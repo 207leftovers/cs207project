@@ -1,5 +1,22 @@
 class TimeSeries:
+    """
+    A class to store a single, ordered set of numerical data
 
+    Parameters
+    ----------
+    data: list
+        A list of single, ordered numerical data
+
+    Functions
+    ----------
+    __init__
+        Takes in user-input data and save it in the class
+
+    __str__
+        return the length, first element and last element of the data
+
+
+    """
     def __init__(self, data):
         self.data = data
 
