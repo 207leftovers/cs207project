@@ -12,3 +12,8 @@ for i in range(0,1000):
     s += i
 
 print("sum",s)
+
+print(repr(threes))
+print(threes)
+
+print(TimeSeries(range(0,1000000)))
