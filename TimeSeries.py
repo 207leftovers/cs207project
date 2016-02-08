@@ -27,7 +27,7 @@ class TimeSeries:
         return self.data[index]
 
     def __setitem__(self, index, value):
-        if len(index) != len(value):
+        if index > len(self.data):
             return 'Error'
         self.data[index] = value
 	
