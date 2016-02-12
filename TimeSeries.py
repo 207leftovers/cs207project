@@ -22,7 +22,7 @@ class TimeSeries:
    		Given an index, update the value corresponding the index with the input value
 
     __str__
-        return the length, first element and last element of the series
+        Prints the length, first element and last element of the series if the length is greater than five
 
 
     """
@@ -41,8 +41,10 @@ class TimeSeries:
         self._data[index] = value
 	
     def __repr__(self):
-        return "TimeSeries(length=%r, first=%r, last=%r)" % (len(self.data), self.data[0], self.data[-1])
+        return "%r" %(self._data)
     
     def __str__(self):
-        return "TimeSeries: Length - %r, First - %r, Last - %r" % (len(self.data), self.data[0], self.data[-1])
-
+    	if len(self._data) > 5:
+    		return "TimeSeries: Length - %r, First - %r, Last - %r" % (len(self.data), self.data[0], self.data[-1])
+    	else 
+    		return "%r" %(self._datas
