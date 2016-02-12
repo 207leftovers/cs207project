@@ -4,32 +4,41 @@ class TimeSeries:
 
     Parameters
     ----------
-    data: list
-        A list of single, ordered numerical data
+    data: 
+        Any object that can be treated like a sequence
 
     Functions
     ----------
     __init__
         Takes in user-input data and save it in the class
 
+    __len__
+    	Returns the length of the series
+
+   	__getitem__
+   		Given an index, returns the corresponding value of the series
+
+   	__setitem__
+   		Given an index, update the value corresponding the index with the input value
+
     __str__
-        return the length, first element and last element of the data
+        return the length, first element and last element of the series
 
 
     """
     def __init__(self, data):
-        self.data = data
+        self._data = list(data)
 
     def __len__(self):
-        return len(self.data)
+        return len(self._data)
 
     def __getitem__(self, index):
-        return self.data[index]
+        return self._data[index]
 
     def __setitem__(self, index, value):
-        if index > len(self.data):
+        if index >= len(self._data):
             return 'Error'
-        self.data[index] = value
+        self._data[index] = value
 	
     def __repr__(self):
         return "TimeSeries(length=%r, first=%r, last=%r)" % (len(self.data), self.data[0], self.data[-1])
