@@ -1,50 +1,204 @@
+import numpy as np
+from bisect import bisect_left
+
 class TimeSeries:
     """
-    A class to store a single, ordered set of numerical data
+    A class to store a single, ordered set of TimeSeries data
 
     Parameters
     ----------
-    data: 
-        Any object that can be treated like a sequence
+    _times
+        contain the timestamps of the data
+    _values
+        contains the values of the data that correspond to each timestamp   
+        
 
     Functions
     ----------
     __init__
         Takes in user-input data and save it in the class
+        Data is in the form of 2 list of equal length, containing the timestamps and the corresponding values 
+        Timestamp has to be monotonically increasing
+
+        Assertion Error will be raised when 
+            1. the length of the two lists are different
+            2. Timestamp is not monotonically increasing
 
     __len__
+        asserts that _values and _times are of the same length
     	Returns the length of the series
 
+    __getpos
+        search for the timestamp in self._times using binary search (via bisect_left)
+        throw exception errors when the timestamp is out of range or not found within the array
+
    	__getitem__
-   		Given an index, returns the corresponding value of the series
+   		Given a time, returns the corresponding value of the series
 
    	__setitem__
-   		Given an index, update the value corresponding the index with the input value
+   		Given a time, update the value corresponding the time with the input value
 
     __str__
         Prints the length, first element and last element of the series if the length is greater than five
 
+    __eq__
+        for two timeseries, check that all values and timestamps are equal
 
+    __contains__
+        check if a timestamp exist in the data
+
+    __iter__
+        return an instance of TimeSeriesIterator, that can iterate through the values of the time series
+
+    items
+        return the list of (timestamp, value) tuples
+
+    times
+        return the list of timestamps
+
+    values
+        return the list of values
+
+
+    interpolate
+        Given a list of timestamps, find the interpolation value of those timestamps
+        For t in list, cases considered:
+            1. if t <= smallest timestamp in self, interpolation value = value of smallest timestamp
+            2. if t >= largest timestamp in self, interpolation value = value of largest timestamp
+            3. if t == some timestamp in self, interpolation value = value of that timestamp
+            4. if t is between a pair of timestamps, value is the interpolated values between the two nearest timestamps
     """
-    def __init__(self, data):
-        self._data = list(data)
+    def __init__(self, times, values):
+
+        #times and values are 2 arrays that match to each other. Check that they have the same length
+        assert len(times) == len(values)
+
+        #Check that the list of time is monotonically increasing
+        assert all(times[i] < times[i+1] for i in range(len(times)-1))
+
+        self._times = np.array(times)
+        self._values = np.array(values)
+        
 
     def __len__(self):
-        return len(self._data)
 
-    def __getitem__(self, index):
-        return self._data[index]
+        #_times and _values are 2 arrays that match to each other. Check that they have the same length
+        assert len(self._times) == len(self._values)
+        return len(self._values)
 
-    def __setitem__(self, index, value):
-        if index >= len(self._data):
-            return 'Error'
-        self._data[index] = value
-	
+
+    def __getpos(self, time):
+        if time > self._times[-1] or time < self._times[0]:
+            raise IndexError("IndexError: Timestamp out of range of data: "+ str(time))
+
+        #Do a binary search to find the position to the left of the time
+        pos = bisect_left(self._times,time) 
+
+        #Check that the position correspond to the actual value. otherwise throw an error
+        if self._times[pos] != time:
+            raise ValueError("ValueError: Value not found in timestamps: " + str(time))
+        return pos
+
+    def __getitem__(self, time):
+
+        try:
+            pos = self.__getpos(time)
+            return self._values[pos]
+        except Exception as exc:
+            print (exc)
+
+
+    def __setitem__(self, time, value):
+
+        try:
+            pos = self.__getpos(time)
+            self._values[pos] = value
+        except Exception as exc:
+            print (exc)
+
+    def __contains__(self, time):
+
+        try:
+            pos = self.__getpos(time)
+            return True
+        except Exception as exc:
+            return False
+
     def __repr__(self):
-        return "%r" %(self._data)
+        return "%r" %(self._values)
     
     def __str__(self):
-    	if len(self._data) > 5:
-    		return "TimeSeries: Length - %r, First - %r, Last - %r" % (len(self.data), self.data[0], self.data[-1])
-    	else 
-    		return "%r" %(self._datas
+    	if len(self._values) > 5:
+    		return "TimeSeries: Length - %r, First - %r, Last - %r" % (len(self._values), self._values[0], self._values[-1])
+    	else:
+    		return "TimeSeries: (%r, %r)" %(list(self._times), list(self._values)) 
+
+    def __iter__(self):
+        return TimeSeriesIterator(self._values)
+
+    #check for equality, elementwise for both _times and _values
+    def __eq__(self, other):
+        return (self._values==other._values).all() and (self._times==other._times).all()
+
+    def values(self):
+        return list(self._values)
+
+    def times(self):
+        return list(self._times)
+
+    def items(self):
+        return list(zip(self._times, self._values))
+
+    def interpolate(self, time_points):
+
+        value_points = np.zeros(len(time_points))
+        val_index = 0
+
+        for time in time_points:
+
+            #Check right boundary
+            if time >= self._times[-1]:
+                value_points[val_index] = self._values[-1]
+
+            #Check Left boundary
+            elif time <= self._times[0]:
+                value_points[val_index] = self._values[0]
+            else:
+                pos = bisect_left(self._times,time) 
+
+                #check if the timestamp exist in _time array
+                if self._times[pos] == time:
+                    value_points[val_index] = self._values[pos]
+
+                #if it does not exist, do interpolation
+                else:
+                    right = self._times[pos]
+                    left = self._times[pos-1]
+                    right_val = self._values[pos]
+                    left_val = self._values[pos-1]
+                    gradient = (right_val-left_val)/(right - left)
+                    value_points[val_index] = (time - left) * gradient + left_val
+
+            val_index += 1   
+
+        #Create a new instance of TimeSeries with the interpolated values         
+        return TimeSeries(time_points,value_points)
+
+class TimeSeriesIterator:
+    '''
+    This is an iterator for the TimeSeries class to iterate through the values of the time series
+    '''
+    def __init__(self, values):
+        self._values = values
+        self.index = 0
+
+    def __next__ (self):
+        try:
+            val = self._values[self.index] 
+        except IndexError:
+            raise StopIteration() 
+        self.index += 1
+        return val        
+
+    def __iter__(self):
+        return self
