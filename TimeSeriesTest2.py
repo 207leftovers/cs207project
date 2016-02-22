@@ -49,6 +49,16 @@ a = TimeSeries([0,5,10], [1,2,3])
 b = TimeSeries([2.5,7.5], [100, -100])
 
 
+#Testing lazyness
+print('-----Lazy test begins----------------')
+print("Laziness test: the following should be equal")
+x = TimeSeries([1,2,3,4],[1,4,9,16])
+print(x)
+print(x.lazy.eval())
+print('-----Lazy test ends------------------')
+
+
+
 #Testing Interpolations
 print (a.interpolate([1]) == TimeSeries([1],[1.2]))
 print (a.interpolate(b.times()) == TimeSeries([2.5,7.5], [1.5, 2.5]))

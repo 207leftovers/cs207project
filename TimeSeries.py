@@ -1,5 +1,6 @@
 import numpy as np
 from bisect import bisect_left
+from lazy import LazyOperation
 
 class TimeSeries:
     """
@@ -10,17 +11,17 @@ class TimeSeries:
     _times
         contain the timestamps of the data
     _values
-        contains the values of the data that correspond to each timestamp   
-        
+        contains the values of the data that correspond to each timestamp
+
 
     Functions
     ----------
     __init__
         Takes in user-input data and save it in the class
-        Data is in the form of 2 list of equal length, containing the timestamps and the corresponding values 
+        Data is in the form of 2 list of equal length, containing the timestamps and the corresponding values
         Timestamp has to be monotonically increasing
 
-        Assertion Error will be raised when 
+        Assertion Error will be raised when
             1. the length of the two lists are different
             2. Timestamp is not monotonically increasing
 
@@ -78,7 +79,7 @@ class TimeSeries:
 
         self._times = np.array(times)
         self._values = np.array(values)
-        
+
 
     def __len__(self):
 
@@ -92,7 +93,7 @@ class TimeSeries:
             raise IndexError("IndexError: Timestamp out of range of data: "+ str(time))
 
         #Do a binary search to find the position to the left of the time
-        pos = bisect_left(self._times,time) 
+        pos = bisect_left(self._times,time)
 
         #Check that the position correspond to the actual value. otherwise throw an error
         if self._times[pos] != time:
@@ -126,12 +127,12 @@ class TimeSeries:
 
     def __repr__(self):
         return "%r" %(self._values)
-    
+
     def __str__(self):
     	if len(self._values) > 5:
     		return "TimeSeries: Length - %r, First - %r, Last - %r" % (len(self._values), self._values[0], self._values[-1])
     	else:
-    		return "TimeSeries: (%r, %r)" %(list(self._times), list(self._values)) 
+    		return "TimeSeries: (%r, %r)" %(list(self._times), list(self._values))
 
     def __iter__(self):
         return TimeSeriesIterator(self._values)
@@ -164,7 +165,7 @@ class TimeSeries:
             elif time <= self._times[0]:
                 value_points[val_index] = self._values[0]
             else:
-                pos = bisect_left(self._times,time) 
+                pos = bisect_left(self._times,time)
 
                 #check if the timestamp exist in _time array
                 if self._times[pos] == time:
@@ -179,10 +180,17 @@ class TimeSeries:
                     gradient = (right_val-left_val)/(right - left)
                     value_points[val_index] = (time - left) * gradient + left_val
 
-            val_index += 1   
+            val_index += 1
 
-        #Create a new instance of TimeSeries with the interpolated values         
+        #Create a new instance of TimeSeries with the interpolated values
         return TimeSeries(time_points,value_points)
+
+    @property
+    def lazy(self):
+        return LazyOperation(self)
+
+    def __call__(self):
+        return self
 
 class TimeSeriesIterator:
     '''
@@ -194,11 +202,11 @@ class TimeSeriesIterator:
 
     def __next__ (self):
         try:
-            val = self._values[self.index] 
+            val = self._values[self.index]
         except IndexError:
-            raise StopIteration() 
+            raise StopIteration()
         self.index += 1
-        return val        
+        return val
 
     def __iter__(self):
         return self
