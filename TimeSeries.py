@@ -59,6 +59,12 @@ class TimeSeries:
 
     values
         return the list of values
+        
+    mean
+        return the mean of the values
+    
+    medians 
+        return the median of the values
 
 
     interpolate
@@ -149,6 +155,12 @@ class TimeSeries:
 
     def items(self):
         return list(zip(self._times, self._values))
+    
+    def mean(self):
+        return np.mean(self._values)
+    
+    def median(self):
+        return np.median(self._values)
 
     def interpolate(self, time_points):
 
