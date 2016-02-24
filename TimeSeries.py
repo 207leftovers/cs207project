@@ -49,7 +49,16 @@ class TimeSeries:
         check if a timestamp exist in the data
 
     __iter__
-        return an instance of TimeSeriesIterator, that can iterate through the values of the time series
+        return an instance of TimeSeriesIterator that can iterate through the values of the time series
+        
+    itertimes
+        return an instance of TimeSeriesIterator that can iterate through the times of the time series
+        
+    itervalues
+        see __iter__ above
+       
+    iteritems
+        return an instance of TimeSeriesIterator that iterates over the time value pairs
 
     items
         return the list of (timestamp, value) tuples
@@ -142,6 +151,18 @@ class TimeSeries:
 
     def __iter__(self):
         return TimeSeriesIterator(self._values)
+    
+    def itertimes(self):
+        return TimeSeriesIterator(self._times)
+    
+    def itervalues(self):
+        return TimeSeriesIterator(self._values)
+    
+    def iteritems(self):
+        combined = []
+        for i in range(len(self._times)):
+            combined.append((self._times[i], self._values[i]))
+        return TimeSeriesIterator(combined)
 
     #check for equality, elementwise for both _times and _values
     def __eq__(self, other):
