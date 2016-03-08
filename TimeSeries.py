@@ -1,6 +1,8 @@
 import numpy as np
 from bisect import bisect_left
 from lazy import LazyOperation
+import numbers
+import math
 
 class TimeSeries:
     """
@@ -74,6 +76,21 @@ class TimeSeries:
     
     medians 
         return the median of the values
+
+    __abs__
+        return the absolute value of the values in the TimeSeries
+
+    __bool__
+        return the False if __abs__ is 0, True otherwise 
+
+    __pos__
+        return a new TimeSeries that is the same as self
+
+    __neg__
+        return a new TimeSeries where the values are the negative of self
+
+    __add__ 
+        Given two TimeSeries with the same time domain, add the values up
 
 
     interpolate
@@ -224,6 +241,73 @@ class TimeSeries:
 
     def __call__(self):
         return self
+
+
+    #-------------Operators---------------------
+
+    #Unary Operators
+    def __abs__(self):
+        return math.sqrt(sum(x * x for x in self._values))
+    
+    def __bool__(self): 
+        return bool(abs(self))
+
+    def __neg__(self):
+        return TimeSeries(self._times, [-x for x in self._values]) 
+    
+    def __pos__(self):
+        return TimeSeries(self._times, self._values)
+
+    def __add__ (self, rhs):
+
+        try:
+            if isinstance(rhs, numbers.Real):
+                return TimeSeries(self._times, [a + rhs for a in self._values]) 
+            else: #
+
+                if ((len(self._values) == len(rhs._values)) and all((self._times == rhs._times))):
+                    pairs = zip(self._values, rhs._values)
+                    return TimeSeries(self._times, [a + b for a, b in pairs])
+                else:
+                    raise ValueError(str(self)+' and '+str(rhs)+' must have the same time points')
+                #self._check_length_helper(rhs)
+                #pairs = zip(self, rhs)
+                #return Vector(a + b for a, b in pairs)
+        except TypeError:
+            raise NotImplemented
+
+       
+    def __radd__(self, other):
+        return self + other
+
+    def __sub__(self, rhs):
+        return self + (-rhs)
+
+    def __rsub__(self, other): # other + self delegates to __add__
+        return -self + other
+
+    def __mul__ (self, rhs):
+
+        try:
+            if isinstance(rhs, numbers.Real):
+                return TimeSeries(self._times, [a * rhs for a in self._values]) 
+            else: #
+
+                if ((len(self._values) == len(rhs._values)) and all((self._times == rhs._times))):
+                    pairs = zip(self._values, rhs._values)
+                    return TimeSeries(self._times, [a * b for a, b in pairs])
+                else:
+                    raise ValueError(str(self)+' and '+str(rhs)+' must have the same time points')
+                #self._check_length_helper(rhs)
+                #pairs = zip(self, rhs)
+                #return Vector(a + b for a, b in pairs)
+        except TypeError:
+            raise NotImplemented
+
+    def __rmul__(self, other):
+        return self * other
+
+
 
 class TimeSeriesIterator:
     '''
