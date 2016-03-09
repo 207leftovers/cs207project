@@ -68,6 +68,7 @@ def test_iteritems():
     n = next(i)
     assert n == (1, 1)
     
+    
 # Test Operators
 def test_add():
     a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
@@ -77,6 +78,7 @@ def test_add():
     assert a+b == TimeSeries([1, 1.5, 2, 2.5, 10], [1, 4, 2, 4.5, 5])
     assert a+3 == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [3.0, 5.0, 2.0, 3.5, 3.0])
     assert 3+a == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [3.0, 5.0, 2.0, 3.5, 3.0])
+    
     # Test that the timepoints are the same
     e1 = ''
     try:
@@ -94,6 +96,18 @@ def test_add():
         e2 = e
     assert str(e2) == 'TimeSeries: ([1.0, 1.5, 2.0, 2.5, 10.0], [0.0, 2.0, -1.0, 0.5, 0.0]) and TimeSeries: ([1.0, 1.5, 2.0, 10.0], [1, 2, 3, 5]) must have the same time points' 
     assert type(e2).__name__ == 'ValueError'
+    
+    # Test that they have time series
+    e3 = ''
+    try:
+        a + [0, 1, 2, 3, 4]
+    except Exception as e: 
+        e3 = e
+    print(type(e3))
+    #assert type(e3).__name__ == 'AttributeError'
+    #assert str(e3) == "'list' object has no attribute '_values'" 
+
+    
         
 def test_sub():
     a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])

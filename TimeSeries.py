@@ -260,7 +260,6 @@ class TimeSeries:
         except TypeError:
             raise NotImplemented
 
-       
     def __radd__(self, other):
         return self + other
 
