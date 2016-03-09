@@ -102,7 +102,6 @@ class TimeSeries:
             4. if t is between a pair of timestamps, value is the interpolated values between the two nearest timestamps
     """
     def __init__(self, times, values):
-
         #times and values are 2 arrays that match to each other. Check that they have the same length
         assert len(times) == len(values)
 
@@ -114,7 +113,6 @@ class TimeSeries:
 
 
     def __len__(self):
-
         #_times and _values are 2 arrays that match to each other. Check that they have the same length
         assert len(self._times) == len(self._values)
         return len(self._values)
@@ -133,7 +131,6 @@ class TimeSeries:
         return pos
 
     def __getitem__(self, time):
-
         try:
             pos = self.__getpos(time)
             return self._values[pos]
@@ -142,7 +139,6 @@ class TimeSeries:
 
 
     def __setitem__(self, time, value):
-
         try:
             pos = self.__getpos(time)
             self._values[pos] = value
@@ -150,7 +146,6 @@ class TimeSeries:
             print (exc)
 
     def __contains__(self, time):
-
         try:
             pos = self.__getpos(time)
             return True
@@ -201,7 +196,6 @@ class TimeSeries:
         return np.median(self._values)
 
     def interpolate(self, time_points):
-
         value_points = np.zeros(len(time_points))
         val_index = 0
 
