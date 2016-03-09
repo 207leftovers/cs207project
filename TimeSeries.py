@@ -92,7 +92,6 @@ class TimeSeries:
     __add__ 
         Given two TimeSeries with the same time domain, add the values up
 
-
     interpolate
         Given a list of timestamps, find the interpolation value of those timestamps
         For t in list, cases considered:
@@ -111,12 +110,10 @@ class TimeSeries:
         self._times = np.array(times)
         self._values = np.array(values)
 
-
     def __len__(self):
         #_times and _values are 2 arrays that match to each other. Check that they have the same length
         assert len(self._times) == len(self._values)
         return len(self._values)
-
 
     def __getpos(self, time):
         if time > self._times[-1] or time < self._times[0]:
@@ -136,7 +133,6 @@ class TimeSeries:
             return self._values[pos]
         except Exception as exc:
             print (exc)
-
 
     def __setitem__(self, time, value):
         try:
@@ -200,7 +196,6 @@ class TimeSeries:
         val_index = 0
 
         for time in time_points:
-
             #Check right boundary
             if time >= self._times[-1]:
                 value_points[val_index] = self._values[-1]
@@ -236,10 +231,9 @@ class TimeSeries:
     def __call__(self):
         return self
 
-
     #-------------Operators---------------------
 
-    #Unary Operators
+    # Unary Operators
     def __abs__(self):
         return math.sqrt(sum(x * x for x in self._values))
     
@@ -252,21 +246,17 @@ class TimeSeries:
     def __pos__(self):
         return TimeSeries(self._times, self._values)
 
-    def __add__ (self, rhs):
-
+    # Binary Operators
+    def __add__(self, rhs):
         try:
             if isinstance(rhs, numbers.Real):
                 return TimeSeries(self._times, [a + rhs for a in self._values]) 
-            else: #
-
+            else: 
                 if ((len(self._values) == len(rhs._values)) and all((self._times == rhs._times))):
                     pairs = zip(self._values, rhs._values)
                     return TimeSeries(self._times, [a + b for a, b in pairs])
                 else:
-                    raise ValueError(str(self)+' and '+str(rhs)+' must have the same time points')
-                #self._check_length_helper(rhs)
-                #pairs = zip(self, rhs)
-                #return Vector(a + b for a, b in pairs)
+                    raise ValueError(str(self) + ' and ' + str(rhs) + ' must have the same time points')
         except TypeError:
             raise NotImplemented
 
@@ -281,12 +271,10 @@ class TimeSeries:
         return -self + other
 
     def __mul__ (self, rhs):
-
         try:
             if isinstance(rhs, numbers.Real):
                 return TimeSeries(self._times, [a * rhs for a in self._values]) 
-            else: #
-
+            else:
                 if ((len(self._values) == len(rhs._values)) and all((self._times == rhs._times))):
                     pairs = zip(self._values, rhs._values)
                     return TimeSeries(self._times, [a * b for a, b in pairs])
@@ -300,8 +288,6 @@ class TimeSeries:
 
     def __rmul__(self, other):
         return self * other
-
-
 
 class TimeSeriesIterator:
     '''

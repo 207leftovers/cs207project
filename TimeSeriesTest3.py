@@ -11,8 +11,6 @@ c = TimeSeries([1, 1.5, 2, 3, 10], [1, 2, 3, 4, 5])
 
 d = TimeSeries([1, 1.5, 2, 10], [1, 2, 3, 5])
 
-print (a+b)
-
 try:
 	print (a+c)
 except Exception as e:
@@ -23,10 +21,6 @@ try:
 except Exception as e:
 	print (type(e),e)
 
-print (a+3)
-
-print (3+a)
-
 print (abs(a))
 
 print (bool(a))
@@ -34,15 +28,3 @@ print (bool(a))
 print (-a)
 
 print (+a)
-
-print (a-3)
-
-print (3-a)
-
-print (a-b)
-
-print (a*3)
-
-print (3*a)
-
-print (a*b)

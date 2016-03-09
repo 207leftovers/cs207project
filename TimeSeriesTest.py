@@ -68,6 +68,33 @@ def test_iteritems():
     n = next(i)
     assert n == (1, 1)
     
+# Test Operators
+def test_add():
+    a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
+    b = TimeSeries([1, 1.5, 2, 2.5, 10], [1, 2, 3, 4, 5])
+    assert a+b == TimeSeries([1, 1.5, 2, 2.5, 10], [1, 4, 2, 4.5, 5])
+    assert a+3 == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [3.0, 5.0, 2.0, 3.5, 3.0])
+    assert 3+a == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [3.0, 5.0, 2.0, 3.5, 3.0])
+
+def test_sub():
+    a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
+    b = TimeSeries([1, 1.5, 2, 2.5, 10], [1, 2, 3, 4, 5])
+    assert a-b == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [-1.0, 0.0, -4.0, -3.5, -5.0])
+    assert 3-a == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [3.0, 1.0, 4.0, 2.5, 3.0])
+    assert a-3 == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [-3.0, -1.0, -4.0, -2.5, -3.0])
+    
+def test_mul():
+    a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
+    b = TimeSeries([1, 1.5, 2, 2.5, 10], [1, 2, 3, 4, 5])
+    assert a*b == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [0.0, 4.0, -3.0, 2.0, 0.0])
+    assert 3*a == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [0.0, 6.0, -3.0, 1.5, 0.0])
+    assert a*3 == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [0.0, 6.0, -3.0, 1.5, 0.0])
+    
+def test_unary():
+    a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
+    print(abs(a))
+    assert abs(a) == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [0, 2, 1, 0.5, 0])
+    
 # Run the tests
 print("Running mean and median tests")
 test_mean()
@@ -78,3 +105,9 @@ test_iter()
 test_itertimes()
 test_itervalues()
 test_iteritems()
+
+print("Running operations")
+test_add()
+test_sub()
+test_mul()
+test_unary()
