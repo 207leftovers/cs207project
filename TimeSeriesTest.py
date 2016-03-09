@@ -72,10 +72,29 @@ def test_iteritems():
 def test_add():
     a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
     b = TimeSeries([1, 1.5, 2, 2.5, 10], [1, 2, 3, 4, 5])
+    c = TimeSeries([1, 1.5, 2, 3, 10], [1, 2, 3, 4, 5])
+    d = TimeSeries([1, 1.5, 2, 10], [1, 2, 3, 5])
     assert a+b == TimeSeries([1, 1.5, 2, 2.5, 10], [1, 4, 2, 4.5, 5])
     assert a+3 == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [3.0, 5.0, 2.0, 3.5, 3.0])
     assert 3+a == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [3.0, 5.0, 2.0, 3.5, 3.0])
-
+    # Test that the timepoints are the same
+    e1 = ''
+    try:
+        a + c
+    except Exception as e: 
+        e1 = e
+    assert str(e1) == 'TimeSeries: ([1.0, 1.5, 2.0, 2.5, 10.0], [0.0, 2.0, -1.0, 0.5, 0.0]) and TimeSeries: ([1.0, 1.5, 2.0, 3.0, 10.0], [1, 2, 3, 4, 5]) must have the same time points'
+    assert type(e1).__name__ == 'ValueError'
+    
+    # Test that they have the same number of timepoints
+    e2 = ''
+    try:
+        a + d
+    except Exception as e: 
+        e2 = e
+    assert str(e2) == 'TimeSeries: ([1.0, 1.5, 2.0, 2.5, 10.0], [0.0, 2.0, -1.0, 0.5, 0.0]) and TimeSeries: ([1.0, 1.5, 2.0, 10.0], [1, 2, 3, 5]) must have the same time points' 
+    assert type(e2).__name__ == 'ValueError'
+        
 def test_sub():
     a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
     b = TimeSeries([1, 1.5, 2, 2.5, 10], [1, 2, 3, 4, 5])
@@ -92,8 +111,10 @@ def test_mul():
     
 def test_unary():
     a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
-    print(abs(a))
-    assert abs(a) == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [0, 2, 1, 0.5, 0])
+    assert abs(a) == 2.29128784747792
+    assert bool(a) == True
+    assert -a == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [-0.0, -2.0, 1.0, -0.5, -0.0])
+    assert +a == TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
     
 # Run the tests
 print("Running mean and median tests")
