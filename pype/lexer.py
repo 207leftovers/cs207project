@@ -16,19 +16,48 @@ tokens = [
   'ID', # a sequence of letters, numbers, and underscores. Must not start with a number.
 ] + list(reserved.values())
 
-# TODO You'll need a list of token specifications here.
-# TODO Here's an example:
-t_LPAREN = r'\('
+# Regular expression rules for simple tokens
+t_LPAREN  = r'\('
+t_RPAREN  = r'\)'
+t_LBRACE  = r'\['
+t_RBRACE  = r'\]'
+t_ADD    = r'\+'
+t_SUB   = r'-'
+t_MUL   = r'\*'
+t_DIV  = r'/'
 
-# TODO Ignore whitespace.
+t_STRING = r'"[^"]"'
+    
+t_ASSIGN = r':='
 
-# TODO Write one rule for IDs and reserved keywords. Section 4.3 has an example.
+def t_NUMBER(t):
+    r'\d+'
+    t.value = int(t.value)    
+    return t
 
-# TODO Ignore comments. Comments in PyPE are just like in Python. Section 4.5.
+# Ignore whitespace (spaces and tabs)
+t_ignore  = ' \t'
 
-# TODO Write a rule for newlines that track line numbers. Section 4.6.
+# Write one rule for IDs and reserved keywords. Section 4.3 has an example.
+def t_ID(t):
+    r'[a-zA-Z_][a-zA-Z_0-9]*'
+    t.type = reserved.get(t.value,'ID')    # Check for reserved words
+#    # Look up symbol table information and return a tuple
+#    t.value = (t.value, symbol_lookup(t.value))
+    return t
 
-# TODO Write an error-handling routine. It should print both line and column numbers.
+# Ignore comments. Comments in PyPE are just like in Python. Section 4.5.
+t_ignore_COMMENT = r'\#.*'
+
+# Write a rule for newlines that track line numbers. Section 4.6.
+def t_newline(t):
+    r'\n+'
+    t.lexer.lineno += len(t.value)
+
+# Write an error-handling routine. It should print both line and column numbers.
+def t_error(t):
+    print("Illegal character '%s', line %d, column %d" % (t.value[0], t.lineno, t.lexpos))
+    t.lexer.skip(1)
 
 # This actually builds the lexer.
 lexer = ply.lex.lex()
