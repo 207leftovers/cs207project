@@ -106,8 +106,6 @@ def test_add():
     print(type(e3))
     #assert type(e3).__name__ == 'AttributeError'
     #assert str(e3) == "'list' object has no attribute '_values'" 
-
-    
         
 def test_sub():
     a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])

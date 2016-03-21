@@ -15,7 +15,6 @@ class TimeSeries:
     _values
         contains the values of the data that correspond to each timestamp
 
-
     Functions
     ----------
     __init__
@@ -101,10 +100,10 @@ class TimeSeries:
             4. if t is between a pair of timestamps, value is the interpolated values between the two nearest timestamps
     """
     def __init__(self, times, values):
-        #times and values are 2 arrays that match to each other. Check that they have the same length
+        # Times and values are 2 arrays that match to each other. Check that they have the same length
         assert len(times) == len(values)
 
-        #Check that the list of time is monotonically increasing
+        # Check that the list of time is monotonically increasing
         assert all(times[i] < times[i+1] for i in range(len(times)-1))
 
         self._times = np.array(times)

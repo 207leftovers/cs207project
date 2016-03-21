@@ -36,14 +36,12 @@ def t_NUMBER(t):
     return t
 
 # Ignore whitespace (spaces and tabs)
-t_ignore  = ' \t'
+t_ignore = ' \t'
 
 # Write one rule for IDs and reserved keywords. Section 4.3 has an example.
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
     t.type = reserved.get(t.value,'ID')    # Check for reserved words
-#    # Look up symbol table information and return a tuple
-#    t.value = (t.value, symbol_lookup(t.value))
     return t
 
 # Ignore comments. Comments in PyPE are just like in Python. Section 4.5.
@@ -60,4 +58,4 @@ def t_error(t):
     t.lexer.skip(1)
 
 # This actually builds the lexer.
-lexer = ply.lex.lex()
+lexer = ply.lex.lex(debug=True)
