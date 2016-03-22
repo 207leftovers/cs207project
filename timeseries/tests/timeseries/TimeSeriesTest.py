@@ -4,21 +4,35 @@ import numpy as np
 # projecteuler.net/problem=1
 # Note: this is decidely *not* the intended purpose of this class.
 
-threes = TimeSeries(range(0,1000,3), range(0,1000,3))
-fives = TimeSeries(range(0,1000,5), range(0,1000,5))
+# threes = TimeSeries(range(0,1000,3), range(0,1000,3))
+# fives = TimeSeries(range(0,1000,5), range(0,1000,5))
 
-s = 0
-for i in range(0,1000):
-  if i in threes or i in fives:
-    s += i
+# s = 0
+# for i in range(0,1000):
+#   if i in threes or i in fives:
+#     s += i
 
-print("sum",s)
+# print("sum",s)
 
-print(repr(threes))
-print(threes)
+# print(repr(threes))
+# print(threes)
 
-print(TimeSeries(range(0,1000000), range(0,1000000)))
+# print(TimeSeries(range(0,1000000), range(0,1000000)))
 
+def test_initialization():
+    a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
+    assert isinstance(a, TimeSeries)
+    assert a == TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
+
+def test_getter_setter():
+    a = TimeSeries([2.5],[0.5])
+    assert a[2.5] == 0.5
+    # better have testing setter a[3] = 1
+
+def test_calling():
+    a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
+    assert a.times() == [1, 1.5, 2, 2.5, 10]
+    assert a.values() == [0, 2, -1, 0.5, 0]
 
 # Test the Mean and Median Functions
 def test_mean():
@@ -78,7 +92,7 @@ def test_add():
     assert a+b == TimeSeries([1, 1.5, 2, 2.5, 10], [1, 4, 2, 4.5, 5])
     assert a+3 == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [3.0, 5.0, 2.0, 3.5, 3.0])
     assert 3+a == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [3.0, 5.0, 2.0, 3.5, 3.0])
-    
+
     # Test that the timepoints are the same
     e1 = ''
     try:
@@ -103,9 +117,9 @@ def test_add():
         a + [0, 1, 2, 3, 4]
     except Exception as e: 
         e3 = e
-    print(type(e3))
-    #assert type(e3).__name__ == 'AttributeError'
+    assert type(e3).__name__ == 'AttributeError'
     #assert str(e3) == "'list' object has no attribute '_values'" 
+
         
 def test_sub():
     a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
@@ -127,20 +141,42 @@ def test_unary():
     assert bool(a) == True
     assert -a == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [-0.0, -2.0, 1.0, -0.5, -0.0])
     assert +a == TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
+
+def test_interpolation():
+    a = TimeSeries([0,5,10], [1,2,3])
+    b = TimeSeries([2.5,7.5], [100, -100])
+    assert (a.interpolate([1]) == TimeSeries([1],[1.2]))
+    assert (a.interpolate(b.times()) == TimeSeries([2.5,7.5], [1.5, 2.5]))
+    assert (a.interpolate([-100,100]) == TimeSeries([-100,100], [1,3]))
+
+
+def test_lazy():
+    x = TimeSeries([1,2,3,4],[1,4,9,16])
+    assert x == x.lazy.eval()
+
     
-# Run the tests
-print("Running mean and median tests")
-test_mean()
-test_median()
+# print("Running initialization tests")
+# test_initialization()
+# test_getter_setter()
+# test_calling()
 
-print("Running iteration tests")
-test_iter()
-test_itertimes()
-test_itervalues()
-test_iteritems()
 
-print("Running operations")
-test_add()
-test_sub()
-test_mul()
-test_unary()
+# print("Running mean and median tests")
+# test_mean()
+# test_median()
+
+# print("Running iteration tests")
+# test_iter()
+# test_itertimes()
+# test_itervalues()
+# test_iteritems()
+
+# print("Running operations tests")
+# test_add()
+# test_sub()
+# test_mul()
+# test_unary()
+# test_interpolation()
+
+# print("Running lazy operations tests")
+# test_lazy()
