@@ -1,24 +1,6 @@
 from TimeSeries import TimeSeries
 import numpy as np
 
-# projecteuler.net/problem=1
-# Note: this is decidely *not* the intended purpose of this class.
-
-# threes = TimeSeries(range(0,1000,3), range(0,1000,3))
-# fives = TimeSeries(range(0,1000,5), range(0,1000,5))
-
-# s = 0
-# for i in range(0,1000):
-#   if i in threes or i in fives:
-#     s += i
-
-# print("sum",s)
-
-# print(repr(threes))
-# print(threes)
-
-# print(TimeSeries(range(0,1000000), range(0,1000000)))
-
 def test_initialization():
     a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
     assert isinstance(a, TimeSeries)
@@ -82,7 +64,6 @@ def test_iteritems():
     n = next(i)
     assert n == (1, 1)
     
-    
 # Test Operators
 def test_add():
     a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
@@ -119,7 +100,6 @@ def test_add():
         e3 = e
     assert type(e3).__name__ == 'AttributeError'
     #assert str(e3) == "'list' object has no attribute '_values'" 
-
         
 def test_sub():
     a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
@@ -149,34 +129,6 @@ def test_interpolation():
     assert (a.interpolate(b.times()) == TimeSeries([2.5,7.5], [1.5, 2.5]))
     assert (a.interpolate([-100,100]) == TimeSeries([-100,100], [1,3]))
 
-
 def test_lazy():
     x = TimeSeries([1,2,3,4],[1,4,9,16])
     assert x == x.lazy.eval()
-
-    
-# print("Running initialization tests")
-# test_initialization()
-# test_getter_setter()
-# test_calling()
-
-
-# print("Running mean and median tests")
-# test_mean()
-# test_median()
-
-# print("Running iteration tests")
-# test_iter()
-# test_itertimes()
-# test_itervalues()
-# test_iteritems()
-
-# print("Running operations tests")
-# test_add()
-# test_sub()
-# test_mul()
-# test_unary()
-# test_interpolation()
-
-# print("Running lazy operations tests")
-# test_lazy()
