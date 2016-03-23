@@ -1,4 +1,3 @@
-
 class ASTVisitor():
   def visit(self, astnode):
     'A read-only function which looks at a single AST node.'
@@ -23,7 +22,7 @@ class ASTNode(object):
   def pprint(self,indent=''):
     '''Recursively prints a formatted string representation of the AST.'''
     # TODO-check
-    print self.parent
+    print(self.parent)
     for child in self._children:
       child.pprint(indent)
 
@@ -75,7 +74,7 @@ class ASTAssignmentExpr(ASTNode): # TODO
   def binding(self): # TODO
   @property
   def value(self): # TODO
-
+       
 
 class ASTEvalExpr(ASTNode): # TODO-check
   @property
@@ -91,9 +90,6 @@ class ASTEvalExpr(ASTNode): # TODO-check
 
     for arg in args:
       self.children.append(arg)
-
-
-
 
 
 # These are already complete.

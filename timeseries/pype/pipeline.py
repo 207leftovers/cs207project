@@ -1,5 +1,5 @@
 from .lexer import lexer
-from .parser import parser
+import parser
 from .ast import *
 from .semantic_analysis import CheckSingleAssignment
 from .translate import SymbolTableVisitor

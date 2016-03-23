@@ -139,6 +139,5 @@ def p_parameter_list(p):
 #       If you're interested, read section 6.8, but it requires a fairly deep
 #       understanding of LR parsers and the language specification.
 def p_error(p):
-
-start = 'program'
-parser = ply.yacc.yacc() # To get more information, add debug=True
+    start = 'program'
+    parser = ply.yacc.yacc() # To get more information, add debug=True
