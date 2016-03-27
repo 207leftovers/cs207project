@@ -8,12 +8,12 @@ ATTRIB_COMPONENT = '_pype_component'
 
 def component(func):
   'Marks a functions as compatible for exposing as a component in PyPE.'
-  # TODO
+  func._attributes = {ATTRIB_COMPONENT: True}
   return func
 
 def is_component(func):
   'Checks whether the @component decorator was applied to a function.'
-  # TODO
+  return func._attributes[ATTRIB_COMPONENT] == True
 
 class LibraryImporter(object):
   def __init__(self, modname=None):
@@ -39,4 +39,7 @@ class LibraryImporter(object):
            #   check if method was decorated like before
            #   add a symbol like before, but with type librarymethod
            #   (the ref should be the method, not obj)
+         
+          if inspect.isroutine(method) and is_component(method):
+            symtab.addsym( Symbol(methodname, SymbolType.librarymethod, method)  )
     return symtab

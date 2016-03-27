@@ -1,4 +1,5 @@
 import ply.lex
+
 # pattern : token-name
 reserved = {'input':'INPUT', 'output':'OUTPUT', 'import':'IMPORT',}
 
@@ -29,7 +30,7 @@ t_ASSIGN = r':='
 
 def t_NUMBER(t):
     r'\d+'
-    t.value = int(t.value)  
+    t.value = int(t.value)
     return t
 
 # Ignore whitespace (spaces and tabs)
@@ -39,7 +40,6 @@ t_ignore = ' \t'
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
     t.type = reserved.get(t.value, 'ID')    # Check for reserved words
-    print(t)
     return t
 
 # Ignore comments. Comments in PyPE are just like in Python. Section 4.5.
@@ -56,4 +56,4 @@ def t_error(t):
     t.lexer.skip(1)
 
 # This actually builds the lexer.
-lexer = ply.lex.lex(debug=True)
+lexer = ply.lex.lex(debug=False)

@@ -28,7 +28,6 @@ def p_import(p):
 
 def p_component(p):
   r'''component : LBRACE ID expression_list RBRACE'''
-  print(p[2])
   p[0] = ASTComponent(ASTID(p[2]), p[3])
 
 def p_expression_list(p):
