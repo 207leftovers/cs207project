@@ -1,12 +1,12 @@
 from .lexer import lexer
 import parser
 from .ast import *
-from .semantic_analysis import CheckSingleAssignment
-from .translate import SymbolTableVisitor
+#from .semantic_analysis import CheckSingleAssignment
+#from .translate import SymbolTableVisitor
 
 class Pipeline(object):
   def __init__(self, source):
-    with open(f) as source:
+    with open(source) as f:
       self.compile(f)
 
   def compile(self, file):
@@ -14,7 +14,10 @@ class Pipeline(object):
     # Lexing, parsing, AST construction
     ast = parser.parse(input, lexer=lexer)
     # Semantic analysis
-    ast.walk( CheckSingleAssignment() )
+    #ast.walk( CheckSingleAssignment() )
+    # Pretty print
+    ast.pprint()
+    
     # Translation
-    syms = ast.walk( SymbolTableVisitor() )
-    return syms
+    #syms = ast.walk( SymbolTableVisitor() )
+    #return syms

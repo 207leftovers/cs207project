@@ -13,6 +13,7 @@ class ASTNode(object):
   @property
   def children(self):
     return self._children
+
   @children.setter
   def children(self, children):
     self._children = children
@@ -21,8 +22,8 @@ class ASTNode(object):
 
   def pprint(self,indent=''):
     '''Recursively prints a formatted string representation of the AST.'''
-    # TODO-check
-    print(self.parent)
+    print(indent + self.__class__.__name__)
+    indent = indent + '   '
     for child in self._children:
       child.pprint(indent)
 
@@ -33,8 +34,7 @@ class ASTNode(object):
     any children, children will be visited in order, and (by extension) a node's
     children will all be visited before its siblings.
     The visitor may modify attributes, but may not add or delete nodes.'''
-    # TODO-check
-    visitor.visit()
+    visitor.visit(self)
     for child in self.children:
       child.walk(visitor)
 
@@ -53,44 +53,59 @@ class ASTImport(ASTNode):
   def module(self):
     return self.mod
 
-class ASTComponent(ASTNode): # TODO
-  @property
-  def name(self): # TODO return an element of self.children
+class ASTComponent(ASTNode):
+  def __init__(self, component_id, expression_list=[]):
+    super().__init__()
+    self.children.append(component_id)
+    for expression in expression_list:
+      self.children.append(expression)
 
   @property
-  def expressions(self): # TODO return one or more children
-
-  def __init__(self, componentID, *args):
-    self.id = componentID
-
-    for arg in args:
-      self.children.append(arg)    
-
-
-class ASTInputExpr(ASTNode): # TODO
-class ASTOutputExpr(ASTNode): # TODO
-class ASTAssignmentExpr(ASTNode): # TODO
-  @property
-  def binding(self): # TODO
-  @property
-  def value(self): # TODO
-       
-
-class ASTEvalExpr(ASTNode): # TODO-check
-  @property
-  def op(self): # TODO
+  def name(self): # return an element of self.children
     return self.children[0]
+
   @property
-  def args(self): # TODO
+  def expressions(self): # return one or more children
     return self.children[1:]
 
-  def __init__(self, operator,*args):
+class ASTInputExpr(ASTNode):
+  def __init__(self, input_list):
+    super().__init__()
+    for input_i in input_list:
+      self.children.append(input_i)
+    
+class ASTOutputExpr(ASTNode):
+  def __init__(self, output_list):
+    super().__init__()
+    for output_i in output_list:
+      self.children.append(output_i)
+    
+class ASTAssignmentExpr(ASTNode): 
+  def __init__(self, expression_id, expression):
+    super().__init__()
+    self.children.append(expression_id)
+    self.children.append(expression)
+
+  @property
+  def binding(self):
+    return self.children[0]
+  @property
+  def value(self):
+    return self.children[1]
+
+class ASTEvalExpr(ASTNode):
+  def __init__(self, operator, parameter_list=[]):
     super().__init__()
     self.children.append(operator)
-
-    for arg in args:
-      self.children.append(arg)
-
+    for parameter in parameter_list:
+        self.children.append(parameter)
+    
+  @property
+  def op(self):
+    return self.children[0]
+  @property
+  def args(self):
+    return self.children[1:]
 
 # These are already complete.
 class ASTID(ASTNode):

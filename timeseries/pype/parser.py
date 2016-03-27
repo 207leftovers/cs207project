@@ -1,7 +1,7 @@
 import ply.yacc
 
-from .lexer import tokens,reserved
-from .ast import *
+from lexer import tokens, reserved
+from ast import *
 
 # Here's an example production rule which constructs an AST node
 def p_program(p):
@@ -20,101 +20,93 @@ def p_statement_list(p):
   else:
     p[0] = [p[1]]
 
-# TODO Implement production rules for all other grammar rules and construct a
-#      full AST.
+# Implement production rules for all other grammar rules and construct a full AST.
 
 def p_import(p):
   r'import_statement : LPAREN IMPORT ID RPAREN'
   p[0] = ASTImport(p[3])
 
-# TODO-check
 def p_component(p):
   r'''component : LBRACE ID expression_list RBRACE'''
   p[0] = ASTComponent(p[2], p[3])
 
-
-#TODO-check
 def p_expression_list(p):
   r'''expression_list : expression_list expression
                       | expression'''
   if len(p)>2:
     p[1].append(p[2])
     p[0] = p[1]
-
+  else:
+    p[0] = [p[1]]
 
 def p_inputExpr(p):
   r'''expression : LPAREN INPUT declaration_list RPAREN
                  | LPAREN INPUT RPAREN'''
   if len(p)>4:
-    p[2].append(p[3])
-    #p[0] = p[2]
-    p[0] = ASTInputExpr(p[2])
+    p[0] = ASTInputExpr(p[3])
   else:
-    #p[0] = [p[2]]
-    p[0] = ASTInputExpr([p[2]])
-
+    p[0] = ASTInputExpr([])
 
 def p_outputExpr(p):
   r'''expression : LPAREN OUTPUT declaration_list RPAREN
                  | LPAREN OUTPUT RPAREN'''
   if len(p)>4:
-    p[2].append(p[3])
-    #p[0] = p[2]
-    p[0] = ASTOutputExpr(p[2])
+    p[0] = ASTOutputExpr(p[3])
   else:
-    #p[0] = [p[2]]
-    p[0] = ASTOutputExpr([p[2]])
+    p[0] = ASTOutputExpr([])
 
-# TODO-check
 def p_declaration_list(p):
   r'''declaration_list : declaration_list declaration
                        | declaration'''
   if len(p)>2:
     p[1].append(p[2])
     p[0] = p[1]
+  else:
+    p[0] = [p[1]]
 
-# TODO
+def p_id(p):
   r'''declaration : LPAREN type ID RPAREN
                   | ID'''
-# TODO-check
-def P_typeID(p):
+  if len(p)>2:
+    p[0] = ASTID(p[3], p[2])
+  else:
+    p[0] = ASTID(p[1])
+    
+def p_type_id(p):
   r'''type : ID'''
-  p[0] = ASTID(p[1])
-
+  p[0] = p[1]
 
 def assignExpr(p):
   r'''expression : LPAREN ASSIGN ID expression RPAREN'''
   p[0] = ASTAssignmentExpr(p[3], p[4])
 
-# TODO
+def p_named_function_operation(p):
   r'''expression : LPAREN ID parameter_list RPAREN
                  | LPAREN ID RPAREN'''
+  if len(p) > 4:
+    p[0] = ASTEvalExpr(p[2], p[3])
+  else:
+    p[0] = ASTEvalExpr(p[2])
 
 def p_add(p):
   r'''expression : LPAREN OP_ADD parameter_list RPAREN'''
-  #p[0] = p[3] + p[4] 
   p[0] = ASTEvalExpr(p[2], p[3])
 
 def p_sub(p):
   r'''expression : LPAREN OP_SUB parameter_list RPAREN'''
-  #p[0] = p[3] - p[4] 
   p[0] = ASTEvalExpr(p[2], p[3])
 
 def p_mul(p):
   r'''expression : LPAREN OP_MUL parameter_list RPAREN'''
-  #p[0] = p[3] * p[4]
   p[0] = ASTEvalExpr(p[2], p[3])
 
 def p_div(p):
   r'''expression : LPAREN OP_DIV parameter_list RPAREN'''
-  #p[0] = p[3] / p[4] 
   p[0] = ASTEvalExpr(p[2], p[3])
 
-def p_id(p):
+def p_expression_id(p):
   r'''expression : ID'''
-  #p[0] = p[1]
-  p[0] = ASTID(p[1])
-
+  p[0] = p[1]
 
 def p_number(p):
   r'''expression : NUMBER'''
@@ -124,13 +116,14 @@ def p_string(p):
   r'''expression : STRING'''
   p[0] = ASTLiteral(p[1])
 
-#todo-check
 def p_parameter_list(p):
   r'''parameter_list : parameter_list expression
                      | expression'''
   if len(p)>2:
     p[1].append(p[2])
     p[0] = p[1]
+  else:
+    p[0] = [p[1]]
 
 # TODO: Write an error handling function. You should attempt to make the error
 #       message sensible. For instance, print out the line and column numbers to
