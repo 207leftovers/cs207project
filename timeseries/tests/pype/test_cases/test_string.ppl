@@ -1,0 +1,4 @@
+{ stringoperation
+  (:= a "something")
+  (output a)
+}

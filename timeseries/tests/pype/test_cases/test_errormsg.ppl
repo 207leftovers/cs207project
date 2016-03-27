@@ -1,0 +1,4 @@
+{ errorcase
+  (:= mu)
+  (output mu)
+}
