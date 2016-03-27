@@ -11,8 +11,10 @@ class Pipeline(object):
 
   def compile(self, file):
     input = file.read()
+    print(input)
     # Lexing, parsing, AST construction
-    ast = parser.parse(input, lexer=lexer)
+    ast = parser.parser.parse(input, lexer=lexer)
+    print(ast)
     # Semantic analysis
     #ast.walk( CheckSingleAssignment() )
     # Pretty print

@@ -1,10 +1,7 @@
 import ply.lex
+# pattern : token-name
+reserved = {'input':'INPUT', 'output':'OUTPUT', 'import':'IMPORT',}
 
-reserved = { # pattern : token-name
-  'input' : 'INPUT',
-  'output' : 'OUTPUT',
-  'import' : 'IMPORT',
-}
 # 'tokens' is a special word in ply's lexers.
 tokens = [ 
   'LPAREN','RPAREN', # Individual parentheses
@@ -19,8 +16,8 @@ tokens = [
 # Regular expression rules for simple tokens
 t_LPAREN  = r'\('
 t_RPAREN  = r'\)'
-t_LBRACE  = r'\['
-t_RBRACE  = r'\]'
+t_LBRACE  = r'\{'
+t_RBRACE  = r'\}'
 t_OP_ADD  = r'\+'
 t_OP_SUB  = r'-'
 t_OP_MUL  = r'\*'
@@ -32,7 +29,7 @@ t_ASSIGN = r':='
 
 def t_NUMBER(t):
     r'\d+'
-    t.value = int(t.value)    
+    t.value = int(t.value)  
     return t
 
 # Ignore whitespace (spaces and tabs)
@@ -41,7 +38,8 @@ t_ignore = ' \t'
 # Write one rule for IDs and reserved keywords. Section 4.3 has an example.
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
-    t.type = reserved.get(t.value,'ID')    # Check for reserved words
+    t.type = reserved.get(t.value, 'ID')    # Check for reserved words
+    print(t)
     return t
 
 # Ignore comments. Comments in PyPE are just like in Python. Section 4.5.

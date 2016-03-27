@@ -24,11 +24,12 @@ def p_statement_list(p):
 
 def p_import(p):
   r'import_statement : LPAREN IMPORT ID RPAREN'
-  p[0] = ASTImport(p[3])
+  p[0] = ASTImport(ASTID(p[3]))
 
 def p_component(p):
   r'''component : LBRACE ID expression_list RBRACE'''
-  p[0] = ASTComponent(p[2], p[3])
+  print(p[2])
+  p[0] = ASTComponent(ASTID(p[2]), p[3])
 
 def p_expression_list(p):
   r'''expression_list : expression_list expression
@@ -74,39 +75,39 @@ def p_id(p):
     
 def p_type_id(p):
   r'''type : ID'''
-  p[0] = p[1]
+  p[0] = ASTID(p[1])
 
-def assignExpr(p):
+def p_assignExpr(p):
   r'''expression : LPAREN ASSIGN ID expression RPAREN'''
-  p[0] = ASTAssignmentExpr(p[3], p[4])
+  p[0] = ASTAssignmentExpr(ASTID(p[3]), p[4])
 
 def p_named_function_operation(p):
   r'''expression : LPAREN ID parameter_list RPAREN
                  | LPAREN ID RPAREN'''
   if len(p) > 4:
-    p[0] = ASTEvalExpr(p[2], p[3])
+    p[0] = ASTEvalExpr(ASTID(p[2]), p[3])
   else:
-    p[0] = ASTEvalExpr(p[2])
+    p[0] = ASTEvalExpr(ASTID(p[2]))
 
 def p_add(p):
   r'''expression : LPAREN OP_ADD parameter_list RPAREN'''
-  p[0] = ASTEvalExpr(p[2], p[3])
+  p[0] = ASTEvalExpr(ASTID(p[2]), p[3])
 
 def p_sub(p):
   r'''expression : LPAREN OP_SUB parameter_list RPAREN'''
-  p[0] = ASTEvalExpr(p[2], p[3])
+  p[0] = ASTEvalExpr(ASTID(p[2]), p[3])
 
 def p_mul(p):
   r'''expression : LPAREN OP_MUL parameter_list RPAREN'''
-  p[0] = ASTEvalExpr(p[2], p[3])
+  p[0] = ASTEvalExpr(ASTID(p[2]), p[3])
 
 def p_div(p):
   r'''expression : LPAREN OP_DIV parameter_list RPAREN'''
-  p[0] = ASTEvalExpr(p[2], p[3])
+  p[0] = ASTEvalExpr(ASTID(p[2]), p[3])
 
 def p_expression_id(p):
   r'''expression : ID'''
-  p[0] = p[1]
+  p[0] = ASTID(p[1])
 
 def p_number(p):
   r'''expression : NUMBER'''
@@ -132,5 +133,7 @@ def p_parameter_list(p):
 #       If you're interested, read section 6.8, but it requires a fairly deep
 #       understanding of LR parsers and the language specification.
 def p_error(p):
-    start = 'program'
-    parser = ply.yacc.yacc() # To get more information, add debug=True
+    pass
+    
+start = 'program'
+parser = ply.yacc.yacc() # To get more information, add debug=True

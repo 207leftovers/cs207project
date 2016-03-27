@@ -27,6 +27,7 @@ class ASTNode(object):
     for child in self._children:
       child.pprint(indent)
 
+
   def walk(self, visitor):
     '''Traverses an AST, calling visitor.visit() on every node.
 
