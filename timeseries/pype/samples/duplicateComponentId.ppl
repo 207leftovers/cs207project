@@ -1,0 +1,2 @@
+{ comp1 (input) (output) (:= a 1) }
+{ comp1 (input) (output) (:= a 2) }

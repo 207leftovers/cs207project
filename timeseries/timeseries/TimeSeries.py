@@ -72,6 +72,9 @@ class TimeSeries:
         
     mean
         return the mean of the values
+       
+    std
+        return the standard deviation of the values
     
     medians 
         return the median of the values
@@ -184,8 +187,13 @@ class TimeSeries:
     def items(self):
         return list(zip(self._times, self._values))
     
+    @pype.component
     def mean(self):
         return np.mean(self._values)
+    
+    @pype.component
+    def std(self):
+        return np.std(self._value)
     
     def median(self):
         return np.median(self._values)

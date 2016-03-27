@@ -28,7 +28,6 @@ def p_import(p):
 
 def p_component(p):
   r'''component : LBRACE ID expression_list RBRACE'''
-  print(p[2])
   p[0] = ASTComponent(ASTID(p[2]), p[3])
 
 def p_expression_list(p):
@@ -126,14 +125,19 @@ def p_parameter_list(p):
   else:
     p[0] = [p[1]]
 
-# TODO: Write an error handling function. You should attempt to make the error
+# An error handling function. You should attempt to make the error
 #       message sensible. For instance, print out the line and column numbers to
 #       help find your error.
 # NOTE: You do NOT need to write production rules with error tokens in them.
 #       If you're interested, read section 6.8, but it requires a fairly deep
 #       understanding of LR parsers and the language specification.
 def p_error(p):
-    pass
+  if p:
+    print('Syntax error found at line {}, column {}, token{}'.format(p.lineno, p.lexpos, p.type))
+    # Just discard the token and tell the parser it's okay.
+    parser.errok()
+  else:
+    print("Syntax error at EOF")
     
 start = 'program'
 parser = ply.yacc.yacc() # To get more information, add debug=True

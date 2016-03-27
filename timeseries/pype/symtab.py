@@ -29,4 +29,8 @@ class SymbolTable(object):
         print(' ',name,'=>',symbol)
 
   def addsym(self, sym, scope='global'):
-    # TODO
+    sym = Symbol(sym)
+    self.T[scope][sym.name] = sym
+    
+  def lookupsym(name, scope='global'):
+    return self.t[scope][name]

@@ -1,8 +1,8 @@
 from .lexer import lexer
-import parser
+from .parser import parser
 from .ast import *
-#from .semantic_analysis import CheckSingleAssignment
-#from .translate import SymbolTableVisitor
+from .semantic_analysis import CheckSingleAssignment, CheckSingleIOExpression, PrettyPrint#, CheckUndefinedVariables, 
+from .translate import SymbolTableVisitor
 
 class Pipeline(object):
   def __init__(self, source):
@@ -11,15 +11,20 @@ class Pipeline(object):
 
   def compile(self, file):
     input = file.read()
-    print(input)
+
     # Lexing, parsing, AST construction
-    ast = parser.parser.parse(input, lexer=lexer)
-    print(ast)
-    # Semantic analysis
-    #ast.walk( CheckSingleAssignment() )
-    # Pretty print
-    ast.pprint()
+    ast = parser.parse(input, lexer=lexer)
     
+    # Pretty print
+    # ast.pprint()
+    # ast.walk(PrettyPrint())
+    
+    # Semantic analysis
+    ast.walk( CheckSingleAssignment() )
+    ast.walk( CheckSingleIOExpression() )
+    syms = ast.walk( SymbolTableVisitor() )
+    #ast.walk( CheckUndefinedVariables(syms) )
+
     # Translation
-    #syms = ast.walk( SymbolTableVisitor() )
-    #return syms
+    syms = ast.walk( SymbolTableVisitor() )
+    return syms
