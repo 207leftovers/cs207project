@@ -10,7 +10,7 @@ install:
     - pip install pytest-cov
     
 script:
-    - py.test --cov timeseries --cov pype
+    - py.test
     
 after_success:
     - coveralls
