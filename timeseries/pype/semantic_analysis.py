@@ -1,4 +1,4 @@
-import ast
+import .ast as ast
 from .error import *
 
 class PrettyPrint(ast.ASTVisitor):
