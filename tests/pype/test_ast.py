@@ -22,5 +22,11 @@ def test_input_ast():
     ast = parser.parse(input, lexer=lexer)
     pretty = PrettyString()
     ast.walk(pretty)
-    print(pretty.text)
     assert pretty.text == 'ASTProgramASTComponentASTIDASTID'
+    
+def test_literal_ast():
+    input = "{t 939}"
+    ast = parser.parse(input, lexer=lexer)
+    pretty = PrettyString()
+    ast.walk(pretty)
+    assert pretty.text == 'ASTProgramASTComponentASTIDASTLiteral'
