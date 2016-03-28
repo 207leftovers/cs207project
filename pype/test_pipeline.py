@@ -1,6 +1,6 @@
-from .lexer import lexer
-from .parser import parser
-from .ast import *
+from pype.lexer import lexer
+from pype.parser import parser
+from pype.ast import *
 #from .semantic_analysis import CheckSingleAssignment
 #from .translate import SymbolTableVisitor
 
