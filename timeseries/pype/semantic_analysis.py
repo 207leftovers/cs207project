@@ -1,5 +1,5 @@
-from .ast import *
-from .error import *
+from pype.ast import *
+from pype.error import *
 
 class PrettyPrint(ASTVisitor):
   def __init__(self):
@@ -58,15 +58,15 @@ class CheckSingleIOExpression(ASTVisitor):
       self.component_has_output = True
 
 '''
-class CheckUndefinedVariables(ASTVisitor):
+class CheckUndefinedVariables(ast.ASTVisitor):
   def __init__(self, symtab):
     self.symtab = symtab
     self.scope=None
 
   def visit(self, node):
-    if isinstance(node, ASTComponent):
+    if isinstance(node, ast.ASTComponent):
       self.scope = node.name.name
-    elif isinstance(node, ASTID):
+    elif isinstance(node, ast.ASTID):
       if self.symtab.lookupsym(node.name, scope=self.scope) is None:
         raise PypeSyntaxError('Undefined variable: '+str(node.name))
 '''
