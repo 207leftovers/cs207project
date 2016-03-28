@@ -1,6 +1,8 @@
 import pype
 import sys
 from tests.pype.test_cases import *
+from pype import lexer
+from pype import parser
 
 #filename1 = '/timeseries/tests/pype/test_cases/example1.ppl'
 #outputfile1 = 'test_cases/example1.ast'
@@ -26,5 +28,3 @@ from tests.pype.test_cases import *
 #    for line in lines:
 #        refList.append(line.strip())
 #  assert(refList == ASTList)
-
-

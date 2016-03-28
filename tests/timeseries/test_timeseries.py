@@ -123,6 +123,13 @@ def test_mul():
     assert a*b == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [0.0, 4.0, -3.0, 2.0, 0.0])
     assert 3*a == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [0.0, 6.0, -3.0, 1.5, 0.0])
     assert a*3 == TimeSeries([1.0, 1.5, 2.0, 2.5, 10.0], [0.0, 6.0, -3.0, 1.5, 0.0])
+    c = TimeSeries([0, 1.5, 2, 2.5, 10], [1, 2, 3, 4, 5])
+    e3 = ''
+    try:
+        a * c
+    except Exception as e: 
+        e3 = e
+    assert type(e3).__name__ == 'ValueError'
     
 def test_unary():
     a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
