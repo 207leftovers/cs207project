@@ -1,4 +1,4 @@
-import ast
+import pype.ast
 from .error import *
 
 class PrettyPrint(ast.ASTVisitor):
