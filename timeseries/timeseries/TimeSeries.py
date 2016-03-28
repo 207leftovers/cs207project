@@ -1,8 +1,9 @@
 import numpy as np
 from bisect import bisect_left
-from lazy import LazyOperation
+from timeseries.lazy import LazyOperation
 import numbers
 import math
+import pype
 
 class TimeSeries:
     """

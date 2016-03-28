@@ -29,7 +29,9 @@ class SymbolTable(object):
         print(' ',name,'=>',symbol)
 
   def addsym(self, sym, scope='global'):
-    sym = Symbol(sym)
+    sym = Symbol(sym[0], sym[1], sym[2])
+    if scope not in self.T:
+        self.T[scope] = {}
     self.T[scope][sym.name] = sym
     
   def lookupsym(name, scope='global'):

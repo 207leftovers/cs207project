@@ -13,7 +13,8 @@ def component(func):
 
 def is_component(func):
   'Checks whether the @component decorator was applied to a function.'
-  return func._attributes[ATTRIB_COMPONENT] == True
+  if hasattr(func, '_attributes'):
+    return func._attributes[ATTRIB_COMPONENT] == True
 
 class LibraryImporter(object):
   def __init__(self, modname=None):
@@ -26,7 +27,10 @@ class LibraryImporter(object):
 
   def add_symbols(self, symtab):
     assert self.mod is not None, 'No module specified or loaded'
-    for (name,obj) in inspect.getmembers(self.mod):
+    print (self.mod.__path__)
+    for (name, obj) in inspect.getmembers(self.mod):
+      print(name, self.mod.__name__)
+
       if inspect.isroutine(obj) and is_component(obj):
         # TODO: add a symbol to symtab
         #       it should be named name
