@@ -26,7 +26,7 @@ t_OP_DIV  = r'/'
 
 t_STRING = r'"[^"]"'
     
-t_ASSIGN = r':='
+t_ASSIGN = r'\:='
 
 def t_NUMBER(t):
     r'\d+'
