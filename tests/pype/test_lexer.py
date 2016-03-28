@@ -2,6 +2,8 @@ from pype import lexer
 from pype.lexer import tokens
 import ply
 
+# Test the pype lexer
+
 def test_tokens():
     lexer.input('(){}')
     output = list(lexer)
@@ -21,5 +23,10 @@ def test_id():
     output = list(lexer)
     assert(output[0].type == 'ID')
     assert(output[0].value == 'anid')
+    
+def test_assign():
+    lexer.input(':=')
+    output = list(lexer)
+    assert(output[0].type == 'ASSIGN')
 
 

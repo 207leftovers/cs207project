@@ -5,6 +5,10 @@ def test_initialization():
     a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
     assert isinstance(a, TimeSeries)
     assert a == TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
+    
+def test_len():
+    a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
+    assert len(a) == 5
 
 def test_getter_setter():
     a = TimeSeries([2.5],[0.5])
@@ -20,6 +24,11 @@ def test_calling():
 def test_mean():
     ten = TimeSeries(range(0,11), range(0,11))    
     assert ten.mean() == 5
+    
+def test_std():
+    ten = TimeSeries([1, 2, 3, 4, 5], [600, 470, 170, 430, 300]) 
+    print(ten.std())
+    assert int(ten.std()) == 147
     
 def test_median():
     median = TimeSeries(range(0,3), range(0,3))    
@@ -132,3 +141,17 @@ def test_interpolation():
 def test_lazy():
     x = TimeSeries([1,2,3,4],[1,4,9,16])
     assert x == x.lazy.eval()
+    
+def test_contains():
+    a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
+    assert a.__contains__(1.5) == True
+    e3 = ''
+    try:
+        a.__contains__('monkeys')
+    except Exception as e: 
+        e3 = e
+    assert type(e3).__name__ == 'str'
+    
+def test_interpolate():
+    a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
+    assert a.interpolate([2]) == TimeSeries([2],[-1])

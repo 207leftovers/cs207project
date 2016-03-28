@@ -194,7 +194,7 @@ class TimeSeries:
     
     @pype.component
     def std(self):
-        return np.std(self._value)
+        return np.std(self._values)
     
     def median(self):
         return np.median(self._values)
