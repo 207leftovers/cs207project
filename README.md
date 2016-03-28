@@ -8,8 +8,8 @@ A project for CS207 at Harvard University, Spring 2016.  This project contains t
 The timeseries module contains code for a TimeSeries class to handle ordered data and corresponding information.  The pype module is a  Domain Specific Language to compile simple programs.
 
 Group Members:<br />
-Avery Faller <br />
-Haosu Tang<br />
-Thomas Seah<br />
-Abishek Malali<br />
+Avery Faller | averyfaller <br />
+Haosu Tang | haosutang <br />
+Thomas Seah <br />
+Abishek Malali | abhishekmalali <br />
 
