@@ -3,7 +3,7 @@ import sys
 
 filename1 = 'test_cases/example1.ppl'
 outputfile1 = 'test_cases/example1.ast'
-def test_example1(filename1, outputfile1):
+def test_example1(filename1 = 'test_cases/example1.ppl', outputfile1 = 'test_cases/example1.ast'):
   testAST = pype.TestPipeline(source=filename1)
   ASTList = testAST.return_out()
 
@@ -18,7 +18,7 @@ def test_example1(filename1, outputfile1):
 
 filename2 = 'test_cases/example0.ppl'
 outputfile2 = 'test_cases/example0.ast'
-def test_example2(filename2, outputfile2):
+def test_example2(filename2 = 'test_cases/example0.ppl', outputfile2 = 'test_cases/example0.ast'):
   testAST = pype.TestPipeline(source=filename2)
   ASTList = testAST.return_out()
 
