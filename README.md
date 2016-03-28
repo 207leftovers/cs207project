@@ -5,6 +5,8 @@
 
 A project for CS207 at Harvard University, Spring 2016.  This project contains two modules, timeseries and pype.
 
+The timeseries module contains code for a TimeSeries class to handle ordered data and corresponding information.  The pype module is a  Domain Specific Language to compile simple programs.
+
 Group Members:<br />
 Avery Faller <br />
 Haosu Tang<br />
