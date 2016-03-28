@@ -3,9 +3,11 @@
 [![Build Status](https://travis-ci.org/207leftovers/cs207project.svg?branch=master)](https://travis-ci.org/207leftovers/cs207project)
 [![Coverage Status](https://coveralls.io/repos/github/207leftovers/cs207project/badge.svg?branch=master)](https://coveralls.io/github/207leftovers/cs207project?branch=master)
 
-Group Members:
-Avery Faller
-Haosu Tang
-Thomas Seah
-Abishek Malali
+A project for CS207 at Harvard University, Spring 2016.  This project contains two modules, timeseries and pype.
+
+Group Members:<br />
+Avery Faller <br />
+Haosu Tang<br />
+Thomas Seah<br />
+Abishek Malali<br />
 
