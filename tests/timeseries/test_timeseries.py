@@ -1,4 +1,4 @@
-from TimeSeries import TimeSeries
+from timeseries.TimeSeries import TimeSeries
 import numpy as np
 
 def test_initialization():
