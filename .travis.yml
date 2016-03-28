@@ -1,0 +1,16 @@
+language: python
+python:
+    - "3.5"
+    
+install:
+    - pip install pytest pytest-cov
+    - pip install coverage
+    - pip install coveralls
+    - pip install pytest
+    - pip install pytest-cov
+    
+script:
+    - py.test --cov timeseries --cov pype
+    
+after_success:
+    - coveralls
