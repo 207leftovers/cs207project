@@ -57,16 +57,14 @@ class CheckSingleIOExpression(ASTVisitor):
         raise PypeSyntaxError('Component '+str(self.component)+' has multiple output expressions')
       self.component_has_output = True
 
-'''
-class CheckUndefinedVariables(ast.ASTVisitor):
+class CheckUndefinedVariables(ASTVisitor):
   def __init__(self, symtab):
     self.symtab = symtab
     self.scope=None
 
   def visit(self, node):
-    if isinstance(node, ast.ASTComponent):
+    if isinstance(node, ASTComponent):
       self.scope = node.name.name
-    elif isinstance(node, ast.ASTID):
+    elif isinstance(node, ASTID):
       if self.symtab.lookupsym(node.name, scope=self.scope) is None:
         raise PypeSyntaxError('Undefined variable: '+str(node.name))
-'''

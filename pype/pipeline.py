@@ -1,7 +1,7 @@
 from .lexer import lexer
 from .parser import parser
 from .ast import *
-from .semantic_analysis import CheckSingleAssignment, CheckSingleIOExpression, PrettyPrint#, CheckUndefinedVariables
+from .semantic_analysis import CheckSingleAssignment, CheckSingleIOExpression, PrettyPrint, CheckUndefinedVariables
 from .translate import SymbolTableVisitor
 
 class Pipeline(object):
@@ -22,10 +22,12 @@ class Pipeline(object):
     
     # Translation
     syms = ast.walk( SymbolTableVisitor() )
-    
+
+    syms.pprint()    
+    ast.walk( CheckUndefinedVariables(syms) )
     # Pretty print
     # ast.pprint()
     # ast.walk(PrettyPrint())
-    syms.pprint()
+
 
     return syms

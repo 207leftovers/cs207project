@@ -27,9 +27,9 @@ class LibraryImporter(object):
 
   def add_symbols(self, symtab):
     assert self.mod is not None, 'No module specified or loaded'
-    print (self.mod.__path__)
+    #print (self.mod.__path__)
     for (name, obj) in inspect.getmembers(self.mod):
-      print(name, self.mod.__name__)
+      #print(name, self.mod.__name__)
 
       if inspect.isroutine(obj) and is_component(obj):
         # TODO: add a symbol to symtab
