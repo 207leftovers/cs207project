@@ -306,7 +306,7 @@ class TimeSeries:
         return self * other
 
     @pype.component
-    def __div__ (self, rhs):
+    def __truediv__ (self, rhs):
         try:
             if isinstance(rhs, numbers.Real):
                 return TimeSeries(self._times, [a / rhs for a in self._values]) 
@@ -318,7 +318,6 @@ class TimeSeries:
                     raise ValueError(str(self)+' and '+str(rhs)+' must have the same time points')
         except TypeError:
             raise NotImplemented
-
 
 class TimeSeriesIterator:
     '''

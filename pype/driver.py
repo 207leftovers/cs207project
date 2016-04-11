@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-
+#import pype
 import sys
-import pype
+from pype.pipeline import *
 
 for fname in sys.argv[1:]:
-  pype.Pipeline(source=fname)
+    Pipeline(source=fname)

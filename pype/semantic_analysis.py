@@ -67,4 +67,4 @@ class CheckUndefinedVariables(ASTVisitor):
       self.scope = node.name.name
     elif isinstance(node, ASTID):
       if self.symtab.lookupsym(node.name, scope=self.scope) is None:
-        raise PypeSyntaxError('Undefined variable: '+str(node.name))
+        raise PypeSyntaxError('Undefined variable: ' + str(node.name))
