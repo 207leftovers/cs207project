@@ -5,7 +5,6 @@ class ASTVisitor():
   def return_value(self):
     return None
 
-
 class ASTModVisitor(ASTVisitor):
   '''A visitor class that can also construct a new, modified AST.
   Two methods are offered: the normal visit() method, which focuses on analyzing
@@ -22,9 +21,6 @@ class ASTModVisitor(ASTVisitor):
     ASTNode than the original. The top-level return value will then be the
     new AST.'''
     return visit_value
-
-
-
 
 class ASTNode(object):
   def __init__(self):
@@ -62,7 +58,6 @@ class ASTNode(object):
 
     return visitor.return_value()
 
-
   def mod_walk(self, mod_visitor):
     '''Traverses an AST, building up a return value from visitor methods.
     Similar to walk(), but constructs a return value from the result of
@@ -73,8 +68,6 @@ class ASTNode(object):
     child_values = [child.mod_walk(mod_visitor) for child in self.children]
     retval = mod_visitor.post_visit(self, selfval, child_values)
     return retval
-
-
 
 class ASTProgram(ASTNode):
   def __init__(self, statements):
