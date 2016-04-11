@@ -299,14 +299,26 @@ class TimeSeries:
                     return TimeSeries(self._times, [a * b for a, b in pairs])
                 else:
                     raise ValueError(str(self)+' and '+str(rhs)+' must have the same time points')
-                #self._check_length_helper(rhs)
-                #pairs = zip(self, rhs)
-                #return Vector(a + b for a, b in pairs)
         except TypeError:
             raise NotImplemented
 
     def __rmul__(self, other):
         return self * other
+
+    @pype.component
+    def __div__ (self, rhs):
+        try:
+            if isinstance(rhs, numbers.Real):
+                return TimeSeries(self._times, [a / rhs for a in self._values]) 
+            else:
+                if ((len(self._values) == len(rhs._values)) and all((self._times == rhs._times))):
+                    pairs = zip(self._values, rhs._values)
+                    return TimeSeries(self._times, [a / b for a, b in pairs])
+                else:
+                    raise ValueError(str(self)+' and '+str(rhs)+' must have the same time points')
+        except TypeError:
+            raise NotImplemented
+
 
 class TimeSeriesIterator:
     '''
