@@ -16,10 +16,7 @@ class SymbolTableVisitor(ASTVisitor):
     if isinstance(node, ASTImport):
       # Import statements make library functions available to PyPE
       imp = LibraryImporter(node.module.name)
-      #print(imp)
-      print('ANOVE')
       print (imp.add_symbols(self.symbol_table))
-      print('Below')
 
     # TODO
     # Add symbols for the following types of names:

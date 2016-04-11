@@ -31,7 +31,9 @@ class Pipeline(object):
     
     # Translation
     ir = ast.mod_walk( LoweringVisitor(syms) )
-    print(ir.graphs['standardize'].dotfile())
+    for key in ir.graphs.keys():
+        print("Graph for: ", key)
+        print(ir.graphs[key].dotfile())
 
     # Optimization
     ir.flowgraph_pass( AssignmentEllision() )
