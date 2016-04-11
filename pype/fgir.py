@@ -85,35 +85,35 @@ class FGIR(object):
       if fg is not None:
         self.graphs[component] = fg
 
-#  def node_pass(self, node_optimizer, *args, topological=False):
-#    for component in self.graphs:
-#      fg = self.graphs[component]
-#      if topological:
-#        node_order = fg.topological_sort()
-#      else:
-#        node_order = fg.nodes.keys()
-#      for node in node_order:
-#        n = node_optimizer.visit(fg.nodes[node])
-#        if n is not None:
-#          fg.nodes[node] = n
+  def node_pass(self, node_optimizer, *args, topological=False):
+    for component in self.graphs:
+      fg = self.graphs[component]
+      if topological:
+        node_order = fg.topological_sort()
+      else:
+        node_order = fg.nodes.keys()
+      for node in node_order:
+        n = node_optimizer.visit(fg.nodes[node])
+        if n is not None:
+          fg.nodes[node] = n
 
-#  def topological_node_pass(self, topo_optimizer):
-#    self.node_pass(topo_optimizer, topological=True)
+  def topological_node_pass(self, topo_optimizer):
+    self.node_pass(topo_optimizer, topological=True)
 
-#  def _topo_helper(self, name, deps, order=[]):
-#    for dep in deps[name]:
-#      if dep not in order:
-#        order = self._topo_helper(dep, deps, order)
-#    return order+[name]
+  def _topo_helper(self, name, deps, order=[]):
+    for dep in deps[name]:
+      if dep not in order:
+        order = self._topo_helper(dep, deps, order)
+    return order+[name]
 
-#  def topological_flowgraph_pass(self, topo_flowgraph_optimizer):
-#    deps = {}
-#    for (name,fg) in self.graphs.items():
-#      deps[name] = [n.ref for n in fg.nodes.values() if n.type==FGNodeType.component]
-#    order = []
-#    for name in self.graphs:
-#      order = self._topo_helper(name, deps, order)
-#    for name in order:
-#      fg = topo_flowgraph_optimizer.visit(self.graphs[name])
-#      if fg is not None:
-#        self.graphs[name] = fg
+  def topological_flowgraph_pass(self, topo_flowgraph_optimizer):
+    deps = {}
+    for (name,fg) in self.graphs.items():
+      deps[name] = [n.ref for n in fg.nodes.values() if n.type==FGNodeType.component]
+    order = []
+    for name in self.graphs:
+      order = self._topo_helper(name, deps, order)
+    for name in order:
+      fg = topo_flowgraph_optimizer.visit(self.graphs[name])
+      if fg is not None:
+        self.graphs[name] = fg

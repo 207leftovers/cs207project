@@ -31,14 +31,13 @@ class Pipeline(object):
     
     # Translation
     ir = ast.mod_walk( LoweringVisitor(syms) )
-    #print(ir)
-    return ir
+    print(ir.graphs['standardize'].dotfile())
 
     # Optimization
-    #ir.flowgraph_pass( AssignmentEllision() )
-    #ir.flowgraph_pass( DeadCodeElimination() )
-    #ir.topological_flowgraph_pass( InlineComponents() )
-
+    ir.flowgraph_pass( AssignmentEllision() )
+    ir.flowgraph_pass( DeadCodeElimination() )
+    ir.topological_flowgraph_pass( InlineComponents() )
+    
     # PCode Generation
     #pcodegen = PCodeGenerator()
     #ir.flowgraph_pass( pcodegen )
