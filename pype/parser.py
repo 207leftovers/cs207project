@@ -88,24 +88,17 @@ def p_named_function_operation(p):
   else:
     p[0] = ASTEvalExpr(ASTID(p[2]))
 
-def p_add(p):
+def p_op_add_expression(p):
   r'''expression : LPAREN OP_ADD parameter_list RPAREN'''
-  #p[0] = ASTEvalExpr(ASTID(p[2]), p[3])
   p[0] = ASTEvalExpr(ASTID(name='__add__'), p[3])
-def p_sub(p):
+def p_op_sub_expression(p):
   r'''expression : LPAREN OP_SUB parameter_list RPAREN'''
-  #p[0] = ASTEvalExpr(ASTID(p[2]), p[3])
-  p[0] = ASTEvalExpr(ASTID(name='__sub__'), p[3])  
-
-def p_mul(p):
+  p[0] = ASTEvalExpr(ASTID(name='__sub__'), p[3])
+def p_op_mul_expression(p):
   r'''expression : LPAREN OP_MUL parameter_list RPAREN'''
-  #p[0] = ASTEvalExpr(ASTID(p[2]), p[3])
   p[0] = ASTEvalExpr(ASTID(name='__mul__'), p[3])
-
-
-def p_div(p):
+def p_op_div_expression(p):
   r'''expression : LPAREN OP_DIV parameter_list RPAREN'''
-  #p[0] = ASTEvalExpr(ASTID(p[2]), p[3])
   p[0] = ASTEvalExpr(ASTID(name='__truediv__'), p[3])
 
 def p_expression_id(p):

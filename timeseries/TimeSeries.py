@@ -93,7 +93,16 @@ class TimeSeries:
         return a new TimeSeries where the values are the negative of self
 
     __add__ 
-        Given two TimeSeries with the same time domain, add the values up
+        Given two TimeSeries with the same time domain, add the values up element-wise
+        Given a TimeSeries and a Real Number, add the number to the TimeSeries' values
+
+    __sub__ 
+        Given two TimeSeries with the same time domain, subtract the values element-wise
+        Given a TimeSeries and a Real Number, subtract the number from the TimeSeries' values
+
+    __mul__ 
+        Given two TimeSeries with the same time domain, multiply the values element-wise
+        Given a TimeSeries and a Real Number, multiply the TimeSeries' values by the number
 
     interpolate
         Given a list of timestamps, find the interpolation value of those timestamps
@@ -255,6 +264,7 @@ class TimeSeries:
         return TimeSeries(self._times, self._values)
 
     # Binary Operators
+    @pype.component
     def __add__(self, rhs):
         try:
             if isinstance(rhs, numbers.Real):
@@ -271,12 +281,14 @@ class TimeSeries:
     def __radd__(self, other):
         return self + other
 
+    @pype.component
     def __sub__(self, rhs):
         return self + (-rhs)
 
     def __rsub__(self, other): # other + self delegates to __add__
         return -self + other
 
+    @pype.component
     def __mul__ (self, rhs):
         try:
             if isinstance(rhs, numbers.Real):
