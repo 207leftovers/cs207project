@@ -36,6 +36,10 @@ class Pipeline(object):
         print(ir.graphs[key].dotfile())
 
     # Optimization
+    #for key in ir.graphs.keys():
+    #    print("Topological sort for: ", key)
+    #    ir.graphs[key].topological_sort()
+    
     ir.flowgraph_pass( AssignmentEllision() )
     ir.flowgraph_pass( DeadCodeElimination() )
     ir.topological_flowgraph_pass( InlineComponents() )

@@ -62,8 +62,33 @@ class Flowgraph(object):
     return [i for (i,n) in self.nodes.items() if nodeid in self.nodes[i].inputs]
 
   def topological_sort(self):
-    # TODO : implement a topological sort
-    return [] # should return a list of node ids in sorted order
+    # Implement a topological sort, returning nodes in the order of their dependencies
+    L = []
+    S = []
+    
+    # Stores the incoming nodes
+    # Example: node 3 has an incoming edge from node 0
+    # {'@N3':['@N0'], '@N4':['@N3']}
+    edges = {}
+    
+    for node in self.nodes.keys():
+        inputs = self.nodes[node].inputs
+        if len(inputs) == 0:
+            S.append(node)
+        else:
+            edges[node] = inputs
+    
+    while len(S) > 0:
+        n = S.pop()
+        #S.remove(n)
+        L.append(n)
+        for m, es in edges.items():
+            if n in es:
+                edges[m].remove(n)
+                if len(edges[m]) == 0:
+                    S.append(m)
+
+    return L # should return a list of node ids in sorted order
 
 class FGIR(object):
   def __init__(self):
