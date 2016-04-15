@@ -43,7 +43,7 @@ class AssignmentEllision(FlowgraphOptimization):
 
   def visit(self, flowgraph):
     
-    # Check all the nodes in the flowgraph
+    # Check all the nodes in the flowgraph and remove assigment nodes
     to_remove = []
     
     # Keeps track of the predecessors to nodes to be removed
@@ -90,7 +90,37 @@ class DeadCodeElimination(FlowgraphOptimization):
   this instance, component1 will end up unmodified after DCE.'''
 
   def visit(self, flowgraph):
-    # TODO: implement this
+    # Check all the nodes in the flowgraph and remove dead nodes
+    # Start with assuming all nodes should be removed, and then 
+    # work backwards from the outputs to remove unused ones
+    to_remove = list(flowgraph.nodes.keys())
+    to_check = flowgraph.outputs 
+    
+    while len(to_check) > 0:
+        cur = to_check.pop()
+        to_remove.remove(cur)
+        
+        # Add all previous to the to_check queue
+        for key in flowgraph.nodes[cur].inputs:
+            if key in to_remove and key not in to_check:
+                to_check.append(key)
+        
+    # Now eliminate whatever is left and hasn't been visited
+    if len(to_remove) > 0:
+        print("Removing nodes", to_remove)
+    for key in to_remove:
+        del flowgraph.nodes[key]
+    
+    to_remove_vars = []
+    
+    # Remove unused variables as well
+    for var in flowgraph.variables:
+        node = flowgraph.variables[var]
+        if node in to_remove:
+            to_remove_vars.append(var)
+    for var in to_remove_vars:
+        del flowgraph.variables[var]
+        
     return flowgraph
 
 class InlineComponents(TopologicalFlowgraphOptimization):
