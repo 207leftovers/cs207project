@@ -44,6 +44,10 @@ class Pipeline(object):
     ir.flowgraph_pass( DeadCodeElimination() )
     ir.topological_flowgraph_pass( InlineComponents() )
     
+    for key in ir.graphs.keys():
+        print("Graph for: ", key)
+        print(ir.graphs[key].dotfile())
+    
     # PCode Generation
     #pcodegen = PCodeGenerator()
     #ir.flowgraph_pass( pcodegen )

@@ -42,7 +42,36 @@ class AssignmentEllision(FlowgraphOptimization):
   their pre- and post-dependencies.'''
 
   def visit(self, flowgraph):
-    # TODO: implement this
+    
+    # Check all the nodes in the flowgraph
+    to_remove = []
+    
+    # Keeps track of the predecessors to nodes to be removed
+    to_remove_inputs = {}
+    
+    # Find all assignment nodes to remove
+    for node in flowgraph.nodes.keys():
+        # If the node is an assigment, eliminate it
+        if flowgraph.nodes[node].type == FGNodeType.assignment:
+            to_remove.append(node)
+            to_remove_inputs[node] = flowgraph.nodes[node].inputs
+    
+    # Update the nodes that are before and after the assignment nodes
+    for node in flowgraph.nodes.keys():
+        for to_remove_node in to_remove_inputs:
+            if to_remove_node in flowgraph.nodes[node].inputs:
+                flowgraph.nodes[node].inputs.remove(to_remove_node)
+                flowgraph.nodes[node].inputs.extend(to_remove_inputs[to_remove_node])
+    
+    for var in flowgraph.variables:
+        node = flowgraph.variables[var]
+        if node in to_remove:
+            flowgraph.variables[var] = to_remove_inputs[node][0]
+    
+    # Clear out the nodes that should be removed
+    for node_to_remove in to_remove:
+        del flowgraph.nodes[node_to_remove]
+    
     return flowgraph
 
 
