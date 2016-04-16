@@ -117,8 +117,15 @@ class TimeSeries:
         assert len(times) == len(values)
 
         # Check that the list of time is monotonically increasing
-        assert all(times[i] < times[i+1] for i in range(len(times)-1))
+        #assert all(times[i] < times[i+1] for i in range(len(times)-1))
 
+
+        keyValues = list(zip(times, values))
+        keyValues.sort()
+        times = [key for key,value in keyValues]
+        values = [value for key,value in keyValues]
+
+        
         self._times = np.array(times)
         self._values = np.array(values)
 
