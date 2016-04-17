@@ -4,7 +4,7 @@ from .ast import *
 from .semantic_analysis import CheckSingleAssignment, CheckSingleIOExpression, PrettyPrint, CheckUndefinedVariables
 from .translate import SymbolTableVisitor, LoweringVisitor
 from .optimize import *
-from .pcode import PCodeGenerator
+#from .pcode import PCodeGenerator
 
 class Pipeline(object):
   def __init__(self, source):
@@ -49,9 +49,9 @@ class Pipeline(object):
         print(ir.graphs[key].dotfile())
     
     # PCode Generation
-    pcodegen = PCodeGenerator()
-    ir.flowgraph_pass( pcodegen )
-    self.pcodes = pcodegen.pcodes
+    #pcodegen = PCodeGenerator()
+    #ir.flowgraph_pass( pcodegen )
+    #self.pcodes = pcodegen.pcodes
 
-  def __getitem__(self, component_name):
-    return self.pcodes[component_name]
+#  def __getitem__(self, component_name):
+#    return self.pcodes[component_name]
