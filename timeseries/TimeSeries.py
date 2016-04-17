@@ -151,14 +151,14 @@ class TimeSeries:
             pos = self.__getpos(time)
             return self._values[pos]
         except Exception as exc:
-            print (exc)
+            raise exc
 
     def __setitem__(self, time, value):
         try:
             pos = self.__getpos(time)
             self._values[pos] = value
         except Exception as exc:
-            print (exc)
+            raise exc
 
     def __contains__(self, time):
         try:
@@ -282,8 +282,8 @@ class TimeSeries:
                     return TimeSeries(self._times, [a + b for a, b in pairs])
                 else:
                     raise ValueError(str(self) + ' and ' + str(rhs) + ' must have the same time points')
-        except TypeError:
-            raise NotImplemented
+        except Exception as e:
+            raise e
 
     def __radd__(self, other):
         return self + other
@@ -306,8 +306,8 @@ class TimeSeries:
                     return TimeSeries(self._times, [a * b for a, b in pairs])
                 else:
                     raise ValueError(str(self)+' and '+str(rhs)+' must have the same time points')
-        except TypeError:
-            raise NotImplemented
+        except Exception as e:
+            raise e
 
     def __rmul__(self, other):
         return self * other
@@ -323,8 +323,8 @@ class TimeSeries:
                     return TimeSeries(self._times, [a / b for a, b in pairs])
                 else:
                     raise ValueError(str(self)+' and '+str(rhs)+' must have the same time points')
-        except TypeError:
-            raise NotImplemented
+        except Exception as e:
+            raise e
 
 class TimeSeriesIterator:
     '''

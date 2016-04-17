@@ -1,4 +1,6 @@
-from timeseries.TimeSeries import TimeSeries
+from timeseries.TimeSeries import TimeSeries, TimeSeriesIterator
+from timeseries.ArrayTimeSeries import ArrayTimeSeries
+from timeseries.lazy import LazyOperation
 import numpy as np
 
 def test_initialization():
@@ -108,7 +110,14 @@ def test_add():
     except Exception as e: 
         e3 = e
     assert type(e3).__name__ == 'AttributeError'
-    #assert str(e3) == "'list' object has no attribute '_values'" 
+
+
+    e3 = ''
+    try:
+        test = c+complex(1)
+    except Exception as e: 
+        e3 = e
+    assert type(e3).__name__ == 'AttributeError'
         
 def test_sub():
     a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
@@ -131,6 +140,14 @@ def test_mul():
         e3 = e
     assert type(e3).__name__ == 'ValueError'
     
+
+    e3 = ''
+    try:
+        test = c*complex(1)
+    except Exception as e: 
+        e3 = e
+    assert type(e3).__name__ == 'AttributeError'
+
 def test_unary():
     a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
     assert abs(a) == 2.29128784747792
@@ -162,3 +179,120 @@ def test_contains():
 def test_interpolate():
     a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
     assert a.interpolate([2]) == TimeSeries([2],[-1])
+
+#check if time exist in a, or is out of range
+def test_get_pos_error():
+    a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
+    e3 = ''
+    try:
+        test = a[0]
+    except Exception as e: 
+        e3 = e
+    assert type(e3).__name__ == 'IndexError'
+
+    try:
+        test = a[11]
+    except Exception as e: 
+        e3 = e
+    assert type(e3).__name__ == 'IndexError'
+
+    try:
+        test = a[1.1]
+    except Exception as e: 
+        e3 = e
+    assert type(e3).__name__ == 'ValueError'
+
+def test_setitem():
+    a = TimeSeries([1, 1.5, 2, 2.5, 10], [0, 2, -1, 0.5, 0])
+    e3 = ''
+    try:
+        a[1] = 1
+    except Exception as e: 
+        e3 = e
+    assert a[1] == 1
+
+    try:
+        a[0] = 1
+    except Exception as e: 
+        e3 = e
+    assert type(e3).__name__ == 'IndexError'
+
+
+
+def test_str_long():
+    a = TimeSeries([1, 1.5, 2, 2.5, 10, 11], [0, 2, -1, 0.5, 0, 0])     
+    test = str(a)
+
+    assert test == 'TimeSeries: Length - 6, First - 0.0, Last - 0.0' 
+
+def test_repr():
+    a = TimeSeries([1, 1.5, 2, 2.5, 10, 11], [0, 2, -1, 0.5, 0, 0]) 
+    test = repr(a)
+
+    assert test == 'array([ 0. ,  2. , -1. ,  0.5,  0. ,  0. ])'
+
+def test_items():
+    a = TimeSeries([1, 1.5, 2, 2.5, 10, 11], [0, 2, -1, 0.5, 0, 0]) 
+    test = a.items()
+
+    assert test == [(1.0, 0.0), (1.5, 2.0), (2.0, -1.0), (2.5, 0.5), (10.0, 0.0), (11.0, 0.0)]
+
+
+def test_iterator():
+    a = TimeSeriesIterator([1, 2]) 
+
+    test = next(a)
+    assert test == 1
+    test = next(a)
+    assert test == 2
+
+    e3 = ''
+    try:
+        test = next(a)
+    except Exception as e: 
+        e3 = e
+    assert type(e3).__name__ == 'StopIteration'
+
+
+    b = TimeSeriesIterator([0, 0]) 
+    result = []
+    for n in b:
+        result.append(n)
+    assert result == [0,0]
+
+def test_divide():
+    a = TimeSeries([1, 2, 3, 10], [5, 10, 15, 20])
+    b = TimeSeries([1, 2, 3, 10], [15, 100, 150, 200])
+    c = TimeSeries([1, 2, 3], [15, 100, 150])
+
+    assert (a/5) == TimeSeries([1, 2, 3, 10], [1.0, 2.0, 3.0, 4.0])
+    assert (b/a) == TimeSeries([1, 2, 3, 10], [3.0, 10.0, 10.0, 10.0])
+
+    e3 = ''
+    try:
+        test = c/a
+    except Exception as e: 
+        e3 = e
+    assert type(e3).__name__ == 'ValueError'
+
+    e3 = ''
+    try:
+        test = c/complex(1)
+    except Exception as e: 
+        e3 = e
+    assert type(e3).__name__ == 'AttributeError'
+
+def test_ArrayTimeSeries():
+    a = ArrayTimeSeries([5, 10, 15, 20])
+
+
+def test_lazy_op():
+    func = lambda x, y: x+y
+    a = LazyOperation(func, [100], [200])
+    assert a.eval() == [100, 200]
+
+    b = LazyOperation(func, a, [300])
+    assert b.eval() == [100, 200, 300]
+
+    c= (b([100], [400]))
+    assert c.eval() == [100, 400]
