@@ -23,10 +23,16 @@ class TSDBClient(object):
 
     def upsert_meta(self, primary_key, metadata_dict):
         # your code here
-        pass
+        upserted_meta = TSDBOp_UpsertMeta(primary_key, metadata_dict)
+        serialized_ts = serialize(upserted_meta.to_json())
+        return self._send(serialized_ts)
+
+
     def select(self, metadata_dict={}):
         # your code here
-        pass
+        select_op = TSDBOp_Select(metadata_dict)
+        serialized_ts = serialize(select_op.to_json())
+        return self._send(serialized_ts)
 
     # Feel free to change this to be completely synchronous
     # from here onwards. Return the status and the payload
@@ -36,11 +42,11 @@ class TSDBClient(object):
 
         reader, writer = await asyncio.open_connection('127.0.0.1', self.port, loop = loop)
 
-        print('Send:', msg)
+        #print('Send:', msg)
         writer.write(msg)
 
         data = await reader.read(8192)
-        print('Received: %r' % data)
+        #print('Received: %r' % data)
 
         deserializer = Deserializer();
         deserializer.append(data)
