@@ -53,7 +53,6 @@ class Flowgraph(object):
       s+= '  "'+str(nid)+'" [ color = "red" ]\n'
     s+= '}\n'
     return s
-    
 
   def pre(self, nodeid):
     return self.nodes[nodeid].inputs
@@ -72,15 +71,14 @@ class Flowgraph(object):
     edges = {}
     
     for node in self.nodes.keys():
-        inputs = self.nodes[node].inputs
+        inputs = self.pre(node)
         if len(inputs) == 0:
             S.append(node)
         else:
-            edges[node] = inputs
+            edges[node] = inputs.copy()
     
     while len(S) > 0:
         n = S.pop()
-        #S.remove(n)
         L.append(n)
         for m, es in edges.items():
             if n in es:
