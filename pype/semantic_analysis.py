@@ -26,14 +26,14 @@ class CheckSingleAssignment(ASTVisitor):
     elif isinstance(node, ASTAssignmentExpr):
       name = node.binding.name
       if name in self.names_used:
-        raise PypeSyntaxError('Node name: ' + name + '  has already been taken')
+        raise PypeSyntaxError('Node name: ' + name + ' has already been taken')
       else:
         self.names_used.append(name)
     elif isinstance(node, ASTInputExpr):
       for input_expression in node.children:
         name = input_expression.name
         if name in self.names_used:
-          raise PypeSyntaxError('Node name: ' + name + '  has already been taken')
+          raise PypeSyntaxError('Node name: ' + name + ' has already been taken')
         else:
           self.names_used.append(name)
 
@@ -66,5 +66,6 @@ class CheckUndefinedVariables(ASTVisitor):
     if isinstance(node, ASTComponent):
       self.scope = node.name.name
     elif isinstance(node, ASTID):
+      print(node.name)
       if self.symtab.lookupsym(node.name, scope=self.scope) is None:
         raise PypeSyntaxError('Undefined variable: ' + str(node.name))
