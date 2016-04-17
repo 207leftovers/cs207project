@@ -42,7 +42,6 @@ class AssignmentEllision(FlowgraphOptimization):
   their pre- and post-dependencies.'''
 
   def visit(self, flowgraph):
-    
     # Check all the nodes in the flowgraph and remove assigment nodes
     to_remove = []
     
@@ -73,7 +72,6 @@ class AssignmentEllision(FlowgraphOptimization):
         del flowgraph.nodes[node_to_remove]
     
     return flowgraph
-
 
 class DeadCodeElimination(FlowgraphOptimization):
   '''Eliminates unreachable expression statements.
