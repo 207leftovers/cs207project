@@ -16,6 +16,7 @@ class TSDBOp(dict):
         # It recursively converts elements in a hierarchical data structure
         # into a JSON-encodable form. It does *not* handle class instances
         # unless they have a 'to_json' method.
+        #print(">>>",self.items())
         if obj is None:
             obj = self
         json_dict = {}
@@ -38,12 +39,13 @@ class TSDBOp(dict):
 
     @classmethod
     def from_json(cls, json_dict):
-
         if 'op' not in json_dict:
             raise TypeError('Not a TSDB Operation: '+str(json_dict))
         if json_dict['op'] not in typemap:
             raise TypeError('Invalid TSDB Operation: '+str(json_dict['op']))
         return typemap[json_dict['op']].from_json(json_dict)
+
+
 
 
 class TSDBOp_InsertTS(TSDBOp):
@@ -53,7 +55,8 @@ class TSDBOp_InsertTS(TSDBOp):
 
     @classmethod
     def from_json(cls, json_dict):
-        return cls(json_dict['pk'], ts.TimeSeries(json_dict['ts'].keys(), json_dict['ts'].values()))
+        return cls(json_dict['pk'], ts.TimeSeries(*(json_dict['ts'])))
+
 
 class TSDBOp_Return(TSDBOp):
 
@@ -68,7 +71,6 @@ class TSDBOp_Return(TSDBOp):
 class TSDBOp_UpsertMeta(TSDBOp):
 
     def __init__(self, pk, md):
-        #print('-----------')
         super().__init__('upsert_meta')
         self['pk'], self['md'] = pk, md
 
@@ -79,13 +81,40 @@ class TSDBOp_UpsertMeta(TSDBOp):
 
 class TSDBOp_Select(TSDBOp):
 
-    def __init__(self, md):
+    def __init__(self, md, fields):
         super().__init__('select')
-        self['md'] = md #we abuse the metadata dict to carry the payload for `select`
+        self['md'] = md
+        self['fields'] = fields
 
     @classmethod
     def from_json(cls, json_dict):
-        return cls(json_dict['md'])
+        return cls(json_dict['md'], json_dict['fields'])
+
+
+class TSDBOp_AddTrigger(TSDBOp):
+
+    def __init__(self, proc, onwhat, target, arg):
+        super().__init__('add_trigger')
+        self['proc'] = proc
+        self['onwhat'] = onwhat
+        self['target'] = target
+        self['arg'] = arg
+
+    @classmethod
+    def from_json(cls, json_dict):
+        return cls(json_dict['proc'], json_dict['onwhat'], json_dict['target'], json_dict['arg'])
+
+class TSDBOp_RemoveTrigger(TSDBOp):
+
+    def __init__(self, proc, onwhat):
+        super().__init__('remove_trigger')
+        self['proc'] = proc
+        self['onwhat'] = onwhat
+
+
+    @classmethod
+    def from_json(cls, json_dict):
+        return cls(json_dict['proc'], json_dict['onwhat'])
 
 
 
@@ -94,4 +123,6 @@ typemap = {
   'insert_ts': TSDBOp_InsertTS,
   'upsert_meta': TSDBOp_UpsertMeta,
   'select': TSDBOp_Select,
+  'add_trigger': TSDBOp_AddTrigger,
+  'remove_trigger': TSDBOp_RemoveTrigger,
 }

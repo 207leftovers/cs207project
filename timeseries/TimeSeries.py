@@ -111,6 +111,9 @@ class TimeSeries:
             2. if t >= largest timestamp in self, interpolation value = value of largest timestamp
             3. if t == some timestamp in self, interpolation value = value of that timestamp
             4. if t is between a pair of timestamps, value is the interpolated values between the two nearest timestamps
+
+    to_json
+        convert times and values into a list 
     """
     def __init__(self, times, values):
         # Times and values are 2 arrays that match to each other. Check that they have the same length
@@ -325,6 +328,19 @@ class TimeSeries:
                     raise ValueError(str(self)+' and '+str(rhs)+' must have the same time points')
         except Exception as e:
             raise e
+
+    def to_json(self):
+
+        value_output = []
+        times_output = []
+
+        for value in self._values:
+            value_output.append(float(value))
+
+        for time in self._times:
+            times_output.append(float(time))
+        return [value_output, times_output]
+
 
 class TimeSeriesIterator:
     '''

@@ -12,38 +12,51 @@ class TSDBClient(object):
 
     def insert_ts(self, primary_key, ts):
         # your code here, construct from the code in tsdb_ops.py
-        times = ts.times()
-        values = ts.values()
-        times =  map(str, times)
-        values =  map(str, values)
-        ts_dict = dict(zip(times, values))
-        InsertedTS = TSDBOp_InsertTS(primary_key, ts_dict)
-        serialized_ts = serialize(InsertedTS.to_json())
-        return self._send(serialized_ts)
+        #times = ts.times()
+        #values = ts.values()
+        #times =  map(str, times)
+        #values =  map(str, values)
+        #ts_dict = dict(zip(times, values))
+        InsertedTS = TSDBOp_InsertTS(primary_key, ts)
+        return self._send(InsertedTS.to_json())
 
     def upsert_meta(self, primary_key, metadata_dict):
         # your code here
         upserted_meta = TSDBOp_UpsertMeta(primary_key, metadata_dict)
-        serialized_ts = serialize(upserted_meta.to_json())
-        return self._send(serialized_ts)
+        return self._send(upserted_meta.to_json())
 
 
-    def select(self, metadata_dict={}):
+
+    def select(self, metadata_dict={}, fields=None):
         # your code here
-        select_op = TSDBOp_Select(metadata_dict)
-        serialized_ts = serialize(select_op.to_json())
-        return self._send(serialized_ts)
+        select_op = TSDBOp_Select(metadata_dict, fields)
+        return self._send(select_op.to_json())
+
+
+    def add_trigger(self, proc, onwhat, target, arg):
+        # your code here
+        add_trigger_op = TSDBOp_AddTrigger(proc, onwhat, target, arg)
+        return self._send(add_trigger_op.to_json())
+
+
+
+    def remove_trigger(self, proc, onwhat):
+        # your code here
+        remove_trigger_op = TSDBOp_RemoveTrigger(proc, onwhat)
+        return self._send(remove_trigger_op.to_json())
 
     # Feel free to change this to be completely synchronous
     # from here onwards. Return the status and the payload
 
     async def _send_coro(self, msg, loop):
         # your code here
+        print ("C> sending:", msg)
+        serialized_msg = serialize(msg)
 
         reader, writer = await asyncio.open_connection('127.0.0.1', self.port, loop = loop)
 
         #print('Send:', msg)
-        writer.write(msg)
+        writer.write(serialized_msg)
 
         data = await reader.read(8192)
         #print('Received: %r' % data)
@@ -55,6 +68,8 @@ class TSDBClient(object):
             status = response['status']
             payload = response['payload']
 
+        print ("C> status:", status)
+        print ("C> payload", payload)
         return status, payload
 
     #call `_send` with a well formed message to send.
