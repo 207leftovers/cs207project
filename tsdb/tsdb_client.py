@@ -27,10 +27,15 @@ class TSDBClient(object):
 
 
 
-    def select(self, metadata_dict={}, fields=None):
+    def select(self, metadata_dict={}, fields=None, additional=None):
         # your code here
-        select_op = TSDBOp_Select(metadata_dict, fields)
+        select_op = TSDBOp_Select(metadata_dict, fields, additional)
         return self._send(select_op.to_json())
+
+    def augmented_select(self, proc, target, arg=None, metadata_dict={}, additional=None):
+        #your code here
+        aug_select_op = TSDBOp_AugmentedSelect(proc, target, arg, md, additional)
+        return self._send(aug_select_op.to_json())
 
 
     def add_trigger(self, proc, onwhat, target, arg):

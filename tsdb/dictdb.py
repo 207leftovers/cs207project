@@ -13,6 +13,18 @@ OPMAP = {
     '>=': operator.ge
 }
 
+def metafiltered(d, schema, fieldswanted):
+    d2 = {}
+    if len(fieldswanted) == 0:
+        keys = [k for k in d.keys() if k != 'ts']
+    else:
+        keys = [k for k in d.keys() if k in fieldswanted]
+    for k in keys:
+        if k in schema:
+            d2[k] = schema[k]['convert'](d[k])
+    return d2
+
+
 
 class DictDB:
     "Database implementation in a dict"
@@ -63,7 +75,7 @@ class DictDB:
                 idx = self.indexes[field]
                 idx[v].add(pk)
 
-    def select(self, meta, fields):
+    def select(self, meta, fields, additional):
         # your code here
         # if fields is None: return only pks
         # like so [pk1,pk2],[{},{}]
@@ -74,6 +86,14 @@ class DictDB:
         #acceptable field and can be used to just return time series.
         #see tsdb_server to see how this return
         #value is used
+        #additional is a dictionary. It has two possible keys:
+        #(a){'sort_by':'-order'} or {'sort_by':'+order'} where order
+        #must be in the schema AND have an index. (b) limit: 'limit':10
+        #which will give you the top 10 in the current sort order.
+        #your code here
+
+
+        print (additional)
 
         result_set = []
 
@@ -119,6 +139,55 @@ class DictDB:
                         matched_field[field] = self.rows[pk][field]
             matchedfielddicts.append(matched_field)
 
-        return result_set, matchedfielddicts
+
+        if additional is None:
+            return result_set, matchedfielddicts
+        else:
+            #we have to do sorting and limiting
+
+
+            order_list = []
+
+            #get the sorted by keyword
+            sorted_by = additional['sort_by']
+
+            #get direction of sorting
+            is_decreasing = True
+            if sorted_by[0] == '+':
+                is_decreasing = False
+
+            #get the keyword
+            sorted_by = sorted_by[1:]
+
+
+
+            #get the order for the result_set
+            for matchedfield in matchedfielddicts:
+                order_list.append(matchedfield[sorted_by])
+
+            result_tuple = []
+
+            #then we combine everything into a tuple
+            for x in range(len(result_set)):
+                result_tuple.append((result_set[x], matchedfielddicts[x], order_list[x]))
+
+            result_sorted = sorted(result_tuple, key=lambda x: x[2], reverse=is_decreasing)
+
+            if 'limit' in additional.keys():
+                limit_num = additional['limit']
+                print (limit_num)
+                result_sorted = result_sorted[:limit_num]
+
+            print (result_sorted)
+
+            result_set_sorted = []
+            matchedfielddicts_sorted = []
+
+            for x in range(len(result_sorted)):
+                result_set_sorted.append(result_sorted[x][0])
+                matchedfielddicts_sorted.append(result_sorted[x][1])
+
+            print (result_set_sorted, matchedfielddicts_sorted)
+            return result_set, matchedfielddicts
 
 

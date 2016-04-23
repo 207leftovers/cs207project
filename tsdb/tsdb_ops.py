@@ -78,17 +78,48 @@ class TSDBOp_UpsertMeta(TSDBOp):
     def from_json(cls, json_dict):
         return cls(json_dict['pk'], json_dict['md'])
 
+# class TSDBOp_Select(TSDBOp):
+
+#     def __init__(self, md, fields):
+#         super().__init__('select')
+#         self['md'] = md
+#         self['fields'] = fields
+
+#     @classmethod
+#     def from_json(cls, json_dict):
+#         return cls(json_dict['md'], json_dict['fields'])
 
 class TSDBOp_Select(TSDBOp):
 
-    def __init__(self, md, fields):
+    def __init__(self, md, fields, additional):
         super().__init__('select')
         self['md'] = md
         self['fields'] = fields
+        self['additional'] = additional
 
     @classmethod
     def from_json(cls, json_dict):
-        return cls(json_dict['md'], json_dict['fields'])
+        return cls(json_dict['md'], json_dict['fields'], json_dict['additional'])
+
+class TSDBOp_AugmentedSelect(TSDBOp):
+    """
+    A hybrid of select, and add trigger, we only miss the onwhat key as this op
+    is used as an add on to selects. We remove the fields arg from select, as
+    the only fields sent back are the ones in target, which is used as in
+    add_trigger, except that instead of upserting meta with the targets, that
+    data is sent back to the user.
+    """
+    def __init__(self, proc, target, arg, md, additional):
+        super().__init__('augmented_select')
+        self['md'] = md
+        self['additional'] = additional
+        self['proc'] = proc
+        self['arg'] = arg
+        self['target'] = target
+
+    @classmethod
+    def from_json(cls, json_dict):
+        return cls(json_dict['proc'], json_dict['target'], json_dict['arg'], json_dict['md'], json_dict['additional'])
 
 
 class TSDBOp_AddTrigger(TSDBOp):
@@ -123,6 +154,7 @@ typemap = {
   'insert_ts': TSDBOp_InsertTS,
   'upsert_meta': TSDBOp_UpsertMeta,
   'select': TSDBOp_Select,
+  'augmented_select': TSDBOp_AugmentedSelect,
   'add_trigger': TSDBOp_AddTrigger,
   'remove_trigger': TSDBOp_RemoveTrigger,
 }
