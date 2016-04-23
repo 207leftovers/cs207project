@@ -54,3 +54,23 @@ def test_dead_code_elimination():
 
     for a_var in component_graph.variables.keys():
         assert(component_graph.variables[a_var] in nodes_to_have)
+
+
+
+def test_inline():
+    with open ('tests/pype/test_cases/example_opt.ppl') as f:
+        opt_ppl = f.read()
+    program_input ='''
+    (import timeseries)
+    { mul (input x y) (:= z (* x y)) (output z) }
+    { dist (input a b) (:= c (mul (mul a b) (mul b a))) (output c) }
+    '''
+    ast3 = parser.parse(program_input, lexer=lexer)
+    ast3.walk(CheckSingleAssignment())
+    ast3.walk(CheckSingleIOExpression())
+    syms3 = ast3.walk( SymbolTableVisitor() )
+    ast3.walk(CheckUndefinedVariables(syms3))
+    ir3 = ast3.mod_walk( LoweringVisitor(syms3) )
+    ir3.flowgraph_pass( AssignmentEllision() )
+    ir3.flowgraph_pass( DeadCodeElimination() )
+    #ir3.topological_flowgraph_pass(InlineComponents())
