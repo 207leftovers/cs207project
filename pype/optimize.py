@@ -92,7 +92,8 @@ class DeadCodeElimination(FlowgraphOptimization):
     # Start with assuming all nodes should be removed, and then 
     # work backwards from the outputs to remove unused ones
     to_remove = list(flowgraph.nodes.keys())
-    to_check = flowgraph.outputs 
+    # Need to copy this list, otherwise you are modifying the originals
+    to_check = flowgraph.outputs[:]
     
     while len(to_check) > 0:
         cur = to_check.pop()
@@ -102,7 +103,7 @@ class DeadCodeElimination(FlowgraphOptimization):
         for key in flowgraph.nodes[cur].inputs:
             if key in to_remove and key not in to_check:
                 to_check.append(key)
-        
+    
     # Now eliminate whatever is left and hasn't been visited
     if len(to_remove) > 0:
         print("Removing nodes", to_remove)
