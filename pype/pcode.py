@@ -28,9 +28,6 @@ class PCodeOp(object):
     for output_queue in out_qs:
       await output_queue.put(output)
 
-
-
-
   @staticmethod
   async def forward(in_qs, out_qs):
     def f(input):
@@ -116,8 +113,6 @@ class PCodeGenerator(FlowgraphOptimization):
     for dst in flowgraph.nodes:
       for src in flowgraph.nodes[dst].inputs:
         qs[(src, dst)] = asyncio.Queue()      
-
-
 
     # Add an extra input queue for each component input
     component_inputs = []
