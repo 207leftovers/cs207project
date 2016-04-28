@@ -24,8 +24,6 @@ def metafiltered(d, schema, fieldswanted):
             d2[k] = schema[k]['convert'](d[k])
     return d2
 
-
-
 class DictDB:
     "Database implementation in a dict"
     def __init__(self, schema, pkfield):
@@ -92,7 +90,6 @@ class DictDB:
         #which will give you the top 10 in the current sort order.
         #your code here
 
-
         print (additional)
 
         result_set = []
@@ -122,7 +119,6 @@ class DictDB:
         if fields is None:
             return result_set, None
 
-
         #select the correct fields
         for pk in result_set:
             matched_field = {}
@@ -139,12 +135,10 @@ class DictDB:
                         matched_field[field] = self.rows[pk][field]
             matchedfielddicts.append(matched_field)
 
-
         if additional is None:
             return result_set, matchedfielddicts
         else:
             #we have to do sorting and limiting
-
 
             order_list = []
 
@@ -158,8 +152,6 @@ class DictDB:
 
             #get the keyword
             sorted_by = sorted_by[1:]
-
-
 
             #get the order for the result_set
             for matchedfield in matchedfielddicts:
@@ -189,5 +181,3 @@ class DictDB:
 
             print (result_set_sorted, matchedfielddicts_sorted)
             return result_set, matchedfielddicts
-
-

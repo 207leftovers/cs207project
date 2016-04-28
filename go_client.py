@@ -16,7 +16,6 @@ def tsmaker(m, s, j):
     v = norm.pdf(t, m, s) + j*np.random.randn(100)
     return meta, ts.TimeSeries(t, v)
 
-
 def main():
     print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
     client = TSDBClient()
@@ -122,6 +121,3 @@ def main():
 
 if __name__=='__main__':
     main()
-
-
-

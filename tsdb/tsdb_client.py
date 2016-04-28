@@ -25,8 +25,6 @@ class TSDBClient(object):
         upserted_meta = TSDBOp_UpsertMeta(primary_key, metadata_dict)
         return self._send(upserted_meta.to_json())
 
-
-
     def select(self, metadata_dict={}, fields=None, additional=None):
         # your code here
         select_op = TSDBOp_Select(metadata_dict, fields, additional)
@@ -37,13 +35,10 @@ class TSDBClient(object):
         aug_select_op = TSDBOp_AugmentedSelect(proc, target, arg, md, additional)
         return self._send(aug_select_op.to_json())
 
-
     def add_trigger(self, proc, onwhat, target, arg):
         # your code here
         add_trigger_op = TSDBOp_AddTrigger(proc, onwhat, target, arg)
         return self._send(add_trigger_op.to_json())
-
-
 
     def remove_trigger(self, proc, onwhat):
         # your code here
