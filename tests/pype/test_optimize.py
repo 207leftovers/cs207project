@@ -106,3 +106,38 @@ def test_inline():
     ir3.flowgraph_pass( AssignmentEllision() )
     ir3.flowgraph_pass( DeadCodeElimination() )
     ir3.topological_flowgraph_pass(InlineComponents())
+    
+
+    # Check the 'mul' graph
+    component_graph1 = ir3.graphs['mul']
+    inputs_to_have1 = ['@N0', '@N1']
+    outputs_to_have1 = ['@N4']
+    # Check for component nodes
+    for n in component_graph1.nodes.values():
+        assert(n.type is not FGNodeType.component)
+    # Check inputs and outputs
+    assert(len(component_graph1.inputs) == len(inputs_to_have1))
+    for input_node in inputs_to_have1:
+        assert(input_node in component_graph1.inputs)
+    assert(len(component_graph1.outputs) == len(outputs_to_have1))
+    for output_node in outputs_to_have1:
+        assert(output_node in component_graph1.outputs)
+        
+    # Check the 'dist' graph
+    component_graph2 = ir3.graphs['dist']
+    inputs_to_have2 = ['@N0', '@N1']
+    outputs_to_have2 = ['@N6']
+    # Check for component nodes
+    for n in component_graph2.nodes.values():
+        assert(n.type is not FGNodeType.component)
+    # Check inputs and outputs
+    assert(len(component_graph2.inputs) == len(inputs_to_have2))
+    for input_node in inputs_to_have2:
+        assert(input_node in component_graph2.inputs)
+    assert(len(component_graph2.outputs) == len(outputs_to_have2))
+    for output_node in outputs_to_have2:
+        assert(output_node in component_graph2.outputs)
+    
+    
+    
+    
