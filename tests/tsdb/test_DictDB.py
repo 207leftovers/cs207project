@@ -28,10 +28,39 @@ def test_insert():
     ats = ts.TimeSeries(t, v)
     
     db.insert_ts(1, ats)
+    
     rows = db.rows
-    print(rows)
     assert(rows[1] is not None)
     assert(rows[1]['pk'] == 1)
     assert(rows[1]['ts'] == ats)
     
-#    select = db.select([1], None, None)
+    try:
+        db.insert_ts(1, ats)
+    except Exception as e: 
+        e1 = e
+    assert str(e1) == 'Duplicate primary key found during insert'
+    assert type(e1).__name__ == 'ValueError'  
+    
+def test_upsert():
+    db = DictDB(schema, 'pk')
+    
+    t1 = [0,1,2,3,4]
+    v1 = [1.0,2.0,3.0,2.0,1.0]
+    ats1 = ts.TimeSeries(t1, v1)
+    
+    t2 = [10,11,12,13,14]
+    v2 = [-1.0,-2.0,-3.0,-2.0,-1.0]
+    ats2 = ts.TimeSeries(t2, v2)
+    
+    db.insert_ts(1, ats1)
+    db.insert_ts(2, ats1)
+    
+    db.upsert_meta(2, {'ts': ats2})
+    db.upsert_meta(3, {'ts': ats2, 'not_there': 3, 'order': 1})
+    
+    rows = db.rows
+    
+    assert(rows[1]['ts'] == ats1)
+    assert(rows[2]['ts'] == ats2)
+    assert(rows[3]['ts'] == ats2)
+    assert(rows[3]['order'] == 1)

@@ -49,13 +49,12 @@ class DictDB:
 
     def upsert_meta(self, pk, meta):
         "implement upserting field values, as long as the fields are in the schema."
-
         # Insert the primary key if it wasn't present
         if pk not in self.rows:
             self.rows[pk] = {'pk': pk}
             
         for key in meta:         
-            if self.schema[key] is not None:
+            if key in self.schema:
                 self.rows[pk][key] = meta[key]
 
         self.update_indices(pk)

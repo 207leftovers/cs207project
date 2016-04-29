@@ -107,7 +107,6 @@ def test_inline():
     ir3.flowgraph_pass( DeadCodeElimination() )
     ir3.topological_flowgraph_pass(InlineComponents())
     
-
     # Check the 'mul' graph
     component_graph1 = ir3.graphs['mul']
     inputs_to_have1 = ['@N0', '@N1']
@@ -137,7 +136,3 @@ def test_inline():
     assert(len(component_graph2.outputs) == len(outputs_to_have2))
     for output_node in outputs_to_have2:
         assert(output_node in component_graph2.outputs)
-    
-    
-    
-    

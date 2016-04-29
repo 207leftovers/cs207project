@@ -28,5 +28,3 @@ def test_assign():
     lexer.input(':=')
     output = list(lexer)
     assert(output[0].type == 'ASSIGN')
-
-
