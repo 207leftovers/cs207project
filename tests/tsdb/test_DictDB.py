@@ -105,7 +105,7 @@ def test_select_basic_operations():
     ids7, fields7 = db.select({'pk': {'>': 1, '<': 3}},None,None)
     assert(ids7 == [2])
 
-def test_select_basic_operations():
+def test_select_basic_fields():
     db = DictDB(schema, 'pk')
     
     t1 = [0,1,2,3,4]
@@ -124,7 +124,61 @@ def test_select_basic_operations():
     db.insert_ts(2, ats2)
     db.insert_ts(3, ats3)
     
+    db.upsert_meta(2, {'useless': 2})
+    
+    # One result
     ids1, fields1 = db.select({'pk': {'==': 1}},['ts'],None)
     assert(ids1 == [1])
     assert(fields1[0]['ts'] == ats1)
+    
+    # Two results
+    ids2, fields2 = db.select({'pk': {'>': 1}},['ts'],None)
+    assert(ids2 == [2,3])
+    assert(fields2[0]['ts'] == ats2)
+    assert(fields2[1]['ts'] == ats3)
+    
+    # No results
+    ids3, fields3 = db.select({'blarg': {'=': 1}},['ts'],None)
+    assert(ids3 == [])
+    
+    # None Field List (just pks)
+    ids4, fields4 = db.select({'pk':{'>': 0}},None,None)
+    assert(ids4 == [1, 2, 3])
+    assert(fields4 == [{}, {}, {}])
+    
+    # Empty Field List (everything but ts)
+    ids5, fields5 = db.select({'pk':{'>': 0}},[],None)
+    assert(ids5 == [1, 2, 3])
+    assert(fields5 == [{'pk': 1}, {'pk': 2, 'useless': 2}, {'pk': 3}])
+    
+    # Named Field List (just that field)
+    ids6, fields6 = db.select({'useless':{'>': 0}},['useless'],None)
+    assert(ids6 == [2])
+    assert(fields6 == [{'useless': 2}])
+    
+def test_select_basic_additional():
+    db = DictDB(schema, 'pk')
+    
+    t1 = [0,1,2,3,4]
+    v1 = [1.0,2.0,3.0,2.0,1.0]
+    ats1 = ts.TimeSeries(t1, v1)
+    
+    t2 = [10,11,12,13,14]
+    v2 = [-1.0,-2.0,-3.0,-2.0,-1.0]
+    ats2 = ts.TimeSeries(t2, v2)
+    
+    t3 = [10,11,12,13,14]
+    v3 = [-1.0,-2.0,-3.0,-2.0,-1.0]
+    ats3 = ts.TimeSeries(t3, v3)
+    
+    db.insert_ts(1, ats1)
+    db.insert_ts(2, ats2)
+    db.insert_ts(3, ats3)
+    
+    db.upsert_meta(2, {'useless': 2})
+    
+    # Limit to 2 results
+    ids1, fields1 = db.select({'pk': {'>': 0}},None,{'limit':2})
+    assert(ids1 == [1, 2])
+    
     

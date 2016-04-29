@@ -88,10 +88,10 @@ class DictDB:
         # (a){'sort_by':'-order'} or {'sort_by':'+order'} where order
         # must be in the schema AND have an index. (b) limit: 'limit':10
         # which will give you the top 10 in the current sort order.
-        # your code here
 
         result_set = []
 
+        # META
         # Select the keys that matches the metadata
         for pk in self.rows.keys():
             satisfied = True
@@ -112,14 +112,16 @@ class DictDB:
                 result_set.append(pk)
 
         matchedfielddicts = []
-
-        if fields is None:
-            return result_set, None
         
-        #select the correct fields
+        # FIELDS
+        # select the correct fields
         for pk in result_set:
             matched_field = {}
-            if len(fields) is 0:
+            # If fields is None, just return the primary keys
+            if fields == None:
+                # Do nothing
+                pass
+            elif len(fields) is 0:
                 for row_field in self.rows[pk]:
 
                     #skip the ts 
@@ -132,42 +134,47 @@ class DictDB:
                         matched_field[field] = self.rows[pk][field]
             matchedfielddicts.append(matched_field)
 
+        # ADDITIONAL
         if additional is None:
             return result_set, matchedfielddicts
         else:
-            #we have to do sorting and limiting
+            # We have to do sorting and limiting
+            result_sorted = []
+            
+            # SORTING
+            # Get the sorted by keyword
+            if 'sort_by' in additional.keys():
+                sorted_by = additional['sort_by']
+                order_list = []
 
-            order_list = []
+                # Get direction of sorting
+                is_decreasing = True
+                if sorted_by[0] == '+':
+                    is_decreasing = False
 
-            #get the sorted by keyword
-            sorted_by = additional['sort_by']
+                # Get the keyword
+                sorted_by = sorted_by[1:]
 
-            #get direction of sorting
-            is_decreasing = True
-            if sorted_by[0] == '+':
-                is_decreasing = False
+                # Get the order for the result_set
+                for matchedfield in matchedfielddicts:
+                    order_list.append(matchedfield[sorted_by])
 
-            #get the keyword
-            sorted_by = sorted_by[1:]
+                result_tuple = []
 
-            #get the order for the result_set
-            for matchedfield in matchedfielddicts:
-                order_list.append(matchedfield[sorted_by])
+                # Then we combine everything into a tuple
+                for x in range(len(result_set)):
+                    result_tuple.append((result_set[x], matchedfielddicts[x], order_list[x]))
 
-            result_tuple = []
+                result_sorted = sorted(result_tuple, key=lambda x: x[2], reverse=is_decreasing)
+            else:
+                # We are going to skip sorting and move on to limiting
+                for x in range(len(result_set)):
+                    result_sorted.append((result_set[x], matchedfielddicts[x]))
 
-            #then we combine everything into a tuple
-            for x in range(len(result_set)):
-                result_tuple.append((result_set[x], matchedfielddicts[x], order_list[x]))
-
-            result_sorted = sorted(result_tuple, key=lambda x: x[2], reverse=is_decreasing)
-
+            # LIMITING
             if 'limit' in additional.keys():
                 limit_num = additional['limit']
-                print (limit_num)
                 result_sorted = result_sorted[:limit_num]
-
-            print (result_sorted)
 
             result_set_sorted = []
             matchedfielddicts_sorted = []
@@ -176,5 +183,4 @@ class DictDB:
                 result_set_sorted.append(result_sorted[x][0])
                 matchedfielddicts_sorted.append(result_sorted[x][1])
 
-            print (result_set_sorted, matchedfielddicts_sorted)
-            return result_set, matchedfielddicts
+            return result_set_sorted, matchedfielddicts_sorted
