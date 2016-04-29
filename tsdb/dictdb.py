@@ -49,12 +49,13 @@ class DictDB:
 
     def upsert_meta(self, pk, meta):
         "implement upserting field values, as long as the fields are in the schema."
-        # your code here
 
+        # Insert the primary key if it wasn't present
         if pk not in self.rows:
-            raise ValueError('primary key not found during upsert')
-        else:
-            for key in meta:         
+            self.rows[pk] = {'pk': pk}
+            
+        for key in meta:         
+            if self.schema[key] is not None:
                 self.rows[pk][key] = meta[key]
 
         self.update_indices(pk)
@@ -78,27 +79,30 @@ class DictDB:
         # if fields is None: return only pks
         # like so [pk1,pk2],[{},{}]
         # if fields is [], this means all fields
-        #except for the 'ts' field. Looks like
-        #['pk1',...],[{'f1':v1, 'f2':v2},...]
+        # except for the 'ts' field. Looks like
+        # ['pk1',...],[{'f1':v1, 'f2':v2},...]
         # if the names of fields are given in the list, include only those fields. `ts` ia an
-        #acceptable field and can be used to just return time series.
-        #see tsdb_server to see how this return
-        #value is used
-        #additional is a dictionary. It has two possible keys:
-        #(a){'sort_by':'-order'} or {'sort_by':'+order'} where order
-        #must be in the schema AND have an index. (b) limit: 'limit':10
-        #which will give you the top 10 in the current sort order.
-        #your code here
+        # acceptable field and can be used to just return time series.
+        # see tsdb_server to see how this return
+        # value is used
+        # additional is a dictionary. It has two possible keys:
+        # (a){'sort_by':'-order'} or {'sort_by':'+order'} where order
+        # must be in the schema AND have an index. (b) limit: 'limit':10
+        # which will give you the top 10 in the current sort order.
+        # your code here
 
         print (additional)
 
         result_set = []
 
+        
         #select the keys that matches the metadata
         for pk in self.rows.keys():
+            print("PK", pk)
             satisfied = True
             for meta_key in meta:
                 if meta_key not in self.rows[pk].keys():
+                    print("NOT SATISFIED", meta_key, self.rows[pk].keys())
                     satisfied = False
                 else:
                     #range operators are stored in a dict
@@ -107,7 +111,6 @@ class DictDB:
                             if (not OPMAP[operator] (self.rows[pk][meta_key], meta[meta_key][operator] )):
                                 satisfied = False
 
-                        
                     else:
                         if self.rows[pk][meta_key] is not meta[meta_key]:
                             satisfied = False
@@ -119,6 +122,8 @@ class DictDB:
         if fields is None:
             return result_set, None
 
+        print("RESULTS", result_set)
+        
         #select the correct fields
         for pk in result_set:
             matched_field = {}

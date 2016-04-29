@@ -62,7 +62,6 @@ class TSDBProtocol(asyncio.Protocol):
             results.append(dict(zip(target, result)))
         return TSDBOp_Return(TSDBStatus.OK, op['op'], dict(zip(loids, results)))
 
-
     def _add_trigger(self, op):
         trigger_proc = op['proc']  # the module in procs
         trigger_onwhat = op['onwhat']  # on what? eg `insert_ts`
@@ -91,7 +90,6 @@ class TSDBProtocol(asyncio.Protocol):
                 row = self.server.db.rows[pk]
                 task = asyncio.ensure_future(t(pk, row, arg))
                 task.add_done_callback(trigger_callback_maker(pk, target, self.server.db.upsert_meta))
-
 
     def connection_made(self, conn):
         print('S> connection made')
@@ -129,7 +127,6 @@ class TSDBProtocol(asyncio.Protocol):
     def connection_lost(self, transport):
         print('S> connection lost')
 
-
 class TSDBServer(object):
 
     def __init__(self, db, port=9999):
@@ -160,7 +157,6 @@ class TSDBServer(object):
         finally:
             listener.close()
             loop.close()
-
 
 if __name__=='__main__':
     empty_schema = {'pk': {'convert': lambda x: x, 'index': None}}
