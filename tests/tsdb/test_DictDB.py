@@ -64,3 +64,42 @@ def test_upsert():
     assert(rows[2]['ts'] == ats2)
     assert(rows[3]['ts'] == ats2)
     assert(rows[3]['order'] == 1)
+    
+def test_select_basic_operations():
+    db = DictDB(schema, 'pk')
+    
+    t1 = [0,1,2,3,4]
+    v1 = [1.0,2.0,3.0,2.0,1.0]
+    ats1 = ts.TimeSeries(t1, v1)
+    
+    t2 = [10,11,12,13,14]
+    v2 = [-1.0,-2.0,-3.0,-2.0,-1.0]
+    ats2 = ts.TimeSeries(t2, v2)
+    
+    t3 = [10,11,12,13,14]
+    v3 = [-1.0,-2.0,-3.0,-2.0,-1.0]
+    ats3 = ts.TimeSeries(t3, v3)
+    
+    db.insert_ts(1, ats1)
+    db.insert_ts(2, ats2)
+    db.insert_ts(3, ats3)
+    
+    ids1, fields1 = db.select({'pk': {'==': 1}},None,None)
+    assert(ids1 == [1])
+
+    ids2, fields2 = db.select({'pk': {'>': 1}},None,None)
+    assert(ids2 == [2, 3])
+    
+    ids3, fields3 = db.select({'pk': {'<': 2}},None,None)
+    assert(ids3 == [1])
+    
+    ids4, fields4 = db.select({'pk': {'!=': 1}},None,None)
+    assert(ids4 == [2, 3])
+    
+    ids5, fields5 = db.select({'pk': {'<=': 2}},None,None)
+    assert(ids5 == [1, 2])
+    
+    ids6, fields6 = db.select({'pk': {'>=': 2}},None,None)
+    assert(ids6 == [2, 3])
+
+    

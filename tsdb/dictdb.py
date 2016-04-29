@@ -6,7 +6,7 @@ import operator
 # this dictionary will help you in writing a generic select operation
 OPMAP = {
     '<': operator.lt,
-    '>': operator.le,
+    '>': operator.gt,
     '==': operator.eq,
     '!=': operator.ne,
     '<=': operator.le,
@@ -90,29 +90,24 @@ class DictDB:
         # which will give you the top 10 in the current sort order.
         # your code here
 
-        print (additional)
-
         result_set = []
 
-        
-        #select the keys that matches the metadata
+        # Select the keys that matches the metadata
         for pk in self.rows.keys():
-            print("PK", pk)
             satisfied = True
-            for meta_key in meta:
+            for meta_key in meta.keys():
                 if meta_key not in self.rows[pk].keys():
-                    print("NOT SATISFIED", meta_key, self.rows[pk].keys())
                     satisfied = False
                 else:
-                    #range operators are stored in a dict
-                    if isinstance(meta[meta_key], dict):
-                        for operator in meta[meta_key]:  
-                            if (not OPMAP[operator] (self.rows[pk][meta_key], meta[meta_key][operator] )):
-                                satisfied = False
-
-                    else:
-                        if self.rows[pk][meta_key] is not meta[meta_key]:
+                    # range operators are stored in a dict
+                    #if isinstance(meta[meta_key], dict):
+                    for operator, value in meta[meta_key].items():  
+                        if (not OPMAP[operator](self.rows[pk][meta_key], value)):
                             satisfied = False
+
+                    #else:
+                    #    if self.rows[pk][meta_key] is not meta[meta_key]:
+                    #        satisfied = False
             if satisfied is True:
                 result_set.append(pk)
 
@@ -120,8 +115,6 @@ class DictDB:
 
         if fields is None:
             return result_set, None
-
-        print("RESULTS", result_set)
         
         #select the correct fields
         for pk in result_set:
