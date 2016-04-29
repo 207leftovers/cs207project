@@ -8,7 +8,7 @@ schema = {
   'ts': {'convert': identity, 'index': None},
   'order': {'convert': int, 'index': 1},
   'blarg': {'convert': int, 'index': 1},
-  'useless': {'convert': identity, 'index': None},
+  'useless': {'convert': identity, 'index': 1},
   'mean': {'convert': float, 'index': 1},
   'std': {'convert': float, 'index': 1},
   'vp': {'convert': bool, 'index': 1}
@@ -175,10 +175,33 @@ def test_select_basic_additional():
     db.insert_ts(2, ats2)
     db.insert_ts(3, ats3)
     
-    db.upsert_meta(2, {'useless': 2})
+    db.upsert_meta(1, {'useless': 1})
+    db.upsert_meta(2, {'useless': 3})
+    db.upsert_meta(3, {'useless': 5})
     
     # Limit to 2 results
     ids1, fields1 = db.select({'pk': {'>': 0}},None,{'limit':2})
     assert(ids1 == [1, 2])
     
+    # Order Ascending
+    ids2, fields2 = db.select({'pk': {'>': 0}},None,{'sort_by':'+useless'})
+    assert(ids2 == [1, 2, 3])
+    
+    # Order Descending
+    ids3, fields3 = db.select({'pk': {'>': 0}},None,{'sort_by':'-useless'})
+    assert(ids3 == [3, 2, 1])
+    
+def test_complex():
+    db = DictDB(schema, 'pk')
+    
+    t1 = [0,1,2,3,4]
+    v1 = [1.0,2.0,3.0,2.0,1.0]
+    ats1 = ts.TimeSeries(t1, v1)
+    
+    for i in range(100):
+        db.insert_ts(i, ats1)
+        db.upsert_meta(i, {'useless': i})
+
+    ids1, fields1 = db.select({'pk': {'>': 10, '<=' : 50}},None,{'limit':10,'sort_by':'-useless'})
+    assert(ids1 == [50, 49, 48, 47, 46, 45, 44, 43, 42, 41])
     

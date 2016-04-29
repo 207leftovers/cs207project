@@ -156,8 +156,8 @@ class DictDB:
                 sorted_by = sorted_by[1:]
 
                 # Get the order for the result_set
-                for matchedfield in matchedfielddicts:
-                    order_list.append(matchedfield[sorted_by])
+                for pk in result_set:
+                    order_list.append(self.rows[pk][sorted_by])
 
                 result_tuple = []
 
