@@ -1,6 +1,5 @@
 import enum
 
-
 class TSDBStatus(enum.IntEnum):
     OK = 0
     UNKNOWN_ERROR = 1

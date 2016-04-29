@@ -6,7 +6,6 @@ from .tsdb_error import *
 # typing for TSDB ops and a straightforward mechanism for conversion to/from
 # JSON objects.
 
-
 class TSDBOp(dict):
     def __init__(self, op):
         self['op'] = op
@@ -45,9 +44,6 @@ class TSDBOp(dict):
             raise TypeError('Invalid TSDB Operation: '+str(json_dict['op']))
         return typemap[json_dict['op']].from_json(json_dict)
 
-
-
-
 class TSDBOp_InsertTS(TSDBOp):
     def __init__(self, pk, ts):
         super().__init__('insert_ts')
@@ -56,7 +52,6 @@ class TSDBOp_InsertTS(TSDBOp):
     @classmethod
     def from_json(cls, json_dict):
         return cls(json_dict['pk'], ts.TimeSeries(*(json_dict['ts'])))
-
 
 class TSDBOp_Return(TSDBOp):
 
@@ -121,7 +116,6 @@ class TSDBOp_AugmentedSelect(TSDBOp):
     def from_json(cls, json_dict):
         return cls(json_dict['proc'], json_dict['target'], json_dict['arg'], json_dict['md'], json_dict['additional'])
 
-
 class TSDBOp_AddTrigger(TSDBOp):
 
     def __init__(self, proc, onwhat, target, arg):
@@ -146,7 +140,6 @@ class TSDBOp_RemoveTrigger(TSDBOp):
     @classmethod
     def from_json(cls, json_dict):
         return cls(json_dict['proc'], json_dict['onwhat'])
-
 
 
 # This simplifies reconstructing TSDBOp instances from network data.

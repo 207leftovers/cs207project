@@ -2,7 +2,6 @@ import json
 
 LENGTH_FIELD_LENGTH = 4
 
-
 def serialize(json_obj):
     '''Turn a JSON object into bytes suitable for writing out to the network.
 
