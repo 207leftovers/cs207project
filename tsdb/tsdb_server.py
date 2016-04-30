@@ -177,9 +177,7 @@ class TSDBProtocol(asyncio.Protocol):
                 response = self._remove_trigger(op)
             else:
                 response = TSDBOp_Return(TSDBStatus.UNKNOWN_ERROR, op['op'])
-        print (serialize(response))
-        return web.Response(body=serialize(response))     
-        #return web.Response(body=b"post handler")
+        return web.json_response(response.to_json())
 
 class TSDBServer(object):
 

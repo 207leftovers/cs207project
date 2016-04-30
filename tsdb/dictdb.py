@@ -91,6 +91,8 @@ class DictDB:
 
         result_set = []
 
+        print (self.rows)
+
         # META
         # Select the keys that matches the metadata
         for pk in self.rows.keys():
@@ -100,14 +102,14 @@ class DictDB:
                     satisfied = False
                 else:
                     # range operators are stored in a dict
-                    #if isinstance(meta[meta_key], dict):
-                    for operator, value in meta[meta_key].items():  
-                        if (not OPMAP[operator](self.rows[pk][meta_key], value)):
-                            satisfied = False
+                    if isinstance(meta[meta_key], dict):
+                        for operator, value in meta[meta_key].items():  
+                            if (not OPMAP[operator](self.rows[pk][meta_key], value)):
+                                satisfied = False
 
-                    #else:
-                    #    if self.rows[pk][meta_key] is not meta[meta_key]:
-                    #        satisfied = False
+                    else:
+                        if self.rows[pk][meta_key] is not meta[meta_key]:
+                            satisfied = False
             if satisfied is True:
                 result_set.append(pk)
 
