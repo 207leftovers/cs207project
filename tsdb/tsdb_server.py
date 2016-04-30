@@ -6,6 +6,9 @@ from .tsdb_serialization import Deserializer, serialize
 from .tsdb_error import *
 from .tsdb_ops import *
 import procs
+import json
+import ast
+from aiohttp import web
 
 def trigger_callback_maker(pk, target, calltomake):
     def callback_(future):
@@ -127,6 +130,57 @@ class TSDBProtocol(asyncio.Protocol):
     def connection_lost(self, transport):
         print('S> connection lost')
 
+    def rest_hello_world(self, request):
+        print (request)
+        return web.Response(body=b"Hello world")
+
+    #@rest_handler
+    @asyncio.coroutine
+    def post_handler(self, request):
+        data = yield from request.json()
+        print (data)
+        # print (request)
+        #print (dict(data), len(data))
+        # print (list(data.keys()))
+        status = TSDBStatus.OK  # until proven otherwise.
+        response = TSDBOp_Return(status, None)  # until proven otherwise.
+
+        #OLD WAY OF DOING THINGS. IGNORE PLS
+        #Hack-ish way of doing things. convert the fields into json, then use code above. 
+        #msg = json.dumps(dict(data))
+        # temp = str(dict(data))
+        # temp2 = temp.replace('\'','"')
+        # msg = json.loads(temp2)
+
+        # #convert string to list
+        # if 'ts' in msg:
+        #     msg['ts'] = ast.literal_eval(msg['ts'])
+
+        msg = data
+
+        try:
+            op = TSDBOp.from_json(msg)
+        except TypeError as e:
+            response = TSDBOp_Return(TSDBStatus.INVALID_OPERATION, None)
+
+        print (op)
+        if status is TSDBStatus.OK:
+            if isinstance(op, TSDBOp_InsertTS):
+                response = self._insert_ts(op)
+            elif isinstance(op, TSDBOp_UpsertMeta):
+                response = self._upsert_meta(op)
+            elif isinstance(op, TSDBOp_Select):
+                response = self._select(op)
+            elif isinstance(op, TSDBOp_AddTrigger):
+                response = self._add_trigger(op)
+            elif isinstance(op, TSDBOp_RemoveTrigger):
+                response = self._remove_trigger(op)
+            else:
+                response = TSDBOp_Return(TSDBStatus.UNKNOWN_ERROR, op['op'])
+        print (serialize(response))
+        return web.Response(body=serialize(response))     
+        #return web.Response(body=b"post handler")
+
 class TSDBServer(object):
 
     def __init__(self, db, port=9999):
@@ -148,6 +202,27 @@ class TSDBServer(object):
         self.listener = loop.create_server(lambda: TSDBProtocol(self), '127.0.0.1', self.port)
         print('S> Starting TSDB server on port',self.port)
         listener = loop.run_until_complete(self.listener)
+        try:
+            loop.run_forever()
+        except KeyboardInterrupt:
+            print('S> Exiting.')
+        except Exception as e:
+            print('S> Exception:',e)
+        finally:
+            listener.close()
+            loop.close()
+
+
+    def rest_run(self):
+        loop = asyncio.get_event_loop()
+        app = web.Application()
+        tsdbproc = TSDBProtocol(self)
+        app.router.add_route('GET', '/', tsdbproc.rest_hello_world)
+        app.router.add_route('POST', '/', tsdbproc.post_handler)
+        self.listener = loop.create_server(app.make_handler(), '127.0.0.1', self.port)
+        print('S> Starting REST TSDB server on port',self.port)
+        listener = loop.run_until_complete(self.listener)
+
         try:
             loop.run_forever()
         except KeyboardInterrupt:
