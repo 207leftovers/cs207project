@@ -204,4 +204,3 @@ def test_complex():
 
     ids1, fields1 = db.select({'pk': {'>': 10, '<=' : 50}},None,{'limit':10,'sort_by':'-useless'})
     assert(ids1 == [50, 49, 48, 47, 46, 45, 44, 43, 42, 41])
-    
