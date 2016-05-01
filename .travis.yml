@@ -9,6 +9,7 @@ install:
     - pip install pytest
     - pip install pytest-cov
     - pip install ply
+    - pip install aiohttp
     
 script:
     - py.test --cov timeseries --cov pype
