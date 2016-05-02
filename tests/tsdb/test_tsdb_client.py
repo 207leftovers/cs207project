@@ -17,8 +17,8 @@ class Test_TSDB_Client(asynctest.TestCase):
         # We need this log file for some reason, it throws exceptions without it
         self.server_log_file = open('.tsdb_server.log.test','w')
         self.server_proc = subprocess.Popen(['python', 'go_server.py']
-                ,stdout=self.server_log_file,stderr=subprocess.STDOUT)
-        #time.sleep(.1)
+            ,stdout=self.server_log_file,stderr=subprocess.STDOUT)
+        time.sleep(.1)
 
         # Data
         t = [0,1,2,3,4]
@@ -41,4 +41,4 @@ class Test_TSDB_Client(asynctest.TestCase):
         # Shuts down the server
         self.server_proc.terminate()
         self.server_log_file.close()
-        #time.sleep(.1)
+        time.sleep(.1)
