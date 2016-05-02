@@ -138,10 +138,6 @@ class TSDBProtocol(asyncio.Protocol):
     @asyncio.coroutine
     def post_handler(self, request):
         data = yield from request.json()
-        print (data)
-        # print (request)
-        #print (dict(data), len(data))
-        # print (list(data.keys()))
         status = TSDBStatus.OK  # until proven otherwise.
         response = TSDBOp_Return(status, None)  # until proven otherwise.
 
@@ -163,7 +159,6 @@ class TSDBProtocol(asyncio.Protocol):
         except TypeError as e:
             response = TSDBOp_Return(TSDBStatus.INVALID_OPERATION, None)
 
-        print (op)
         if status is TSDBStatus.OK:
             if isinstance(op, TSDBOp_InsertTS):
                 response = self._insert_ts(op)
