@@ -191,7 +191,7 @@ class TSDBServer(object):
         print('S> EXCEPTION:', str(context))
         loop.stop()
 
-    def run(self):
+    def run(self, testing=False):
         loop = asyncio.get_event_loop()
         # NOTE: enable this if you'd rather have the server stop on an error
         #       currently it dumps the protocol and keeps going; new connections
@@ -200,6 +200,13 @@ class TSDBServer(object):
         self.listener = loop.create_server(lambda: TSDBProtocol(self), '127.0.0.1', self.port)
         print('S> Starting TSDB server on port',self.port)
         listener = loop.run_until_complete(self.listener)
+
+        # If this is a test, don't run forever
+        #if testing:
+            
+        #    listener.close()
+        #    loop.close()
+            
         try:
             loop.run_forever()
         except KeyboardInterrupt:
@@ -209,7 +216,6 @@ class TSDBServer(object):
         finally:
             listener.close()
             loop.close()
-
 
     def rest_run(self):
         loop = asyncio.get_event_loop()
