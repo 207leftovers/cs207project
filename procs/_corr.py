@@ -70,6 +70,7 @@ def kernel_corr(ts1, ts2, mult=1):
 
 #this is for a quick and dirty test of these functions
 #you might need to add procs to pythonpath for this to work
+"""
 if __name__ == "__main__":
     print("HI")
     _, t1 = tsmaker(0.5, 0.1, 0.01)
@@ -97,3 +98,4 @@ if __name__ == "__main__":
     print(idx, mcorr)
     sumcorr = kernel_corr(standts3, standts4, mult=10)
     print(sumcorr)
+"""
