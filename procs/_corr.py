@@ -34,9 +34,38 @@ def max_corr_at_phase(ts1, ts2):
 #http://www.cs.tufts.edu/~roni/PUB/ecml09-tskernels.pdf
 #normalize the kernel there by np.sqrt(K(x,x)K(y,y)) so that the correlation
 #of a time series with itself is 1.
+
+def K_function(ts1, ts2):
+    ts1_val = ts1.values()
+    ts2_val = ts2.values()
+    k = 0
+    for i in range(len(ts1_val)):
+        #Shifting the time series
+        ts2_appended = np.concatenate((np.zeros(i), ts2_val[i:]))
+        k += np.exp(np.dot(ts1_val, ts2_appended))
+    return k
+
+def K_function_mult(ts1, ts2, mult):
+    ts1_val = ts1.values()
+    ts2_val = ts2.values()
+    k = 0
+    for i in range(len(ts1_val)):
+        #Shifting the time series
+        ts2_appended = np.concatenate((np.zeros(i), ts2_val[i:]))
+        k += np.exp(mult*np.dot(ts1_val, ts2_appended))
+    return k
+
+
 def kernel_corr(ts1, ts2, mult=1):
     "compute a kernelized correlation so that we can get a real distance"
-    #your code here.
+    #your code here. 
+
+    #using the code below gave overflow errors which is why a new kernel K_function was needed.
+    """
+    crossCorr = corr(ts1, ts2)
+    return np.sum(np.exp(crossCorr*mult))/ np.sqrt(np.sum(np.exp(mult*ccor(ts1, ts1)))*np.sum(np.exp(mult*ccor(ts2, ts2))))
+    """
+    return K_function_mult(ts1, ts2, mult) / np.sqrt(K_function(ts1, ts1) * K_function(ts2, ts2))
 
 
 #this is for a quick and dirty test of these functions
