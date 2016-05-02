@@ -72,8 +72,8 @@ class TSDBClient(object):
         print ("C> payload", payload)
         return status, payload
 
-    #call `_send` with a well formed message to send.
-    #once again replace this function if appropriate
+    # Call `_send` with a well formed message to send.
+    # Once again replace this function if appropriate
     def _send(self, msg):
         loop = asyncio.get_event_loop()
         coro = asyncio.ensure_future(self._send_coro(msg, loop))

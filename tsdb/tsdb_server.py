@@ -131,7 +131,6 @@ class TSDBProtocol(asyncio.Protocol):
         print('S> connection lost')
 
     def rest_hello_world(self, request):
-        print (request)
         return web.Response(body=b"Hello world")
 
     #@rest_handler
@@ -198,7 +197,6 @@ class TSDBServer(object):
 
         # If this is a test, don't run forever
         #if testing:
-            
         #    listener.close()
         #    loop.close()
             
