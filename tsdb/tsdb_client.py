@@ -58,6 +58,7 @@ class TSDBClient(object):
         writer.write(serialized_msg)
         await writer.drain()
 
+        # 8192
         data = await reader.read()
         #print('Received: %r' % data)
         writer.close()

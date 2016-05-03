@@ -3,7 +3,7 @@ from operator import and_
 from functools import reduce
 import operator
 
-# this dictionary will help you in writing a generic select operation
+# This dictionary will help you in writing a generic select operation
 OPMAP = {
     '<': operator.lt,
     '>': operator.gt,
@@ -39,6 +39,7 @@ class DictDB:
             if indexinfo is not None:
                 self.indexes[s] = defaultdict(set)
 
+    # Insert a timeseries for a specific primary key
     def insert_ts(self, pk, ts):
         if pk not in self.rows:
             self.rows[pk] = {'pk': pk}
@@ -47,16 +48,17 @@ class DictDB:
         self.rows[pk]['ts'] = ts
         self.update_indices(pk)
 
+    # Upsert data for a specific primary key based on a dictionary of 
+    # fields and values to upsert
     def upsert_meta(self, pk, meta):
-        #print('UPSERTING!!!')
         "implement upserting field values, as long as the fields are in the schema."
         # Insert the primary key if it wasn't present
         if pk not in self.rows:
             self.rows[pk] = {'pk': pk}
             
+        # Look through the fields and upsert their values
         for key in meta:         
             if key in self.schema:
-                #raise TypeError('UPSERTING KEY: '+str(key)) 
                 self.rows[pk][key] = meta[key]
 
         self.update_indices(pk)
