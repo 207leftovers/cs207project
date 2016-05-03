@@ -66,6 +66,7 @@ class TSDBProtocol(asyncio.Protocol):
         return TSDBOp_Return(TSDBStatus.OK, op['op'], dict(zip(loids, results)))
 
     def _add_trigger(self, op):
+        print('Adding triggers')
         trigger_proc = op['proc']  # the module in procs
         trigger_onwhat = op['onwhat']  # on what? eg `insert_ts`
         trigger_target = op['target']  # if provided, this meta will be upserted

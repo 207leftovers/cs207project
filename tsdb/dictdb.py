@@ -48,6 +48,7 @@ class DictDB:
         self.update_indices(pk)
 
     def upsert_meta(self, pk, meta):
+        #print('UPSERTING!!!')
         "implement upserting field values, as long as the fields are in the schema."
         # Insert the primary key if it wasn't present
         if pk not in self.rows:
@@ -55,6 +56,7 @@ class DictDB:
             
         for key in meta:         
             if key in self.schema:
+                #raise TypeError('UPSERTING KEY: '+str(key)) 
                 self.rows[pk][key] = meta[key]
 
         self.update_indices(pk)
