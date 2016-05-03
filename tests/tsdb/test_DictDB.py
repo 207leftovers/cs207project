@@ -81,6 +81,7 @@ def test_select_basic_operations():
     ats3 = ts.TimeSeries(t3, v3)
     
     db.insert_ts(1, ats1)
+    
     db.insert_ts(2, ats2)
     db.insert_ts(3, ats3)
     
@@ -201,6 +202,10 @@ def test_complex():
     for i in range(100):
         db.insert_ts(i, ats1)
         db.upsert_meta(i, {'useless': i})
+        db.upsert_meta(i, {'order': -i})
 
     ids1, fields1 = db.select({'pk': {'>': 10, '<=' : 50}},None,{'limit':10,'sort_by':'-useless'})
     assert(ids1 == [50, 49, 48, 47, 46, 45, 44, 43, 42, 41])
+    
+    ids2, fields2 = db.select(meta={}, fields=[], additional={'limit':15,'sort_by': '-order'})
+    assert(ids2 == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])

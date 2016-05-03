@@ -67,7 +67,7 @@ class TSDBClient(object):
         deserializer.append(data)
         if deserializer.ready():
             response = deserializer.deserialize()
-            status = response['status']
+            status = TSDBStatus(response['status'])
             payload = response['payload']
 
             print ("C> status:", status)

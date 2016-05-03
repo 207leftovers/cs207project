@@ -195,11 +195,6 @@ class TSDBServer(object):
         self.listener = loop.create_server(lambda: TSDBProtocol(self), '127.0.0.1', self.port)
         print('S> Starting TSDB server on port',self.port)
         listener = loop.run_until_complete(self.listener)
-
-        # If this is a test, don't run forever
-        #if testing:
-        #    listener.close()
-        #    loop.close()
             
         try:
             loop.run_forever()
