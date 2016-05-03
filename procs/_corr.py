@@ -35,6 +35,8 @@ def max_corr_at_phase(ts1, ts2):
 #normalize the kernel there by np.sqrt(K(x,x)K(y,y)) so that the correlation
 #of a time series with itself is 1.
 
+"""
+#Incase multiplier was not being used for generating correlation
 def K_function(ts1, ts2):
     ts1_val = ts1.values()
     ts2_val = ts2.values()
@@ -44,13 +46,13 @@ def K_function(ts1, ts2):
         ts2_appended = np.concatenate((np.zeros(i), ts2_val[i:]))
         k += np.exp(np.dot(ts1_val, ts2_appended))
     return k
-
+"""
 def K_function_mult(ts1, ts2, mult):
     ts1_val = ts1.values()
     ts2_val = ts2.values()
     k = 0
     for i in range(len(ts1_val)):
-        #Shifting the time series
+        #Shifting the time series and computing the dot product for every shift
         ts2_appended = np.concatenate((np.zeros(i), ts2_val[i:]))
         k += np.exp(mult*np.dot(ts1_val, ts2_appended))
     return k
@@ -65,11 +67,14 @@ def kernel_corr(ts1, ts2, mult=1):
     crossCorr = corr(ts1, ts2)
     return np.sum(np.exp(crossCorr*mult))/ np.sqrt(np.sum(np.exp(mult*ccor(ts1, ts1)))*np.sum(np.exp(mult*ccor(ts2, ts2))))
     """
-    return K_function_mult(ts1, ts2, mult) / np.sqrt(K_function(ts1, ts1) * K_function(ts2, ts2))
+    #Using the formula in the paper and using the K_function_mult to compute the kernelized correlation
+    return K_function_mult(ts1, ts2, mult) / np.sqrt(K_function_mult(ts1, ts1, mult) \
+            * K_function_mult(ts2, ts2, mult))
 
 
 #this is for a quick and dirty test of these functions
 #you might need to add procs to pythonpath for this to work
+#commenting this since its not needed anymore
 """
 if __name__ == "__main__":
     print("HI")

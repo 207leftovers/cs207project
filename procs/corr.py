@@ -14,6 +14,7 @@ def proc_main(pk, row, arg):
     stand_argts = stand(argts, argts.mean(), argts.std())
     # for each row in our select/etc, standardize the time series
     stand_rowts = stand(row['ts'], row['ts'].mean(), row['ts'].std())
+    print(stand_argts, stand_rowts)
     #compute the normalozed kernelized cross-correlation
     kerncorr = kernel_corr(stand_rowts, stand_argts, 5)
     # compute a distance from it.
