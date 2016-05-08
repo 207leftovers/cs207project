@@ -83,6 +83,12 @@ class Test_TSDB_Client(asynctest.TestCase):
         assert('std' not in payload['2'])
         assert('mean' not in payload['2'])
         
+        # Delete 
+        await client.delete_ts(1)
+        status, payload = await client.select({'pk':{'==':1}}, ['ts','mean','std'], None)
+        assert(status == 0)
+        assert(payload == {})
+        
     # Modeled after go_client.py
     async def test_complex_run(self):
         print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
