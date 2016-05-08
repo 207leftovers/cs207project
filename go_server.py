@@ -5,15 +5,14 @@ import timeseries as ts
 identity = lambda x: x
 
 schema = {
-  'pk': {'convert': identity, 'index': None},  #will be indexed anyways
+  'pk': {'convert': identity, 'index': None},  # Will be indexed anyways
   'ts': {'convert': identity, 'index': None},
   'order': {'convert': int, 'index': 1},
   'blarg': {'convert': int, 'index': 1},
   'useless': {'convert': identity, 'index': None},
   'mean': {'convert': float, 'index': 1},
   'std': {'convert': float, 'index': 1},
-  'vp': {'convert': bool, 'index': 1},
-  'type': {'convert': identity, 'index': 1}
+  'vp': {'convert': bool, 'index': 1}
 }
 
 NUMVPS = 5

@@ -31,15 +31,14 @@ class DictDB:
         self.rows = {}
         self.schema = schema
         self.pkfield = pkfield
-        if 'type' not in schema:
-            raise ValueError('\'type\' field required for DB')
         
         for s in schema:
             indexinfo = schema[s]['index']
             # convert = schema[s]['convert']
             # later use binary search trees for highcard/numeric
             # bitmaps for lowcard/str_or_factor
-            if indexinfo is not None:
+            # Always index PK no matter what indexinfo says
+            if indexinfo is not None or s == 'pk':
                 self.indexes[s] = defaultdict(set)
 
     # Insert a timeseries for a specific primary key
@@ -88,7 +87,8 @@ class DictDB:
         row = self.rows[pk]
         for field in row:
             v = row[field]
-            if self.schema[field]['index'] is not None:
+            print(field, v)
+            if field in self.indexes:
                 idx = self.indexes[field]
                 idx[v].add(pk)
                 
@@ -96,9 +96,15 @@ class DictDB:
         row = self.rows[pk]
         for field in row:
             v = row[field]
-            if self.schema[field]['index'] is not None:
+            if field in self.indexes:
                 idx = self.indexes[field]
-                del idx[v]
+                
+                # Remove this pk from this index value's dict
+                idx[v].remove(pk)
+                
+                # If this value has no more rows, then remove it
+                if len(idx[v]) == 0:
+                    del idx[v]
 
     def select(self, meta, fields, additional):
         # If fields is None: return only pks like so: 
