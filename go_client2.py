@@ -44,6 +44,11 @@ async def main():
     await client.select({'order': {'>=': 2}}, fields=['order', 'blarg', 'mean'], additional={'sort_by': '-order'})
     await client.select({'order': {'>=': 2}}, fields=['order', 'blarg', 'mean'], additional={'sort_by': '-order', 'limit':2})
 
+    select = await client.select(fields=['order'], additional={'sort_by': '-order'})
+
+    for x in range(1, len(select[1])):
+        print (list(select[1].keys())[x])
+        assert(select[1][list(select[1].keys())[x]]['order'] <= select[1][list(select[1].keys())[x-1]]['order'])
 if __name__=='__main__':
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main())

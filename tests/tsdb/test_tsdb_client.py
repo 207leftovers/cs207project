@@ -132,41 +132,42 @@ class Test_TSDB_Client(asynctest.TestCase):
         select = await client.select(fields=['order'], additional={'sort_by': '-order'})
         print(select)
         # TODO: DO NOT APPEAR TO BE IN ORDER
-        #assert(select[1] == [0, 1, 2, 3])
+        for x in range(1, len(select[1])):
+            assert(select[1][list(select[1].keys())[x]]['order'] <= select[1][list(select[1].keys())[x-1]]['order'])
     
-        print('----------ORDER FIELD-----------')
-        _, results = await client.select(fields=['order'])
-        for k in results:
-            print(k, results[k])
+        # print('----------ORDER FIELD-----------')
+        # _, results = await client.select(fields=['order'])
+        # for k in results:
+        #     print(k, results[k])
     
-        print('---------ALL FILEDS------------')
-        await client.select(fields=[])
+        # print('---------ALL FILEDS------------')
+        # await client.select(fields=[])
     
-        print('------------TS with order 1---------')
-        await client.select({'order': 1}, fields=['ts'])
+        # print('------------TS with order 1---------')
+        # await client.select({'order': 1}, fields=['ts'])
     
-        print('------------All fields, blarg 1 ---------')
-        await client.select({'blarg': 1}, fields=[])
+        # print('------------All fields, blarg 1 ---------')
+        # await client.select({'blarg': 1}, fields=[])
     
-        print('------------order 1 blarg 2 no fields---------')
-        _, bla = await client.select({'order': 1, 'blarg': 2})
-        print(bla)
+        # print('------------order 1 blarg 2 no fields---------')
+        # _, bla = await client.select({'order': 1, 'blarg': 2})
+        # print(bla)
     
-        print('------------order >= 4  order, blarg and mean sent back, also sorted---------')
-        _, results = await client.select({'order': {'>=': 4}}, fields=['order', 'blarg', 'mean'], additional={'sort_by': '-order'})
-        for k in results:
-            print(k, results[k])
+        # print('------------order >= 4  order, blarg and mean sent back, also sorted---------')
+        # _, results = await client.select({'order': {'>=': 4}}, fields=['order', 'blarg', 'mean'], additional={'sort_by': '-order'})
+        # for k in results:
+        #     print(k, results[k])
 
-        print('------------order 1 blarg >= 1 fields blarg and std---------')
-        _, results = await client.select({'blarg': {'>=': 1}, 'order': 1}, fields=['blarg', 'std'])
-        for k in results:
-            print(k, results[k])
+        # print('------------order 1 blarg >= 1 fields blarg and std---------')
+        # _, results = await client.select({'blarg': {'>=': 1}, 'order': 1}, fields=['blarg', 'std'])
+        # for k in results:
+        #     print(k, results[k])
 
-        print('------now computing vantage point stuff---------------------')
-        print("VPS", vpkeys)
+        # print('------now computing vantage point stuff---------------------')
+        # print("VPS", vpkeys)
     
-        #we first create a query time series.
-        _, query = tsmaker(0.5, 0.2, 0.1)
+        # #we first create a query time series.
+        # _, query = tsmaker(0.5, 0.2, 0.1)
 
         # your code here begins
     

@@ -138,7 +138,11 @@ class DictDB:
                 for field in fields:
                     if field in self.rows[pk]:
                         matched_field[field] = self.rows[pk][field]
+
             matchedfielddicts.append(matched_field)
+
+
+
 
         # ADDITIONAL
         if additional is None:
@@ -161,17 +165,24 @@ class DictDB:
                 # Get the keyword
                 sorted_by = sorted_by[1:]
 
+
+
+
                 # Get the order for the result_set
                 for pk in result_set:
                     order_list.append(self.rows[pk][sorted_by])
 
                 result_tuple = []
 
+
+
                 # Then we combine everything into a tuple
                 for x in range(len(result_set)):
                     result_tuple.append((result_set[x], matchedfielddicts[x], order_list[x]))
 
                 result_sorted = sorted(result_tuple, key=lambda x: x[2], reverse=is_decreasing)
+
+
             else:
                 # We are going to skip sorting and move on to limiting
                 for x in range(len(result_set)):

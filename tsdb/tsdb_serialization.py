@@ -1,4 +1,5 @@
 import json
+from collections import OrderedDict
 
 LENGTH_FIELD_LENGTH = 4
 
@@ -49,7 +50,8 @@ class Deserializer(object):
         # There may be more data in the buffer already, so preserve it
         self._maybe_set_length()
         try:
-            obj = json.loads(json_str)
+            obj = json.loads(json_str, object_pairs_hook=OrderedDict)
+            print (json_str)
             return obj
         except json.JSONDecodeError:
             print('Invalid JSON object received:\n'+str(json_str))
