@@ -92,7 +92,9 @@ def test_delete():
     assert(1 not in rows)
     assert(db.indexes['order'] == {})
     assert(db.indexes['blarg'] == {3: {4}})
-    print(db.indexes)
+
+    # Check to ensure that PKs that have been deleted are no 
+    # longer in the index
     assert(db.indexes['pk'] == {4: {4}})
     
 def test_select_basic_operations():

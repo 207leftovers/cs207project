@@ -83,17 +83,6 @@ class TSDBOp_UpsertMeta(TSDBOp):
     def from_json(cls, json_dict):
         return cls(json_dict['pk'], json_dict['md'])
 
-# class TSDBOp_Select(TSDBOp):
-
-#     def __init__(self, md, fields):
-#         super().__init__('select')
-#         self['md'] = md
-#         self['fields'] = fields
-
-#     @classmethod
-#     def from_json(cls, json_dict):
-#         return cls(json_dict['md'], json_dict['fields'])
-
 class TSDBOp_Select(TSDBOp):
 
     def __init__(self, md, fields, additional):

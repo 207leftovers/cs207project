@@ -11,12 +11,18 @@ class TSDBClient(object):
         self.port = port
 
     async def insert_ts(self, primary_key, ts):
-        # your code here, construct from the code in tsdb_ops.py
-        #times = ts.times()
-        #values = ts.values()
-        #times =  map(str, times)
-        #values =  map(str, values)
-        #ts_dict = dict(zip(times, values))
+        '''
+        Inserts a TimeSeries into the database.
+        Parameters
+        ----------
+        primary_key : String, Int, etc.
+            The primary key for the TimeSeries entry
+        ts : TimeSeries
+            TimeSeries to be inserted into the database
+        Returns
+        -------
+        The result of the operation
+        '''
         InsertedTS = TSDBOp_InsertTS(primary_key, ts)
         return await self._send(InsertedTS.to_json())
 
