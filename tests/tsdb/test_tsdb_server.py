@@ -19,7 +19,8 @@ schema = {
   'useless': {'convert': identity, 'index': None},
   'mean': {'convert': float, 'index': 1},
   'std': {'convert': float, 'index': 1},
-  'vp': {'convert': bool, 'index': 1}
+  'vp': {'convert': bool, 'index': 1},
+  'type': {'convert': identity, 'index': 1}
 }
 
 NUMVPS = 5
