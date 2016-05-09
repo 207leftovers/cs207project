@@ -1,7 +1,7 @@
 #Required for making unique id's and keeping track of nodes
 import uuid
 import numpy as np
-
+import graphviz as gv
 
 class vpnode():
     def __init__(self):
@@ -65,15 +65,14 @@ class vptree():
         self.vpList = vpList
         self.dfunc = dfunc
         self.root = self.maketree(allPk, vpList)
-
     
     def maketree(self, allPk, vpList):
         #Making an id for the node:
-        uid = uuid.uuid1().int % 10000
+        uid = uuid.uuid4().int % 10000
 
         #checking if there are vantage points left
         #if we have none left, its just the vpnodeLeaf node
-        if not vpList == []:
+        if vpList == []:
             return vpnodeLeaf(allPk, uid)
 
         else:
@@ -88,7 +87,7 @@ class vptree():
             #Assigning if left or right
             #initializing empty lists
             left_PK, left_VP, right_PK, right_VP = [], [], [], []
-            for key, dist in zip(allPK, VPdist):
+            for key, dist in zip(allPk, VPdist):
                 if dist < median : #assigning left
                     left_PK.append(key)
                     if key in vpList and key != VP:
@@ -110,6 +109,21 @@ class vptree():
             rightChild.parent = node
             leftChild.parent = node
             return node
+        
+    def gen_graph(self):
+        """
+        Visualize the tree
+        """
+        graph = gv.Digraph(format='svg')
+        for parent, leftChild, rightChild in self.root.preorder():
+            if isinstance(parent,vpnodeLeaf):
+                graph.node(str(parent.uid), "Leaf:: "+str(parent.pkList))
+            if isinstance(parent,vpnodeVP):
+                graph.node(str(parent.uid), """Vantage point:: Key={} medianDist = {:3.3f}
+                                        """.format(parent.pk, parent.median))
+                graph.edge(str(parent.uid), str(leftChild.uid))
+                graph.edge(str(parent.uid), str(rightChild.uid))
+        return graph
     
 
 
@@ -128,5 +142,7 @@ if __name__ == "__main__":
         x = data[VP]
         y = np.array([data[key] for key in allPk])
         return np.abs(x-y)
-    tree = vptree(allPk, testvps, absdist) 
+    tree = vptree(allPk, testvps, absdist)
+    vpt = tree.gen_graph()
+    vpt.render("vptree.gv")
 
