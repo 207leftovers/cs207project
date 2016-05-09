@@ -23,7 +23,6 @@ schema = {
 }
 
 NUMVPS = 5
-
 # we augment the schema by adding columns for 5 vantage points
 for i in range(NUMVPS):
     schema["d_vp-{}".format(i)] = {'convert': float, 'index': 1}
@@ -46,13 +45,19 @@ class Test_TSDB_Protocol():
         t2 = [10,11,12,13,14]
         v2 = [-1.0,-2.0,-3.0,-2.0,-1.0]
         ats2 = ts.TimeSeries(t2, v2)
+        
+        # Test Begin Transaction
+        begin_tx = TSDBOp_BeginTransaction()
+        tid = prot._begin_transaction(begin_tx)['payload']
+        assert(tid == 1)
     
         # Test TSDBOp_InsertTS
         insert_op = {}
+        insert_op['tid'] = tid
         insert_op['pk'] = 1
         insert_op['ts'] = ats1
         insert_op['op'] = 'insert_ts'
-        InsertedTS = TSDBOp_InsertTS(1, ats1)
+        InsertedTS = TSDBOp_InsertTS(tid, 1, ats1)
         assert(insert_op == InsertedTS)
     
         # Test Protocol Insert
@@ -65,12 +70,12 @@ class Test_TSDB_Protocol():
         assert(inserted_row['ts'] == ats1)
         
         # Add some more data
-        prot._insert_ts(TSDBOp_InsertTS(2, ats1))
+        prot._insert_ts(TSDBOp_InsertTS(tid, 2, ats1))
         inserted_row = server.db.rows[2]
         assert(inserted_row['ts'] == ats1)
         
         # Test Protocol Upsert
-        upserted_meta = TSDBOp_UpsertMeta(2, {'ts': ats2, 'order': 1})
+        upserted_meta = TSDBOp_UpsertMeta(tid, 2, {'ts': ats2, 'order': 1})
         upsert_return = prot._upsert_meta(upserted_meta)
         assert(upsert_return['op'] == 'upsert_meta')
         assert(upsert_return['status'] == TSDBStatus.OK)
@@ -80,7 +85,7 @@ class Test_TSDB_Protocol():
         metadata_dict = {'pk': {'>': 0}}
         fields = None
         additional = None
-        select_op = TSDBOp_Select(metadata_dict, fields, additional)
+        select_op = TSDBOp_Select(tid, metadata_dict, fields, additional)
         select_return = prot._select(select_op)
         print("Here", select_return)
         assert(select_return['op'] == 'select')
@@ -92,7 +97,7 @@ class Test_TSDB_Protocol():
         metadata_dict = {'pk': {'>': 0}}
         fields = ['ts']
         additional = None
-        select_op = TSDBOp_Select(metadata_dict, fields, additional)
+        select_op = TSDBOp_Select(tid, metadata_dict, fields, additional)
         select_return = prot._select(select_op)
         assert(select_return['op'] == 'select')
         assert(select_return['status'] == TSDBStatus.OK)
@@ -100,7 +105,7 @@ class Test_TSDB_Protocol():
         assert(select_return['payload'][2]['ts'] == ats2)
         
         # Test Add Trigger
-        add_trigger_op = TSDBOp_AddTrigger('stats', 'insert_ts', ['mean', 'std'], None)
+        add_trigger_op = TSDBOp_AddTrigger(tid, 'stats', 'insert_ts', ['mean', 'std'], None)
         prot._add_trigger(add_trigger_op)
         
         mod = import_module('procs.stats')

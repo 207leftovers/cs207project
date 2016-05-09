@@ -8,8 +8,9 @@ from collections import OrderedDict
 # JSON objects.
 
 class TSDBOp(dict):
-    def __init__(self, op):
+    def __init__(self, op, tid):
         self['op'] = op
+        self['tid'] = tid
 
     def to_json(self, obj=None):
         # This is both an interface function and its own helper function.
@@ -45,28 +46,56 @@ class TSDBOp(dict):
             raise TypeError('Invalid TSDB Operation: '+str(json_dict['op']))
         return typemap[json_dict['op']].from_json(json_dict)
 
+class TSDBOp_BeginTransaction(TSDBOp):
+    def __init__(self):
+        # This operation doesn't call super because it
+        # doesn't yet have a tid
+        self['op'] = 'begin_transaction'
+
+    @classmethod
+    def from_json(cls, json_dict):
+        return cls()
+    
+class TSDBOp_Rollback(TSDBOp):
+    def __init__(self, tid):
+        super().__init__('rollback', tid)
+
+    @classmethod
+    def from_json(cls, json_dict):
+        return cls(json_dict['tid'])
+    
+class TSDBOp_Commit(TSDBOp):
+    def __init__(self, tid):
+        super().__init__('commit', tid)
+
+    @classmethod
+    def from_json(cls, json_dict):
+        return cls(json_dict['tid'])
+    
 class TSDBOp_InsertTS(TSDBOp):
-    def __init__(self, pk, ts):
-        super().__init__('insert_ts')
+    def __init__(self, tid, pk, ts):
+        super().__init__('insert_ts', tid)
         self['pk'], self['ts'] = pk, ts
 
     @classmethod
     def from_json(cls, json_dict):
-        return cls(json_dict['pk'], ts.TimeSeries(*(json_dict['ts'])))
+        return cls(json_dict['tid'], json_dict['pk'], ts.TimeSeries(*(json_dict['ts'])))
     
 class TSDBOp_DeleteTS(TSDBOp):
-    def __init__(self, pk):
+    def __init__(self, tid, pk):
         super().__init__('delete_ts')
         self['pk'] = pk
 
     @classmethod
     def from_json(cls, json_dict):
-        return cls(json_dict['pk'])
+        return cls(json_dict['tid'], json_dict['pk'])
 
 class TSDBOp_Return(TSDBOp):
 
     def __init__(self, status, op, payload=None):
-        super().__init__(op)
+        #super().__init__(op)
+        # Returns don't need to have the transaction id
+        self['op'] = op
         self['status'], self['payload'] = status, payload
 
     @classmethod
@@ -75,25 +104,25 @@ class TSDBOp_Return(TSDBOp):
 
 class TSDBOp_UpsertMeta(TSDBOp):
 
-    def __init__(self, pk, md):
-        super().__init__('upsert_meta')
+    def __init__(self, tid, pk, md):
+        super().__init__('upsert_meta', tid)
         self['pk'], self['md'] = pk, md
 
     @classmethod
     def from_json(cls, json_dict):
-        return cls(json_dict['pk'], json_dict['md'])
+        return cls(json_dict['tid'], json_dict['pk'], json_dict['md'])
 
 class TSDBOp_Select(TSDBOp):
 
-    def __init__(self, md, fields, additional):
-        super().__init__('select')
+    def __init__(self, tid, md, fields, additional):
+        super().__init__('select', tid)
         self['md'] = md
         self['fields'] = fields
         self['additional'] = additional
 
     @classmethod
     def from_json(cls, json_dict):
-        return cls(json_dict['md'], json_dict['fields'], json_dict['additional'])
+        return cls(json_dict['tid'], json_dict['md'], json_dict['fields'], json_dict['additional'])
 
 class TSDBOp_AugmentedSelect(TSDBOp):
     """
@@ -103,8 +132,8 @@ class TSDBOp_AugmentedSelect(TSDBOp):
     add_trigger, except that instead of upserting meta with the targets, that
     data is sent back to the user.
     """
-    def __init__(self, proc, target, arg, md, additional):
-        super().__init__('augmented_select')
+    def __init__(self, tid, proc, target, arg, md, additional):
+        super().__init__('augmented_select', tid)
         self['md'] = md
         self['additional'] = additional
         self['proc'] = proc
@@ -113,12 +142,12 @@ class TSDBOp_AugmentedSelect(TSDBOp):
 
     @classmethod
     def from_json(cls, json_dict):
-        return cls(json_dict['proc'], json_dict['target'], json_dict['arg'], json_dict['md'], json_dict['additional'])
+        return cls(json_dict['tid'], json_dict['proc'], json_dict['target'], json_dict['arg'], json_dict['md'], json_dict['additional'])
 
 class TSDBOp_AddTrigger(TSDBOp):
 
-    def __init__(self, proc, onwhat, target, arg):
-        super().__init__('add_trigger')
+    def __init__(self, tid, proc, onwhat, target, arg):
+        super().__init__('add_trigger', tid)
         self['proc'] = proc
         self['onwhat'] = onwhat
         self['target'] = target
@@ -126,23 +155,26 @@ class TSDBOp_AddTrigger(TSDBOp):
 
     @classmethod
     def from_json(cls, json_dict):
-        return cls(json_dict['proc'], json_dict['onwhat'], json_dict['target'], json_dict['arg'])
+        return cls(json_dict['tid'], json_dict['proc'], json_dict['onwhat'], json_dict['target'], json_dict['arg'])
 
 class TSDBOp_RemoveTrigger(TSDBOp):
 
-    def __init__(self, proc, onwhat):
-        super().__init__('remove_trigger')
+    def __init__(self, tid, proc, onwhat):
+        super().__init__('remove_trigger', tid)
         self['proc'] = proc
         self['onwhat'] = onwhat
 
 
     @classmethod
     def from_json(cls, json_dict):
-        return cls(json_dict['proc'], json_dict['onwhat'])
+        return cls(json_dict['tid'], json_dict['proc'], json_dict['onwhat'])
 
 
 # This simplifies reconstructing TSDBOp instances from network data.
 typemap = {
+  'begin_transaction': TSDBOp_BeginTransaction,
+  'rollback': TSDBOp_Rollback,
+  'commit': TSDBOp_Commit,
   'insert_ts': TSDBOp_InsertTS,
   'delete_ts': TSDBOp_DeleteTS,
   'upsert_meta': TSDBOp_UpsertMeta,

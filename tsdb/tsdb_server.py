@@ -25,9 +25,18 @@ class TSDBProtocol(asyncio.Protocol):
         self.deserializer = Deserializer()
         self.futures = []
 
+    def _begin_transaction(self, op):
+        tid = self.server.db.begin_transaction() 
+        print("S> GETTING TID")
+        if tid > 0:
+            return TSDBOp_Return(TSDBStatus.OK, op['op'], payload=tid)
+        else:
+            raise ValueError("TID", tid)
+        
     def _insert_ts(self, op):
         try:
-            self.server.db.insert_ts(op['pk'], op['ts'])
+            print(op['tid'])
+            self.server.db.insert_ts(op['tid'], op['pk'], op['ts'])
         except ValueError as e:
             return TSDBOp_Return(TSDBStatus.INVALID_KEY, op['op'])
         self._run_trigger('insert_ts', [op['pk']])
@@ -35,19 +44,19 @@ class TSDBProtocol(asyncio.Protocol):
     
     def _delete_ts(self, op):
         try:
-            self.server.db.delete_ts(op['pk'])
+            self.server.db.delete_ts(op['tid'], op['pk'])
         except ValueError as e:
             return TSDBOp_Return(TSDBStatus.INVALID_KEY, op['op'])
         self._run_trigger('delete_ts', [op['pk']])
         return TSDBOp_Return(TSDBStatus.OK, op['op'])
 
     def _upsert_meta(self, op):
-        self.server.db.upsert_meta(op['pk'], op['md'])
+        self.server.db.upsert_meta(op['tid'], op['pk'], op['md'])
         self._run_trigger('upsert_meta', [op['pk']])
         return TSDBOp_Return(TSDBStatus.OK, op['op'])
 
     def _select(self, op):
-        loids, fields = self.server.db.select(op['md'], op['fields'], op['additional'])
+        loids, fields = self.server.db.select(op['tid'], op['md'], op['fields'], op['additional'])
         self._run_trigger('select', loids)
         if fields is not None:
             d = OrderedDict(zip(loids, fields))
@@ -58,7 +67,7 @@ class TSDBProtocol(asyncio.Protocol):
 
     def _augmented_select(self, op):
         "run a select and then synchronously run some computation on it"
-        loids, fields = self.server.db.select(op['md'], None, op['additional'])
+        loids, fields = self.server.db.select(op['tid'], op['md'], None, op['additional'])
         proc = op['proc']  # the module in procs
         arg = op['arg']  # an additional argument, could be a constant
         target = op['target'] #not used to upsert any more, but rather to
@@ -117,10 +126,13 @@ class TSDBProtocol(asyncio.Protocol):
             try:
                 op = TSDBOp.from_json(msg)
             except TypeError as e:
+                print('S> invalid operation')
                 response = TSDBOp_Return(TSDBStatus.INVALID_OPERATION, None)
 
             if status is TSDBStatus.OK:
-                if isinstance(op, TSDBOp_InsertTS):
+                if isinstance(op, TSDBOp_BeginTransaction):
+                    response = self._begin_transaction(op)
+                elif isinstance(op, TSDBOp_InsertTS):
                     response = self._insert_ts(op)
                 elif isinstance(op, TSDBOp_DeleteTS):
                     response = self._delete_ts(op)
@@ -170,7 +182,9 @@ class TSDBProtocol(asyncio.Protocol):
             response = TSDBOp_Return(TSDBStatus.INVALID_OPERATION, None)
 
         if status is TSDBStatus.OK:
-            if isinstance(op, TSDBOp_InsertTS):
+            if isinstance(op, TSDBOp_BeginTransaction):
+                response = self._begin_transaction(op)
+            elif isinstance(op, TSDBOp_InsertTS):
                 response = self._insert_ts(op)
             elif isinstance(op, TSDBOp_DeleteTS):
                 response = self._delete_ts(op)
@@ -193,6 +207,7 @@ class TSDBServer(object):
         self.db = db
         self.triggers = defaultdict(list)
         self.autokeys = {}
+        print('S> Starting Server on port:', port)
 
     def exception_handler(self, loop, context):
         print('S> EXCEPTION:', str(context))

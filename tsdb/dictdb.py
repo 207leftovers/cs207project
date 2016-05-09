@@ -32,6 +32,24 @@ class DictDB:
         self.schema = schema
         self.pkfield = pkfield
         
+        # The highest log sequence number
+        self.logid_seq = 0
+        
+        # The highest transaction sequence number
+        self.tid_seq = 0
+        
+        # The log
+        # Sequence Number, Transaction ID, PK, Redo, Undo, Previous Sequence Number
+        self.log = {}
+        
+        # Dirty Page Table 
+        # "keeps record of all the pages that have been modified and not yet written back to disk"
+        self.dpt = {}
+        
+        # Transaction Table
+        # "contains all transactions that are currently running and the Sequence Number of the last log entry they caused"
+        self.tt = {}
+        
         for s in schema:
             indexinfo = schema[s]['index']
             # convert = schema[s]['convert']
@@ -40,9 +58,43 @@ class DictDB:
             # Always index PK no matter what indexinfo says
             if indexinfo is not None or s == 'pk':
                 self.indexes[s] = defaultdict(set)
+                
+    def next_tid_val(self):
+        self.tid_seq += 1
+        return self.tid_seq
+    
+    # Check to ensure that this tid refers to an open transaction
+    def check_tid_open(self, tid):
+        if tid not in self.tt:
+            raise ValueError('No valid open transaction %d!' % tid)
+                
+    # Begin the transaction
+    def begin_transaction(self):
+        # Generate a new tid
+        tid = self.next_tid_val()
+        
+        # Add this tid to the transaction table
+        self.tt[tid] = {}
+        
+        return tid
+        
+    # Commit the transaction
+    def commit(self, tid):
+        self.check_tid_open(tid)
+        # TODO:
+        
+        # remove this tid from the transaction table
+        del self.tt[tid]
+        
+    # Rollback the transaction
+    def rollback(self, tid):
+        self.check_tid_open(tid)
+        # TODO:
 
     # Insert a timeseries for a specific primary key
-    def insert_ts(self, pk, ts):
+    def insert_ts(self, tid, pk, ts):
+        self.check_tid_open(tid)
+        
         if pk not in self.rows:
             self.rows[pk] = {'pk': pk}
         else:
@@ -51,7 +103,9 @@ class DictDB:
         self.update_indices(pk)
         
     # Delete a timeseries for a specific primary key
-    def delete_ts(self, pk):
+    def delete_ts(self, tid, pk):
+        self.check_tid_open(tid)
+        
         if pk not in self.rows:
             raise ValueError('Primary key %d not found during deletion' % pk)
 
@@ -63,7 +117,9 @@ class DictDB:
 
     # Upsert data for a specific primary key based on a dictionary of 
     # fields and values to upsert
-    def upsert_meta(self, pk, meta):
+    def upsert_meta(self, tid, pk, meta):
+        self.check_tid_open(tid)
+        
         "implement upserting field values, as long as the fields are in the schema."
         # Insert the primary key if it wasn't present
         if pk not in self.rows:
@@ -106,7 +162,9 @@ class DictDB:
                 if len(idx[v]) == 0:
                     del idx[v]
 
-    def select(self, meta, fields, additional):
+    def select(self, tid, meta, fields, additional):
+        self.check_tid_open(tid)
+        
         # If fields is None: return only pks like so: 
         #     [pk1,pk2],[{},{}]
         
@@ -123,7 +181,6 @@ class DictDB:
         #     (b) limit: 'limit':10
         # which will give you the top 10 in the current sort order.
         result_set = []
-
 
         # META
         # Select the keys that matches the metadata
