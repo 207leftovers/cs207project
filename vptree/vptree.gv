@@ -1,23 +1,23 @@
 digraph {
-	1879 [label="Vantage point:: Key=key45 medianDist = 0.226
+	4646 [label="Vantage point:: Key=key45 medianDist = 0.269
                                         "]
-		1879 -> 4957
-		1879 -> 9657
-	4957 [label="Vantage point:: Key=key73 medianDist = 0.132
+		4646 -> 1171
+		4646 -> 4196
+	1171 [label="Vantage point:: Key=key7 medianDist = 0.193
                                         "]
-		4957 -> "['key14', 'key57', 'key43', 'key159', 'key61', 'key64', 'key55', 'key79', 'key26', 'key135', 'key101', 'key41', 'key144', 'key5', 'key24', 'key35', 'key165', 'key186', 'key16', 'key48', 'key149', 'key200', 'key54', 'key46', 'key73', 'key157', 'key147', 'key49', 'key196', 'key185', 'key161', 'key105', 'key97', 'key126', 'key177', 'key189', 'key142', 'key123', 'key56', 'key184', 'key151', 'key187', 'key174', 'key45', 'key166', 'key170', 'key92', 'key125', 'key52', 'key87']"
-		4957 -> "['key181', 'key176', 'key182', 'key75', 'key188', 'key65', 'key145', 'key121', 'key104', 'key21', 'key3', 'key167', 'key191', 'key28', 'key86', 'key30', 'key23', 'key8', 'key171', 'key82', 'key69', 'key180', 'key118', 'key89', 'key80', 'key132', 'key62', 'key143', 'key84', 'key117', 'key59', 'key37', 'key66', 'key47', 'key25', 'key12', 'key119', 'key93', 'key74', 'key139', 'key96', 'key63', 'key136', 'key140', 'key85', 'key111', 'key27', 'key18', 'key2', 'key152']"
-	"['key14', 'key57', 'key43', 'key159', 'key61', 'key64', 'key55', 'key79', 'key26', 'key135', 'key101', 'key41', 'key144', 'key5', 'key24', 'key35', 'key165', 'key186', 'key16', 'key48', 'key149', 'key200', 'key54', 'key46', 'key73', 'key157', 'key147', 'key49', 'key196', 'key185', 'key161', 'key105', 'key97', 'key126', 'key177', 'key189', 'key142', 'key123', 'key56', 'key184', 'key151', 'key187', 'key174', 'key45', 'key166', 'key170', 'key92', 'key125', 'key52', 'key87']" [label="Leaf:: 5393"]
-	"['key181', 'key176', 'key182', 'key75', 'key188', 'key65', 'key145', 'key121', 'key104', 'key21', 'key3', 'key167', 'key191', 'key28', 'key86', 'key30', 'key23', 'key8', 'key171', 'key82', 'key69', 'key180', 'key118', 'key89', 'key80', 'key132', 'key62', 'key143', 'key84', 'key117', 'key59', 'key37', 'key66', 'key47', 'key25', 'key12', 'key119', 'key93', 'key74', 'key139', 'key96', 'key63', 'key136', 'key140', 'key85', 'key111', 'key27', 'key18', 'key2', 'key152']" [label="Leaf:: 1430"]
-	9657 [label="Vantage point:: Key=key10 medianDist = 0.220
+		1171 -> 1506
+		1171 -> 1123
+	1506 [label="Leaf:: ['key136', 'key92', 'key45', 'key97', 'key138', 'key38', 'key145', 'key196', 'key51', 'key185', 'key187', 'key42', 'key116', 'key87', 'key156', 'key163', 'key99', 'key134', 'key91', 'key59', 'key7', 'key11', 'key74', 'key169', 'key14', 'key50', 'key30', 'key90', 'key186', 'key195', 'key121', 'key75', 'key52', 'key65', 'key76', 'key143', 'key34', 'key18', 'key115', 'key70', 'key96', 'key131', 'key77', 'key132', 'key58', 'key165', 'key26', 'key100', 'key148', 'key122']"]
+	1123 [label="Leaf:: ['key183', 'key57', 'key102', 'key20', 'key155', 'key63', 'key106', 'key62', 'key5', 'key53', 'key37', 'key98', 'key86', 'key152', 'key149', 'key193', 'key182', 'key27', 'key173', 'key12', 'key64', 'key107', 'key56', 'key127', 'key21', 'key151', 'key189', 'key88', 'key55', 'key17', 'key104', 'key174', 'key176', 'key123', 'key66', 'key184', 'key83', 'key31', 'key67', 'key80', 'key35', 'key29', 'key153', 'key54', 'key16', 'key47', 'key177', 'key28', 'key192', 'key124']"]
+	4196 [label="Vantage point:: Key=key10 medianDist = 0.112
                                         "]
-		9657 -> "['key77', 'key162', 'key60', 'key179', 'key131', 'key38', 'key114', 'key112', 'key76', 'key4', 'key107', 'key141', 'key192', 'key44', 'key71', 'key130', 'key33', 'key127', 'key36', 'key193', 'key138', 'key40', 'key9', 'key53', 'key173', 'key83', 'key102', 'key32', 'key190', 'key103', 'key129', 'key158', 'key134', 'key15', 'key148', 'key164', 'key155', 'key10', 'key108', 'key120', 'key124', 'key154', 'key50', 'key70', 'key22', 'key169', 'key95', 'key51', 'key194', 'key1']"
-		9657 -> 2926
-	"['key77', 'key162', 'key60', 'key179', 'key131', 'key38', 'key114', 'key112', 'key76', 'key4', 'key107', 'key141', 'key192', 'key44', 'key71', 'key130', 'key33', 'key127', 'key36', 'key193', 'key138', 'key40', 'key9', 'key53', 'key173', 'key83', 'key102', 'key32', 'key190', 'key103', 'key129', 'key158', 'key134', 'key15', 'key148', 'key164', 'key155', 'key10', 'key108', 'key120', 'key124', 'key154', 'key50', 'key70', 'key22', 'key169', 'key95', 'key51', 'key194', 'key1']" [label="Leaf:: 6869"]
-	2926 [label="Vantage point:: Key=key7 medianDist = 0.068
+		4196 -> 3948
+		4196 -> 9887
+	3948 [label="Vantage point:: Key=key73 medianDist = 0.048
                                         "]
-		2926 -> "['key172', 'key100', 'key122', 'key156', 'key67', 'key178', 'key198', 'key197', 'key90', 'key17', 'key34', 'key68', 'key88', 'key20', 'key195', 'key19', 'key146', 'key7', 'key133', 'key110', 'key160', 'key199', 'key78', 'key98', 'key58']"
-		2926 -> "['key183', 'key115', 'key99', 'key137', 'key175', 'key128', 'key39', 'key116', 'key31', 'key11', 'key168', 'key13', 'key72', 'key91', 'key150', 'key153', 'key81', 'key113', 'key106', 'key6', 'key163', 'key94', 'key29', 'key109', 'key42']"
-	"['key172', 'key100', 'key122', 'key156', 'key67', 'key178', 'key198', 'key197', 'key90', 'key17', 'key34', 'key68', 'key88', 'key20', 'key195', 'key19', 'key146', 'key7', 'key133', 'key110', 'key160', 'key199', 'key78', 'key98', 'key58']" [label="Leaf:: 1095"]
-	"['key183', 'key115', 'key99', 'key137', 'key175', 'key128', 'key39', 'key116', 'key31', 'key11', 'key168', 'key13', 'key72', 'key91', 'key150', 'key153', 'key81', 'key113', 'key106', 'key6', 'key163', 'key94', 'key29', 'key109', 'key42']" [label="Leaf:: 3194"]
+		3948 -> 5493
+		3948 -> 2139
+	5493 [label="Leaf:: ['key48', 'key150', 'key117', 'key133', 'key13', 'key44', 'key1', 'key24', 'key73', 'key142', 'key126', 'key15', 'key78', 'key19', 'key144', 'key10', 'key109', 'key69', 'key105', 'key157', 'key168', 'key8', 'key125', 'key119', 'key89']"]
+	2139 [label="Leaf:: ['key197', 'key101', 'key199', 'key170', 'key108', 'key159', 'key171', 'key162', 'key111', 'key40', 'key137', 'key85', 'key172', 'key61', 'key82', 'key158', 'key84', 'key32', 'key25', 'key175', 'key190', 'key167', 'key49', 'key181', 'key60']"]
+	9887 [label="Leaf:: ['key198', 'key2', 'key128', 'key160', 'key41', 'key72', 'key191', 'key68', 'key95', 'key166', 'key161', 'key120', 'key3', 'key23', 'key129', 'key93', 'key118', 'key154', 'key179', 'key164', 'key135', 'key6', 'key114', 'key71', 'key112', 'key180', 'key103', 'key22', 'key79', 'key81', 'key200', 'key141', 'key46', 'key43', 'key147', 'key146', 'key110', 'key130', 'key178', 'key188', 'key36', 'key9', 'key194', 'key33', 'key139', 'key39', 'key140', 'key4', 'key113', 'key94']"]
 }

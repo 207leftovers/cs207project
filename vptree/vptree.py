@@ -16,8 +16,7 @@ class vpnode():
         if self.rightChild == None and self.leftChild == None:
             return [(self, None, None)]
         else:
-            return [(self, self.leftChild, self.rightChild)] + self.leftChild.preorder() +\
-                    self.rightChild.preorder()
+            return [(self, self.leftChild, self.rightChild)] + self.leftChild.preorder() +                    self.rightChild.preorder()
 
 
 #Since a VP tree has two kind of nodes - non-leaf nodes with vantage points and leaf nodes with closest possible candidates.
@@ -73,7 +72,7 @@ class vptree():
         #checking if there are vantage points left
         #if we have none left, its just the vpnodeLeaf node
         if vpList == []:
-            return vpnodeLeaf(allPk, uid)
+            return vpnodeLeaf(uid, allPk)
 
         else:
             #Decide how to pick vantage point
@@ -125,6 +124,22 @@ class vptree():
                 graph.edge(str(parent.uid), str(rightChild.uid))
         return graph
     
+    def gen_subset(self, search_val, dfunc):
+        """Get the subset of nodes that can be the closest to this argument
+        INPUT 
+        search_val - search value
+        dfunc - distance function
+        """
+
+        current = self.root
+        while not isinstance(current,vpnodeLeaf):
+            d = dfunc(current.pk, search_val)
+            if d > current.median:
+                current = current.rightChild
+            else:
+                current = current.leftChild
+        return current.pkList
+    
 
 
 if __name__ == "__main__":
@@ -139,10 +154,23 @@ if __name__ == "__main__":
         """
         Implementing basic absolute distance function
         """
-        x = data[VP]
-        y = np.array([data[key] for key in allPk])
+        x = dataDict[VP]
+        y = np.array([dataDict[key] for key in allPk])
         return np.abs(x-y)
     tree = vptree(allPk, testvps, absdist)
+
     vpt = tree.gen_graph()
     vpt.render("vptree.gv")
+
+
+    def dist(vp,arg):
+        x = dataDict[vp]
+        return np.abs(x-arg)
+
+    search_val = np.random.normal(0,5)
+    allDists = np.array([np.abs(search_val - dataDict[p]) for p in allPk])
+    subset = tree.gen_subset(search_val,dist)
+    closest = min(allPk, key = lambda k:allDists[allPk.index(k)])
+    
+    assert closest in subset
 
