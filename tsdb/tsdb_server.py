@@ -27,7 +27,7 @@ class TSDBProtocol(asyncio.Protocol):
 
     def _begin_transaction(self, op):
         tid = self.server.db.begin_transaction() 
-        print("S> GETTING TID")
+        print("S> Begin TX")
         if tid > 0:
             return TSDBOp_Return(TSDBStatus.OK, op['op'], payload=tid)
         else:

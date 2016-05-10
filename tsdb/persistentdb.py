@@ -6,7 +6,6 @@ import pickle
 import os
 import struct
 import portalocker
-from tsdb.tsdb_ops import *
 import ast
 from TimeSeries import TimeSeries
 
@@ -19,6 +18,38 @@ OPMAP = {
     '<=': operator.le,
     '>=': operator.ge
 }
+
+class DBRow:
+    "Stores a row of data for a primary key"        
+    def __init__(self, pk, defaults, ts=None):
+        self.pk = pk
+        self.ts = ts
+        self.row = defaults
+        
+    def update(self, field_name, value):
+        if field_name == 'ts':
+            self.ts = value
+        else:
+            self.row[field_name] = value
+        
+    def get_field(self, field_name):
+        if field_name == 'ts':
+            return self.ts
+        else:
+            return self.row[field_name]
+    
+    def to_string(self):
+        a_dict = {'pk': self.pk, 'ts_t': self.ts._times.tolist(), 'ts_v': self.ts._values.tolist(), 'row': self.row}
+        return str(a_dict)
+
+    def row_from_string(a_string):
+        a_dict = ast.literal_eval(a_string)
+        pk = a_dict['pk']
+        ts_times = a_dict['ts_t']
+        ts_values = a_dict['ts_v']
+        row = a_dict['row']
+        return DBRow(pk, row, TimeSeries(ts_times, ts_values))
+
 
 def metafiltered(d, schema, fieldswanted):
     d2 = {}
@@ -55,20 +86,15 @@ class ValueRef(object):
     def get(self, storage):
         "read bytes for value from disk"
         if self._referent is None and self._address:
-            print('REFERENT IS NONE!!!!!')
             self._referent = self.bytes_to_referent(storage.read(self._address))
-        if (self._referent is not None):
-            print('*** Getting from ValueRef', self._referent)
         return self._referent
 
     def store(self, storage):
-        print('######Storing')
         "store bytes for value to disk"
         #called by BinaryNode.store_refs
         if self._referent is not None and not self._address:
             self.prepare_to_store(storage)
             self._address = storage.write(self.referent_to_bytes(self._referent))
-            print('*** Setting from ValueRef', self._address)
             
 class BinaryNodeRef(ValueRef):
     "reference to a btree node on disk"
@@ -114,7 +140,6 @@ class BinaryNode(object):
     def __init__(self, left_ref, key, value_ref, right_ref):
         self.left_ref = left_ref
         self.key = key
-        #print('KEY', key, 'VALUE', value_ref)
         self.value_ref = value_ref
         self.right_ref = right_ref
 
@@ -161,17 +186,12 @@ class BinaryTree(object):
         #get the top level node
         node = self._follow(self._tree_ref)
         #traverse until you find appropriate node
-        print('--------------------------')
-        print('GETTING ', key)
         while node is not None:
             if key < node.key:
-                print('Going left')
                 node = self._follow(node.left_ref)
             elif key > node.key:
-                print('Going right')
                 node = self._follow(node.right_ref)
             else:
-                print('This is it')
                 return self._follow(node.value_ref)
         raise KeyError
 
@@ -183,13 +203,11 @@ class BinaryTree(object):
             self._refresh_tree_ref()
         # Get current top-level node and make a value-ref
         node = self._follow(self._tree_ref)
-        #print('Setting', key, value.pk, value.get_field('ts'))
         value_ref = ValueRef(value)
         # Insert and get new tree ref
         self._tree_ref = self._insert(node, key, value_ref)
         # Add key to the set
         self._keys.add(key)
-        #print('Setting: ', key, ' ', value.get_field('ts'))
         
     def _insert(self, node, key, a_value_ref):
         "Insert a new node creating a new path from root"
@@ -197,26 +215,23 @@ class BinaryTree(object):
         new_node = node
         if node is None:
             # New node
-            print('New node')
             new_node = BinaryNode(
                 BinaryNodeRef(), key, a_value_ref, BinaryNodeRef())
         elif key < node.key:
-            print('Key less than node.key')
+            "Key less than node.key"
             new_node = BinaryNode(
                 self._insert(
                     self._follow(node.left_ref), key, a_value_ref), 
                 node.key, node.value_ref, node.right_ref)
         elif key > node.key:
-            print('Key more than node.key', node.value_ref)
+            "Key more than node.key"
             new_node = BinaryNode(
                 node.left_ref, node.key, node.value_ref,
                 self._insert(
                     self._follow(node.right_ref), key, a_value_ref))
         else: 
             # Update an existing node
-            print('Update node')
             new_node = BinaryNode.from_node(node, value_ref=a_value_ref)
-        #print('Modifiying ', new_node.key, self._follow(new_node.value_ref).get_field('ts'), new_node.value_ref)
         return BinaryNodeRef(referent=new_node)
 
     def delete(self, key):
@@ -370,37 +385,6 @@ class Storage(object):
     @property
     def closed(self):
         return self._f.closed
-            
-class DBRow:
-    "Stores a row of data for a primary key"        
-    def __init__(self, pk, defaults, ts=None):
-        self.pk = pk
-        self.ts = ts
-        self.row = defaults
-        
-    def update(self, field_name, value):
-        if field_name == 'ts':
-            self.ts = value
-        else:
-            self.row[field_name] = value
-        
-    def get_field(self, field_name):
-        if field_name == 'ts':
-            return self.ts
-        else:
-            return self.row[field_name]
-    
-    def to_string(self):
-        a_dict = {'pk': self.pk, 'ts_t': self.ts._times.tolist(), 'ts_v': self.ts._values.tolist(), 'row': self.row}
-        return str(a_dict)
-
-    def row_from_string(a_string):
-        a_dict = ast.literal_eval(a_string)
-        pk = a_dict['pk']
-        ts_times = a_dict['ts_t']
-        ts_values = a_dict['ts_v']
-        row = a_dict['row']
-        return DBRow(pk, row, TimeSeries(ts_times, ts_values))
         
 class PersistentDB(object):
 
@@ -437,7 +421,7 @@ class PersistentDB(object):
                 if self.pkfield != pk_field:
                     raise ValueError("PKs don't match")
         else:
-            print(dict(self.schema))
+            pass
             # TODO: !!!
             # Write the meta information to file
             #with open(path_to_db_files+meta_info_filename,'wb',buffering=0) as fd:
@@ -541,7 +525,6 @@ class PersistentDB(object):
             raise ValueError('Duplicate primary key found during insert')
         else:
             row = DBRow(pk, self.defaults, ts)
-            print('CONVERTING')
             self._trees['pk'].set(pk, row.to_string())
 
     # Delete a timeseries for a specific primary key
@@ -566,11 +549,9 @@ class PersistentDB(object):
             # Get the row if it already exists
             row_str = self._trees['pk'].get(pk)
             row = DBRow.row_from_string(row_str)
-            print('Row Exists: ', pk)
         else:
             # Create the row if it doesn't exist
             row = DBRow(pk, self.defaults)
-            print('New Row: ', pk)
             
         # Look through the fields and upsert their values
         for key in meta:         
@@ -589,20 +570,7 @@ class old_DictDB:
     "Database implementation in a dict"
     def __init__(self, schema, pkfield):
         self.indexes = {}
-        self.rows = {}
         
-        # The highest log sequence number
-        self.logid_seq = 0
-        
-        # The log
-        # Sequence Number, Transaction ID, PK, Redo, Undo, Previous Sequence Number
-        self.log = {}
-        
-        # Dirty Page Table 
-        # "keeps record of all the pages that have been modified and not yet written back to disk"
-        self.dpt = {}
-        
-
     def index_bulk(self, pks=[]):
         if len(pks) == 0:
             pks = self.rows
@@ -613,7 +581,6 @@ class old_DictDB:
         row = self.rows[pk]
         for field in row:
             v = row[field]
-            print(field, v)
             if field in self.indexes:
                 idx = self.indexes[field]
                 idx[v].add(pk)

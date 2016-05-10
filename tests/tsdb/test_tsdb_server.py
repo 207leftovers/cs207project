@@ -1,4 +1,4 @@
-from tsdb import TSDBServer, PersistentDB, TSDBClient, TSDBProtocol
+from tsdb import TSDBServer, PersistentDB, TSDBClient, TSDBProtocol, DBRow
 import timeseries as ts
 from concurrent.futures import ThreadPoolExecutor, thread
 from tsdb.tsdb_ops import *
@@ -30,7 +30,7 @@ for i in range(NUMVPS):
 class Test_TSDB_Protocol():
 
     def test_protocol(self):
-        db = PersistentDB(schema, 'pk')
+        db = PersistentDB(schema, 'pk', overwrite=True)
         server = TSDBServer(db)
         prot = TSDBProtocol(server)
     
@@ -65,14 +65,17 @@ class Test_TSDB_Protocol():
         assert(insert_return['op'] == 'insert_ts')
         assert(insert_return['status'] == TSDBStatus.OK)
         assert(insert_return['payload'] == None)
-        inserted_row = server.db.rows[1]
-        assert(inserted_row['pk'] == 1)
-        assert(inserted_row['ts'] == ats1)
+        
+        pk_tree = db._trees['pk']
+        base_node = pk_tree._follow(pk_tree._tree_ref)
+        row1 = DBRow.row_from_string(pk_tree._follow(base_node.value_ref))
+        assert(row1.pk == 1)
+        assert(row1.ts == ats1)
         
         # Add some more data
         prot._insert_ts(TSDBOp_InsertTS(tid, 2, ats1))
-        inserted_row = server.db.rows[2]
-        assert(inserted_row['ts'] == ats1)
+        row2 = DBRow.row_from_string(db._trees['pk'].get(2))
+        assert(row2.ts == ats1)
         
         # Test Protocol Upsert
         upserted_meta = TSDBOp_UpsertMeta(tid, 2, {'ts': ats2, 'order': 1})
