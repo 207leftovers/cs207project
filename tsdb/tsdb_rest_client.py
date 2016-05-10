@@ -4,6 +4,7 @@ from .tsdb_ops import *
 from .tsdb_error import *
 import aiohttp
 import json
+from collections import OrderedDict
 
 class TSDB_REST_Client(object):
     """
@@ -72,5 +73,12 @@ class TSDB_REST_Client(object):
         # return coro.result()
 
         loop = asyncio.get_event_loop()
-        status, payload = await self._run(msg)
+        status, payload_str = await self._run(msg)
+        # print (payload_str)
+        payload_dict = json.loads(payload_str, object_pairs_hook=OrderedDict)
+        status = payload_dict['status']
+        payload = payload_dict['payload']
+        # print ("REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
+        # print (status)
+        # print (payload)
         return status, payload
