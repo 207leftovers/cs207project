@@ -31,12 +31,14 @@ class DictDB:
         self.rows = {}
         self.schema = schema
         self.pkfield = pkfield
+        
         for s in schema:
             indexinfo = schema[s]['index']
             # convert = schema[s]['convert']
             # later use binary search trees for highcard/numeric
             # bitmaps for lowcard/str_or_factor
-            if indexinfo is not None:
+            # Always index PK no matter what indexinfo says
+            if indexinfo is not None or s == 'pk':
                 self.indexes[s] = defaultdict(set)
 
     # Insert a timeseries for a specific primary key
@@ -47,6 +49,17 @@ class DictDB:
             raise ValueError('Duplicate primary key found during insert')
         self.rows[pk]['ts'] = ts
         self.update_indices(pk)
+        
+    # Delete a timeseries for a specific primary key
+    def delete_ts(self, pk):
+        if pk not in self.rows:
+            raise ValueError('Primary key %d not found during deletion' % pk)
+
+        # Remove all indices for this timeseries
+        self.delete_indices(pk)
+        
+        # Remove the timeseries from the db
+        del self.rows[pk]
 
     # Upsert data for a specific primary key based on a dictionary of 
     # fields and values to upsert
@@ -74,9 +87,24 @@ class DictDB:
         row = self.rows[pk]
         for field in row:
             v = row[field]
-            if self.schema[field]['index'] is not None:
+            print(field, v)
+            if field in self.indexes:
                 idx = self.indexes[field]
                 idx[v].add(pk)
+                
+    def delete_indices(self, pk):
+        row = self.rows[pk]
+        for field in row:
+            v = row[field]
+            if field in self.indexes:
+                idx = self.indexes[field]
+                
+                # Remove this pk from this index value's dict
+                idx[v].remove(pk)
+                
+                # If this value has no more rows, then remove it
+                if len(idx[v]) == 0:
+                    del idx[v]
 
     def select(self, meta, fields, additional):
         # If fields is None: return only pks like so: 
@@ -138,6 +166,7 @@ class DictDB:
                 for field in fields:
                     if field in self.rows[pk]:
                         matched_field[field] = self.rows[pk][field]
+
             matchedfielddicts.append(matched_field)
 
         # ADDITIONAL
@@ -172,6 +201,7 @@ class DictDB:
                     result_tuple.append((result_set[x], matchedfielddicts[x], order_list[x]))
 
                 result_sorted = sorted(result_tuple, key=lambda x: x[2], reverse=is_decreasing)
+
             else:
                 # We are going to skip sorting and move on to limiting
                 for x in range(len(result_set)):

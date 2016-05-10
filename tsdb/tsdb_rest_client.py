@@ -18,6 +18,10 @@ class TSDB_REST_Client(object):
         InsertedTS = TSDBOp_InsertTS(primary_key, ts)
         return self._send(InsertedTS.to_json())
 
+    def delete_ts(self, primary_key):
+        delete_ts_op = TSDBOp_DeleteTS(primary_key)
+        return self._send(delete_ts_op.to_json())
+    
     def upsert_meta(self, primary_key, metadata_dict):
         # your code here
         upserted_meta = TSDBOp_UpsertMeta(primary_key, metadata_dict)

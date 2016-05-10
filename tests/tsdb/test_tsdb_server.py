@@ -114,7 +114,3 @@ class Test_TSDB_Protocol():
         #inserted_row = server.db.rows[3]
         #assert(inserted_row['mean'] == ats1)
         #assert(inserted_row['std'] == ats1)
-    
-    
-   
-    

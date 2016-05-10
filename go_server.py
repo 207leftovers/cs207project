@@ -5,7 +5,7 @@ import timeseries as ts
 identity = lambda x: x
 
 schema = {
-  'pk': {'convert': identity, 'index': None},  #will be indexed anyways
+  'pk': {'convert': identity, 'index': None},  # Will be indexed anyways
   'ts': {'convert': identity, 'index': None},
   'order': {'convert': int, 'index': 1},
   'blarg': {'convert': int, 'index': 1},

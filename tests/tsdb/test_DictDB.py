@@ -20,6 +20,20 @@ NUMVPS = 5
 for i in range(NUMVPS):
     schema["d_vp-{}".format(i)] = {'convert': float, 'index': 1}
 
+# Define Time Series
+t1 = [0,1,2,3,4]
+v1 = [1.0,2.0,3.0,2.0,1.0]
+ats1 = ts.TimeSeries(t1, v1)
+    
+t2 = [10,11,12,13,14]
+v2 = [-1.0,-2.0,-3.0,-2.0,-1.0]
+ats2 = ts.TimeSeries(t2, v2)    
+
+t3 = [10,11,12,13,14]
+v3 = [-1.0,-2.0,-3.0,-2.0,-1.0]
+ats3 = ts.TimeSeries(t3, v3)    
+    
+# Tests
 def test_insert():
     db = DictDB(schema, 'pk')
     
@@ -44,14 +58,6 @@ def test_insert():
 def test_upsert():
     db = DictDB(schema, 'pk')
     
-    t1 = [0,1,2,3,4]
-    v1 = [1.0,2.0,3.0,2.0,1.0]
-    ats1 = ts.TimeSeries(t1, v1)
-    
-    t2 = [10,11,12,13,14]
-    v2 = [-1.0,-2.0,-3.0,-2.0,-1.0]
-    ats2 = ts.TimeSeries(t2, v2)
-    
     db.insert_ts(1, ats1)
     db.insert_ts(2, ats1)
     
@@ -65,20 +71,34 @@ def test_upsert():
     assert(rows[3]['ts'] == ats2)
     assert(rows[3]['order'] == 1)
     
+def test_delete():
+    db = DictDB(schema, 'pk')
+
+    # Upserting
+    db.upsert_meta(1, {'ts': ats1, 'blarg': 3, 'order': 1})
+    db.upsert_meta(2, {'ts': ats1, 'order': 1})
+    db.upsert_meta(3, {'ts': ats1, 'not_there': 3, 'order': 3})
+    db.upsert_meta(4, {'ts': ats1, 'blarg': 3})
+    
+    # Deleting
+    db.delete_ts(1)
+    db.delete_ts(2)
+    db.delete_ts(3)
+    
+    # Tests
+    rows = db.rows
+    assert(len(rows) == 1)
+    assert(4 in rows)
+    assert(1 not in rows)
+    assert(db.indexes['order'] == {})
+    assert(db.indexes['blarg'] == {3: {4}})
+
+    # Check to ensure that PKs that have been deleted are no 
+    # longer in the index
+    assert(db.indexes['pk'] == {4: {4}})
+    
 def test_select_basic_operations():
     db = DictDB(schema, 'pk')
-    
-    t1 = [0,1,2,3,4]
-    v1 = [1.0,2.0,3.0,2.0,1.0]
-    ats1 = ts.TimeSeries(t1, v1)
-    
-    t2 = [10,11,12,13,14]
-    v2 = [-1.0,-2.0,-3.0,-2.0,-1.0]
-    ats2 = ts.TimeSeries(t2, v2)
-    
-    t3 = [10,11,12,13,14]
-    v3 = [-1.0,-2.0,-3.0,-2.0,-1.0]
-    ats3 = ts.TimeSeries(t3, v3)
     
     db.insert_ts(1, ats1)
     
@@ -108,18 +128,6 @@ def test_select_basic_operations():
 
 def test_select_basic_fields():
     db = DictDB(schema, 'pk')
-    
-    t1 = [0,1,2,3,4]
-    v1 = [1.0,2.0,3.0,2.0,1.0]
-    ats1 = ts.TimeSeries(t1, v1)
-    
-    t2 = [10,11,12,13,14]
-    v2 = [-1.0,-2.0,-3.0,-2.0,-1.0]
-    ats2 = ts.TimeSeries(t2, v2)
-    
-    t3 = [10,11,12,13,14]
-    v3 = [-1.0,-2.0,-3.0,-2.0,-1.0]
-    ats3 = ts.TimeSeries(t3, v3)
     
     db.insert_ts(1, ats1)
     db.insert_ts(2, ats2)
@@ -160,18 +168,6 @@ def test_select_basic_fields():
 def test_select_basic_additional():
     db = DictDB(schema, 'pk')
     
-    t1 = [0,1,2,3,4]
-    v1 = [1.0,2.0,3.0,2.0,1.0]
-    ats1 = ts.TimeSeries(t1, v1)
-    
-    t2 = [10,11,12,13,14]
-    v2 = [-1.0,-2.0,-3.0,-2.0,-1.0]
-    ats2 = ts.TimeSeries(t2, v2)
-    
-    t3 = [10,11,12,13,14]
-    v3 = [-1.0,-2.0,-3.0,-2.0,-1.0]
-    ats3 = ts.TimeSeries(t3, v3)
-    
     db.insert_ts(1, ats1)
     db.insert_ts(2, ats2)
     db.insert_ts(3, ats3)
@@ -194,10 +190,6 @@ def test_select_basic_additional():
     
 def test_complex():
     db = DictDB(schema, 'pk')
-    
-    t1 = [0,1,2,3,4]
-    v1 = [1.0,2.0,3.0,2.0,1.0]
-    ats1 = ts.TimeSeries(t1, v1)
     
     for i in range(100):
         db.insert_ts(i, ats1)
