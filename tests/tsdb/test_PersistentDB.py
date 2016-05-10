@@ -1,24 +1,26 @@
-from tsdb import DictDB
+from tsdb import PersistentDB
+from tsdb import DBRow
 import timeseries as ts
+import time
 
 identity = lambda x: x
 
 schema = {
-  'pk': {'convert': identity, 'index': None},  #will be indexed anyways
-  'ts': {'convert': identity, 'index': None},
-  'order': {'convert': int, 'index': 1},
-  'blarg': {'convert': int, 'index': 1},
-  'useless': {'convert': identity, 'index': 1},
-  'mean': {'convert': float, 'index': 1},
-  'std': {'convert': float, 'index': 1},
-  'vp': {'convert': bool, 'index': 1}
+  'pk': {'convert': identity, 'index': None, 'default': -1},  # Will be indexed anyways
+  'ts': {'convert': identity, 'index': None, 'default': None},
+  'order': {'convert': int, 'index': 1, 'default': 0},
+  'blarg': {'convert': int, 'index': 1, 'default': 0},
+  'useless': {'convert': identity, 'index': None, 'default': 0},
+  'mean': {'convert': float, 'index': 1, 'default': 0},
+  'std': {'convert': float, 'index': 1, 'default': 0},
+  'vp': {'convert': bool, 'index': 1, 'default': False}
 }
 
 NUMVPS = 5
 
 # we augment the schema by adding columns for 5 vantage points
 for i in range(NUMVPS):
-    schema["d_vp-{}".format(i)] = {'convert': float, 'index': 1}
+    schema["d_vp-{}".format(i)] = {'convert': float, 'index': 1, 'default': 0}
 
 # Define Time Series
 t1 = [0,1,2,3,4]
@@ -32,10 +34,14 @@ ats2 = ts.TimeSeries(t2, v2)
 t3 = [10,11,12,13,14]
 v3 = [-1.0,-2.0,-3.0,-2.0,-1.0]
 ats3 = ts.TimeSeries(t3, v3)    
+
+t4 = [10,11,12,13,14]
+v4 = [-2.0,-2.0,-2.0,-2.0,-2.0]
+ats4 = ts.TimeSeries(t4, v4) 
     
 # Tests
 def test_begin_transaction():
-    db = DictDB(schema, 'pk')
+    db = PersistentDB(schema, 'pk', overwrite=True)
     first_tid = db.begin_transaction()
     assert(first_tid == 1)
     
@@ -45,48 +51,57 @@ def test_begin_transaction():
     
     second_tid = db.begin_transaction()
     assert(second_tid == 2)
+    
+def a_test_rollback():
+    db = PersistentDB(schema, 'pk', overwrite=True)
+    first_tid = db.begin_transaction()
+    assert(first_tid == 1)
+    db.insert_ts(first_tid, 1, ats1)
+    db.rollback(first_tid)
+    assert(db.tt == {})
+    pk_tree = db._trees['pk']
+    assert(pk_tree.get(1) is None)
+    
+def a_test_commit():
+    db = PersistentDB(schema, 'pk', overwrite=True)
+    first_tid = db.begin_transaction()
+    assert(first_tid == 1)
+    db.insert_ts(first_tid, 1, ats1)
+    db.commit(first_tid)
 
 def test_insert():
-    db = DictDB(schema, 'pk')
+    db = PersistentDB(schema, 'pk', overwrite=True)
     tid = db.begin_transaction()
+
+    db.insert_ts(tid, 1, ats1)
+    db.insert_ts(tid, 2, ats2)
+    db.insert_ts(tid, 0, ats4)
     
-    t = [0,1,2,3,4]
-    v = [1.0,2.0,3.0,2.0,1.0]
-    ats = ts.TimeSeries(t, v)
+    pk_tree = db._trees['pk']
+    base_node = pk_tree._follow(pk_tree._tree_ref)
+    right_node = pk_tree._follow(base_node.right_ref)
     
-    db.insert_ts(tid, 1, ats)
+    row1 = DBRow.row_from_string(pk_tree._follow(base_node.value_ref))
+    assert(row1.pk == 1)
+    assert(row1.ts == ats1)
     
-    rows = db.rows
-    assert(rows[1] is not None)
-    assert(rows[1]['pk'] == 1)
-    assert(rows[1]['ts'] == ats)
+    row2 = DBRow.row_from_string(pk_tree._follow(right_node.value_ref))
+    assert(row2.pk == 2)
+    assert(row2.ts == ats2)
     
+    e1 = ''
     try:
-        db.insert_ts(tid, 1, ats)
+        db.insert_ts(tid, 1, ats1)
     except Exception as e: 
         e1 = e
     assert str(e1) == 'Duplicate primary key found during insert'
     assert type(e1).__name__ == 'ValueError'  
     
-def test_upsert():
-    db = DictDB(schema, 'pk')
-    tid = db.begin_transaction()
-    
-    db.insert_ts(tid, 1, ats1)
-    db.insert_ts(tid, 2, ats1)
-    
-    db.upsert_meta(tid, 2, {'ts': ats2})
-    db.upsert_meta(tid, 3, {'ts': ats2, 'not_there': 3, 'order': 1})
-    
-    rows = db.rows
-    
-    assert(rows[1]['ts'] == ats1)
-    assert(rows[2]['ts'] == ats2)
-    assert(rows[3]['ts'] == ats2)
-    assert(rows[3]['order'] == 1)
+    db.commit(tid)
     
 def test_delete():
-    db = DictDB(schema, 'pk')
+    #time.sleep(1)
+    db = PersistentDB(schema, 'pk', overwrite=True)
     tid = db.begin_transaction()
     
     # Upserting
@@ -101,19 +116,58 @@ def test_delete():
     db.delete_ts(tid, 3)
     
     # Tests
-    rows = db.rows
-    assert(len(rows) == 1)
-    assert(4 in rows)
-    assert(1 not in rows)
-    assert(db.indexes['order'] == {})
-    assert(db.indexes['blarg'] == {3: {4}})
+    pk_tree = db._trees['pk']
+    assert(len(pk_tree._keys) == 1)
+    assert(4 in pk_tree._keys)
+    assert(1 not in pk_tree._keys)
 
+    # TODO!
+    #assert(db.indexes['order'] == {})
+    #assert(db.indexes['blarg'] == {3: {4}})
     # Check to ensure that PKs that have been deleted are no 
     # longer in the index
-    assert(db.indexes['pk'] == {4: {4}})
+    #assert(db.indexes['pk'] == {4: {4}}) 
     
-def test_select_basic_operations():
-    db = DictDB(schema, 'pk')
+def test_upsert():
+    db = PersistentDB(schema, 'pk', overwrite=True)
+    tid = db.begin_transaction()
+    
+    # INSERT
+    db.insert_ts(tid, 1, ats1)
+    db.insert_ts(tid, 2, ats1)
+    
+    # TEST
+    pk_tree = db._trees['pk']
+    base_node = pk_tree._follow(pk_tree._tree_ref)
+    right_node = pk_tree._follow(base_node.right_ref)
+    row1 = DBRow.row_from_string(pk_tree._follow(base_node.value_ref))
+    row2 = DBRow.row_from_string(pk_tree._follow(right_node.value_ref))
+    
+    assert(row1.ts == ats1)
+    assert(row2.ts == ats1)
+    
+
+    # UPSERT 
+    db.upsert_meta(tid, 2, {'ts': ats2})
+    db.upsert_meta(tid, 3, {'ts': ats4, 'not_there': 3, 'order': 1})
+    
+    # RETEST
+    pk_tree = db._trees['pk']
+    base_node = pk_tree._follow(pk_tree._tree_ref)
+    right_node = pk_tree._follow(base_node.right_ref)
+    more_right_node = pk_tree._follow(right_node.right_ref)
+    row1 = DBRow.row_from_string(pk_tree._follow(base_node.value_ref))
+    row2 = DBRow.row_from_string(pk_tree._follow(right_node.value_ref))
+    row3 = DBRow.row_from_string(pk_tree._follow(more_right_node.value_ref))
+    
+    assert(row1.ts == ats1)
+    assert(row1.row['order'] == 0)
+    assert(row2.ts == ats2)
+    assert(row3.ts == ats4)
+    assert(row3.row['order'] == 1)
+
+def a_test_select_basic_operations():
+    db = PersistentDB(schema, 'pk', overwrite=True)
     tid = db.begin_transaction()
     
     db.insert_ts(tid, 1, ats1)
@@ -141,8 +195,8 @@ def test_select_basic_operations():
     ids7, fields7 = db.select(tid, {'pk': {'>': 1, '<': 3}},None,None)
     assert(ids7 == [2])
 
-def test_select_basic_fields():
-    db = DictDB(schema, 'pk')
+def a_test_select_basic_fields():
+    db = PersistentDB(schema, 'pk', overwrite=True)
     tid = db.begin_transaction()
     
     db.insert_ts(tid, 1, ats1)
@@ -181,8 +235,8 @@ def test_select_basic_fields():
     assert(ids6 == [2])
     assert(fields6 == [{'useless': 2}])
     
-def test_select_basic_additional():
-    db = DictDB(schema, 'pk')
+def a_test_select_basic_additional():
+    db = PersistentDB(schema, 'pk', overwrite=True)
     tid = db.begin_transaction()
     
     db.insert_ts(tid, 1, ats1)
@@ -205,8 +259,8 @@ def test_select_basic_additional():
     ids3, fields3 = db.select(tid, {'pk': {'>': 0}},None,{'sort_by':'-useless'})
     assert(ids3 == [3, 2, 1])
     
-def test_complex():
-    db = DictDB(schema, 'pk')
+def a_test_complex():
+    db = PersistentDB(schema, 'pk', overwrite=True)
     tid = db.begin_transaction()
     
     for i in range(100):

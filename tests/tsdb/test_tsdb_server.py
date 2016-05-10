@@ -1,4 +1,4 @@
-from tsdb import TSDBServer, DictDB, TSDBClient, TSDBProtocol
+from tsdb import TSDBServer, PersistentDB, TSDBClient, TSDBProtocol
 import timeseries as ts
 from concurrent.futures import ThreadPoolExecutor, thread
 from tsdb.tsdb_ops import *
@@ -12,25 +12,25 @@ import procs
 identity = lambda x: x
 
 schema = {
-  'pk': {'convert': identity, 'index': None},  #will be indexed anyways
-  'ts': {'convert': identity, 'index': None},
-  'order': {'convert': int, 'index': 1},
-  'blarg': {'convert': int, 'index': 1},
-  'useless': {'convert': identity, 'index': None},
-  'mean': {'convert': float, 'index': 1},
-  'std': {'convert': float, 'index': 1},
-  'vp': {'convert': bool, 'index': 1}
+  'pk': {'convert': identity, 'index': None, 'default': -1},  # Will be indexed anyways
+  'ts': {'convert': identity, 'index': None, 'default': None},
+  'order': {'convert': int, 'index': 1, 'default': 0},
+  'blarg': {'convert': int, 'index': 1, 'default': 0},
+  'useless': {'convert': identity, 'index': None, 'default': 0},
+  'mean': {'convert': float, 'index': 1, 'default': 0},
+  'std': {'convert': float, 'index': 1, 'default': 0},
+  'vp': {'convert': bool, 'index': 1, 'default': False}
 }
 
 NUMVPS = 5
 # we augment the schema by adding columns for 5 vantage points
 for i in range(NUMVPS):
-    schema["d_vp-{}".format(i)] = {'convert': float, 'index': 1}
+    schema["d_vp-{}".format(i)] = {'convert': float, 'index': 1, 'default': 0}
     
 class Test_TSDB_Protocol():
 
     def test_protocol(self):
-        db = DictDB(schema, 'pk')
+        db = PersistentDB(schema, 'pk')
         server = TSDBServer(db)
         prot = TSDBProtocol(server)
     

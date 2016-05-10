@@ -1,5 +1,5 @@
 import asyncio
-from .dictdb import DictDB
+from .persistentdb import PersistentDB
 from importlib import import_module
 from collections import defaultdict, OrderedDict
 from .tsdb_serialization import Deserializer, serialize

@@ -5,14 +5,14 @@ import timeseries as ts
 identity = lambda x: x
 
 schema = {
-  'pk': {'convert': identity, 'index': None},  # Will be indexed anyways
-  'ts': {'convert': identity, 'index': None},
-  'order': {'convert': int, 'index': 1},
-  'blarg': {'convert': int, 'index': 1},
-  'useless': {'convert': identity, 'index': None},
-  'mean': {'convert': float, 'index': 1},
-  'std': {'convert': float, 'index': 1},
-  'vp': {'convert': bool, 'index': 1}
+  'pk': {'convert': identity, 'index': None, 'default': -1},  # Will be indexed anyways
+  'ts': {'convert': identity, 'index': None, 'default': None},
+  'order': {'convert': int, 'index': 1, 'default': 0},
+  'blarg': {'convert': int, 'index': 1, 'default': 0},
+  'useless': {'convert': identity, 'index': None, 'default': 0},
+  'mean': {'convert': float, 'index': 1, 'default': 0.0},
+  'std': {'convert': float, 'index': 1, 'default': 0.0},
+  'vp': {'convert': bool, 'index': 1, 'default': False}
 }
 
 NUMVPS = 5
@@ -20,8 +20,8 @@ NUMVPS = 5
 def main():
     # we augment the schema by adding columns for 5 vantage points
     for i in range(NUMVPS):
-        schema["d_vp-{}".format(i)] = {'convert': float, 'index': 1}
-    db = DictDB(schema, 'pk')
+        schema["d_vp-{}".format(i)] = {'convert': float, 'index': 1, 'default': 0.0}
+    db = PersistentDB(schema, 'pk')
     server = TSDBServer(db)
     server.run()
 
