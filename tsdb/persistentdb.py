@@ -6,8 +6,7 @@ import pickle
 import os
 import struct
 import portalocker
-import ast
-from TimeSeries import TimeSeries
+from tsdb.tsdb_row import *
 
 # This dictionary will help you in writing a generic select operation
 OPMAP = {
@@ -18,38 +17,6 @@ OPMAP = {
     '<=': operator.le,
     '>=': operator.ge
 }
-
-class DBRow:
-    "Stores a row of data for a primary key"        
-    def __init__(self, pk, defaults, ts=None):
-        self.pk = pk
-        self.ts = ts
-        self.row = defaults
-        
-    def update(self, field_name, value):
-        if field_name == 'ts':
-            self.ts = value
-        else:
-            self.row[field_name] = value
-        
-    def get_field(self, field_name):
-        if field_name == 'ts':
-            return self.ts
-        else:
-            return self.row[field_name]
-    
-    def to_string(self):
-        a_dict = {'pk': self.pk, 'ts_t': self.ts._times.tolist(), 'ts_v': self.ts._values.tolist(), 'row': self.row}
-        return str(a_dict)
-
-    def row_from_string(a_string):
-        a_dict = ast.literal_eval(a_string)
-        pk = a_dict['pk']
-        ts_times = a_dict['ts_t']
-        ts_values = a_dict['ts_v']
-        row = a_dict['row']
-        return DBRow(pk, row, TimeSeries(ts_times, ts_values))
-
 
 def metafiltered(d, schema, fieldswanted):
     d2 = {}
@@ -158,26 +125,31 @@ class BinaryTree(object):
     def __init__(self, storage):
         self._storage = storage
         self._refresh_tree_ref()
-        self._keys = set()
+        #self._keys = set()
         
     def commit(self):
         "Changes are final only when committed"
-        #triggers BinaryNodeRef.store
+        # Triggers BinaryNodeRef.store
         self._tree_ref.store(self._storage)
-        #make sure address of new tree is stored
+        # Make sure address of new tree is stored
         self._storage.commit_root_address(self._tree_ref.address)
 
     def _refresh_tree_ref(self):
-        "get reference to new tree if it has changed"
+        "Get reference to new tree if it has changed"
         self._tree_ref = BinaryNodeRef(
             address=self._storage.get_root_address())
         
     def has_key(self, key):
         "Checks if the key is in the tree"
-        return key in self._keys
+        #return key in self._keys
+        try:
+            self.get(key)
+        except:
+            return False
+        return True
         
     def get(self, key):
-        "get value for a key"
+        "Get value for a key"
         #your code here
         #if tree is not locked by another writer
         #refresh the references and get new tree if needed
@@ -207,7 +179,7 @@ class BinaryTree(object):
         # Insert and get new tree ref
         self._tree_ref = self._insert(node, key, value_ref)
         # Add key to the set
-        self._keys.add(key)
+        #self._keys.add(key)
         
     def _insert(self, node, key, a_value_ref):
         "Insert a new node creating a new path from root"
@@ -241,7 +213,7 @@ class BinaryTree(object):
         node = self._follow(self._tree_ref)
         self._tree_ref = self._delete(node, key)
         # Remove the key from the dictionary of keys
-        self._keys.remove(key)
+        #self._keys.remove(key)
         
     def _delete(self, node, key):
         "Underlying delete implementation"
@@ -392,7 +364,6 @@ class PersistentDB(object):
         self.schema = schema
         self.pkfield = pkfield
        
-        #self.fields = []
         self.defaults = {}
         
         self._storage = {}
@@ -433,7 +404,6 @@ class PersistentDB(object):
             default = schema[s]['default']
             
             if indexinfo is not None:
-                #self.fields.append(s)
                 self.defaults[s] = default
             
             # Use binary search trees for highcard/numeric
@@ -485,10 +455,10 @@ class PersistentDB(object):
     def commit(self, tid):
         self.check_tid_open(tid)
 
-        open_trees = self.tt[tid]
-        for tree in open_trees:
-            self._assert_not_closed(tree)
-            self._trees[tree].commit()
+        open_fields = self.tt[tid]
+        for field in open_fields:
+            self._assert_not_closed(field)
+            self._trees[field].commit()
         
         # remove this tid from the transaction table
         del self.tt[tid]
@@ -497,10 +467,10 @@ class PersistentDB(object):
     def rollback(self, tid):
         self.check_tid_open(tid)
         
-        open_trees = self.tt[tid]
-        for tree in open_trees:
-            # TODO:
-            pass
+        open_fields = self.tt[tid]
+        for field in open_fields:
+            self._assert_not_closed(field)
+            self._storage[field].unlock()
         
         del self.tt[tid]
 

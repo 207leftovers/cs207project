@@ -52,23 +52,34 @@ def test_begin_transaction():
     second_tid = db.begin_transaction()
     assert(second_tid == 2)
     
-def a_test_rollback():
-    db = PersistentDB(schema, 'pk', overwrite=True)
-    first_tid = db.begin_transaction()
-    assert(first_tid == 1)
-    db.insert_ts(first_tid, 1, ats1)
-    db.rollback(first_tid)
-    assert(db.tt == {})
-    pk_tree = db._trees['pk']
-    assert(pk_tree.get(1) is None)
-    
-def a_test_commit():
+def test_commit():
     db = PersistentDB(schema, 'pk', overwrite=True)
     first_tid = db.begin_transaction()
     assert(first_tid == 1)
     db.insert_ts(first_tid, 1, ats1)
     db.commit(first_tid)
+    
+def test_rollback():
+    db = PersistentDB(schema, 'pk', overwrite=True)
+    first_tid = db.begin_transaction()
+    db.insert_ts(first_tid, 1, ats1)
+    row1 = DBRow.row_from_string(db._trees['pk'].get(1))
+    assert(row1.pk == 1)
+    assert(db._trees['pk'].has_key(1) == True)
+    
+    # ROLLBACK
+    db.rollback(first_tid)
+    assert(db.tt == {})
+    # Test that the set of keys is reverted
+    assert(db._trees['pk'].has_key(1) == False)
+    try:
+        row1 = DBRow.row_from_string(db._trees['pk'].get(1))
+    except Exception as e: 
+        e1 = e
+    assert str(e1) == ''
+    assert type(e1).__name__ == 'KeyError'  
 
+    
 def test_insert():
     db = PersistentDB(schema, 'pk', overwrite=True)
     tid = db.begin_transaction()
@@ -117,9 +128,8 @@ def test_delete():
     
     # Tests
     pk_tree = db._trees['pk']
-    assert(len(pk_tree._keys) == 1)
-    assert(4 in pk_tree._keys)
-    assert(1 not in pk_tree._keys)
+    assert(pk_tree.has_key(4) == True)
+    assert(pk_tree.has_key(1) == False)
 
     # TODO!
     #assert(db.indexes['order'] == {})

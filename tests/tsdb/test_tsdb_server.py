@@ -90,7 +90,6 @@ class Test_TSDB_Protocol():
         additional = None
         select_op = TSDBOp_Select(tid, metadata_dict, fields, additional)
         select_return = prot._select(select_op)
-        print("Here", select_return)
         assert(select_return['op'] == 'select')
         assert(select_return['status'] == TSDBStatus.OK)
         assert(select_return['payload'][1] == {})
