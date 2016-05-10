@@ -12,7 +12,10 @@ schema = {
   'useless': {'convert': identity, 'index': None},
   'mean': {'convert': float, 'index': 1},
   'std': {'convert': float, 'index': 1},
-  'vp': {'convert': bool, 'index': 1}
+  'vp': {'convert': bool, 'index': 1},
+  'sig_epsilon_estimate': {'convert': float, 'index': 1},
+  'sig_eta_estimate': {'convert': float, 'index': 1},
+  'prediction': {'convert': identity, 'index': None}
 }
 
 NUMVPS = 5
