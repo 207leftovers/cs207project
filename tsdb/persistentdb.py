@@ -218,7 +218,8 @@ class PersistentDB(object):
         rr = row.row
         for field in rr.keys():
             v = rr[field]
-            self._trees[field].set(v, pk)
+            if v == None:
+                self._trees[field].set(v, pk)
             
     def delete_indices(self, pk, row):
         rr = row.row

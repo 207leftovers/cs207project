@@ -163,16 +163,6 @@ class TSDBProtocol(asyncio.Protocol):
         status = TSDBStatus.OK  # until proven otherwise.
         response = TSDBOp_Return(status, None)  # until proven otherwise.
 
-        #OLD WAY OF DOING THINGS. IGNORE PLS
-        #Hack-ish way of doing things. convert the fields into json, then use code above. 
-        #msg = json.dumps(dict(data))
-        # temp = str(dict(data))
-        # temp2 = temp.replace('\'','"')
-        # msg = json.loads(temp2)
-
-        # #convert string to list
-        # if 'ts' in msg:
-        #     msg['ts'] = ast.literal_eval(msg['ts'])
 
         msg = data
 

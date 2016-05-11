@@ -121,3 +121,114 @@ class Test_TSDB_Protocol():
         #inserted_row = server.db.rows[3]
         #assert(inserted_row['mean'] == ats1)
         #assert(inserted_row['std'] == ats1)
+
+    def test_protocol_delete(self):
+        db = DictDB(schema, 'pk')
+        server = TSDBServer(db)
+        prot = TSDBProtocol(server)
+    
+        t1 = [0,1,2,3,4]
+        v1 = [1.0,2.0,3.0,2.0,1.0]
+        ats1 = ts.TimeSeries(t1, v1)
+    
+        t2 = [10,11,12,13,14]
+        v2 = [-1.0,-2.0,-3.0,-2.0,-1.0]
+        ats2 = ts.TimeSeries(t2, v2)
+
+        insert_op = {}
+        insert_op['pk'] = 1
+        insert_op['ts'] = ats1
+        insert_op['op'] = 'insert_ts'
+    
+        # Test Protocol Insert
+        insert_return = prot._insert_ts(insert_op)
+        assert(insert_return['op'] == 'insert_ts')
+        assert(insert_return['status'] == TSDBStatus.OK)
+        assert(insert_return['payload'] == None)
+        inserted_row = server.db.rows[1]
+        assert(inserted_row['pk'] == 1)
+        assert(inserted_row['ts'] == ats1)
+
+        insert_return2 = prot._insert_ts(insert_op)
+        assert(insert_return2['op'] == 'insert_ts')
+        assert(insert_return2['status'] == TSDBStatus.INVALID_KEY)
+
+        delete_op = {}
+        delete_op['pk'] = 1
+        delete_op['op'] = 'delete_ts'
+
+        delete_return = prot._delete_ts(delete_op)
+        assert(delete_return['op'] == 'delete_ts')
+        assert(delete_return['status'] == TSDBStatus.OK)
+        assert(delete_return['payload'] == None)
+        assert (len(server.db.rows) == 0)
+
+        delete_return2 = prot._delete_ts(delete_op)
+        assert(delete_return2['op'] == 'delete_ts')
+        assert(delete_return2['status'] == TSDBStatus.INVALID_KEY)
+
+    def test_protocol_triggers(self):
+
+        db = DictDB(schema, 'pk')
+        server = TSDBServer(db)
+        prot = TSDBProtocol(server)
+
+        # Test Add Trigger
+        add_trigger_op = TSDBOp_AddTrigger('stats', 'insert_ts', ['mean', 'std'], None)
+        prot._add_trigger(add_trigger_op)
+
+        mod = import_module('procs.stats')
+        storedproc = getattr(mod,'main')
+
+        assert(server.triggers['insert_ts'] ==  [('stats', storedproc, None, ['mean', 'std'])])
+
+
+        # Test delete Trigger
+        delete_trigger_op = TSDBOp_RemoveTrigger('stats', 'insert_ts')
+        prot._remove_trigger(delete_trigger_op)
+
+        mod = import_module('procs.stats')
+        storedproc = getattr(mod,'main')
+
+        assert(server.triggers['insert_ts'] ==  [])
+
+
+    def test_augmented_select(self):
+        db = DictDB(schema, 'pk')
+        server = TSDBServer(db)
+        prot = TSDBProtocol(server)
+
+        t1 = [0,1,2,3,4]
+        v1 = [1.0,2.0,3.0,2.0,1.0]
+        ats1 = ts.TimeSeries(t1, v1)
+
+        t2 = [10,11,12,13,14]
+        v2 = [-1.0,-2.0,-3.0,-2.0,-1.0]
+        ats2 = ts.TimeSeries(t2, v2)
+
+        insert_op = {}
+        insert_op['pk'] = 1
+        insert_op['ts'] = ats1
+        insert_op['op'] = 'insert_ts'
+
+        # Test Protocol Insert
+        insert_return = prot._insert_ts(insert_op)
+        assert(insert_return['op'] == 'insert_ts')
+        assert(insert_return['status'] == TSDBStatus.OK)
+        assert(insert_return['payload'] == None)
+        inserted_row = server.db.rows[1]
+        assert(inserted_row['pk'] == 1)
+        assert(inserted_row['ts'] == ats1)
+
+        # Test Protocol Select (None fields)
+        metadata_dict = {'pk': {'>': 0}}
+        fields = None
+        additional = None
+        aug_select_op = TSDBOp_AugmentedSelect('corr', ['mean', 'std'], [t2,v2], metadata_dict, additional )
+        aug_select_return = prot._augmented_select(aug_select_op)
+
+        assert(aug_select_return['op'] == 'augmented_select')
+        assert(aug_select_return['status'] == TSDBStatus.OK)
+        assert(aug_select_return['payload'] == {1: {'mean': 1.4142135623730403}})
+
+        

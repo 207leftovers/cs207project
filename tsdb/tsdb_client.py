@@ -86,8 +86,6 @@ class TSDBClient(object):
             status = TSDBStatus(response['status'])
             payload = response['payload']
 
-            print ("C> status:", status)
-            print ("C> payload", payload)
             return status, payload
         else:
             raise(ValueError("tsdb_client never received full json"))

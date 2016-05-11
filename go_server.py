@@ -13,6 +13,9 @@ schema = {
   'mean': {'convert': float, 'index': 1, 'default': 0.0},
   'std': {'convert': float, 'index': 1, 'default': 0.0},
   'vp': {'convert': bool, 'index': 1, 'default': False}
+  'sig_epsilon_estimate': {'convert': float, 'index': 1, 'default': 0.0},
+  'sig_eta_estimate': {'convert': float, 'index': 1, 'default': 0.0},
+  'prediction': {'convert': identity, 'index': None, 'default': None}
 }
 
 NUMVPS = 5
