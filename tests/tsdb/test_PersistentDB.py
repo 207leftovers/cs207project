@@ -193,7 +193,7 @@ def test_indexes():
     assert(db._trees['blarg'].get(0) == '1 0 3')
     assert(db._trees['blarg'].get(79) == '2')
         
-def a_test_select_basic_operations():
+def test_select_basic_operations():
     db = PersistentDB(schema, 'pk', overwrite=True)
     tid = db.begin_transaction()
     
@@ -222,7 +222,7 @@ def a_test_select_basic_operations():
     ids7, fields7 = db.select(tid, {'pk': {'>': 1, '<': 3}},None,None)
     assert(ids7 == [2])
 
-def a_test_select_basic_fields():
+def test_select_basic_fields():
     db = PersistentDB(schema, 'pk', overwrite=True)
     tid = db.begin_transaction()
     
@@ -262,7 +262,7 @@ def a_test_select_basic_fields():
     assert(ids6 == [2])
     assert(fields6 == [{'useless': 2}])
     
-def a_test_select_basic_additional():
+def test_select_basic_additional():
     db = PersistentDB(schema, 'pk', overwrite=True)
     tid = db.begin_transaction()
     
@@ -286,7 +286,7 @@ def a_test_select_basic_additional():
     ids3, fields3 = db.select(tid, {'pk': {'>': 0}},None,{'sort_by':'-useless'})
     assert(ids3 == [3, 2, 1])
     
-def a_test_complex():
+def test_complex():
     db = PersistentDB(schema, 'pk', overwrite=True)
     tid = db.begin_transaction()
     
