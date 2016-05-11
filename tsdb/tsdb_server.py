@@ -66,18 +66,19 @@ class TSDBProtocol(asyncio.Protocol):
 
     def _augmented_select(self, op):
         "run a select and then synchronously run some computation on it"
-        loids, fields = self.server.db.select(op['tid'], op['md'], None, op['additional'])
-        proc = op['proc']  # the module in procs
-        arg = op['arg']  # an additional argument, could be a constant
-        target = op['target'] #not used to upsert any more, but rather to
+        loids, fields = self.server.db.select(op['tid'], op['md'], self.server.db.validfields, op['additional'])
+        proc = op['proc']  # The module in procs
+        arg = op['arg']  # An additional argument, could be a constant
+        target = op['target'] # Not used to upsert any more, but rather to
         # return results in a dictionary with the targets mapped to the return
         # values from proc_main
-        mod = import_module('procs.'+proc)
+        mod = import_module('procs.' + proc)
         storedproc = getattr(mod,'proc_main')
         results=[]
-        for pk in loids:
-            row = self.server.db.rows[pk]
-            result = storedproc(pk, row, arg)
+        for i, pk in enumerate(loids):
+            #row = self.server.db.rows[pk]
+            #result = storedproc(pk, row, arg)
+            result = storedproc(pk, fields[i], arg)
             results.append(dict(zip(target, result)))
         return TSDBOp_Return(TSDBStatus.OK, op['op'], dict(zip(loids, results)))
 

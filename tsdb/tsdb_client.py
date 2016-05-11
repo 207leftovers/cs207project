@@ -12,10 +12,15 @@ class TSDBClient(object):
             
     async def begin_transaction(self):
         tx = TSDBOp_BeginTransaction()
-        
-        value =  await self._send(tx.to_json())
-        print('tsdb_client', value)
-        return value
+        return await self._send(tx.to_json())
+    
+     async def commit(self, tid):
+        commit_op = TSDBOp_Commit(tid)
+        return await self._send(commit_op.to_json()) 
+    
+    async def rollback(self, tid):
+        rollback_op = TSDBOp_Rollback(tid)
+        return await self._send(rollback_op.to_json()) 
         
     async def insert_ts(self, tid, primary_key, ts):
         '''

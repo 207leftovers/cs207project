@@ -1,4 +1,4 @@
-from tsdb import TSDBClient, TSDB_REST_Client
+from tsdb import TSDBClient
 import timeseries as ts
 import numpy as np
 import subprocess
