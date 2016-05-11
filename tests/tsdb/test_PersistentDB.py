@@ -16,11 +16,10 @@ schema = {
   'vp': {'convert': bool, 'index': 1, 'default': False}
 }
 
-NUMVPS = 5
-
+#NUMVPS = 5
 # we augment the schema by adding columns for 5 vantage points
-for i in range(NUMVPS):
-    schema["d_vp-{}".format(i)] = {'convert': float, 'index': 1, 'default': 0}
+#for i in range(NUMVPS):
+#    schema["d_vp-{}".format(i)] = {'convert': float, 'index': 1, 'default': 0}
 
 # Define Time Series
 t1 = [0,1,2,3,4]
@@ -78,6 +77,14 @@ def test_rollback():
         e1 = e
     assert str(e1) == ''
     assert type(e1).__name__ == 'KeyError'  
+    
+def test_vps():
+    db = PersistentDB(schema, 'pk', overwrite=True, numvps=5)
+    tid = db.begin_transaction()
+    
+    assert('d_vp-0' in db.schema)
+    assert('d_vp-4' in db.schema)
+    assert('d_vp-5' not in db.schema)
     
 def test_insert():
     db = PersistentDB(schema, 'pk', overwrite=True)

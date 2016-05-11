@@ -26,33 +26,33 @@ class TSDB_REST_Client(object):
         rollback_op = TSDBOp_Rollback(tid)
         return await self._send(rollback_op.to_json()) 
         
-    async def insert_ts(self, primary_key, ts):
+    async def insert_ts(self, tid, primary_key, ts):
         # your code here, construct from the code in tsdb_ops.py
-        InsertedTS = TSDBOp_InsertTS(primary_key, ts)
+        InsertedTS = TSDBOp_InsertTS(tid, primary_key, ts)
         return await self._send(InsertedTS.to_json())
 
-    async def delete_ts(self, primary_key):
-        delete_ts_op = TSDBOp_DeleteTS(primary_key)
+    async def delete_ts(self, tid, primary_key):
+        delete_ts_op = TSDBOp_DeleteTS(tid, primary_key)
         return await self._send(delete_ts_op.to_json())
     
-    async def upsert_meta(self, primary_key, metadata_dict):
-        upserted_meta = TSDBOp_UpsertMeta(primary_key, metadata_dict)
+    async def upsert_meta(self, tid, primary_key, metadata_dict):
+        upserted_meta = TSDBOp_UpsertMeta(tid, primary_key, metadata_dict)
         return await self._send(upserted_meta.to_json())
 
-    async def select(self, metadata_dict={}, fields=None, additional=None):
-        select_op = TSDBOp_Select(metadata_dict, fields, additional)
+    async def select(self, tid, metadata_dict={}, fields=None, additional=None):
+        select_op = TSDBOp_Select(tid, metadata_dict, fields, additional)
         return await self._send(select_op.to_json())
 
-    async def augmented_select(self, proc, target, arg=None, metadata_dict={}, additional=None):
-        aug_select_op = TSDBOp_AugmentedSelect(proc, target, arg, md, additional)
+    async def augmented_select(self, tid, proc, target, arg=None, metadata_dict={}, additional=None):
+        aug_select_op = TSDBOp_AugmentedSelect(tid, proc, target, arg, md, additional)
         return await self._send(aug_select_op.to_json())
 
-    async def add_trigger(self, proc, onwhat, target, arg):
-        add_trigger_op = TSDBOp_AddTrigger(proc, onwhat, target, arg)
+    async def add_trigger(self, tid, proc, onwhat, target, arg):
+        add_trigger_op = TSDBOp_AddTrigger(tid, proc, onwhat, target, arg)
         return await self._send(add_trigger_op.to_json())
 
-    async def remove_trigger(self, proc, onwhat):
-        remove_trigger_op = TSDBOp_RemoveTrigger(proc, onwhat)
+    async def remove_trigger(self, tid, proc, onwhat):
+        remove_trigger_op = TSDBOp_RemoveTrigger(tid, proc, onwhat)
         return await self._send(remove_trigger_op.to_json())
 
     # Feel free to change this to be completely synchronous

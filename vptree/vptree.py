@@ -18,7 +18,6 @@ class vpnode():
         else:
             return [(self, self.leftChild, self.rightChild)] + self.leftChild.preorder() +  self.rightChild.preorder()
 
-
 #Since a VP tree has two kind of nodes - non-leaf nodes with vantage points and leaf nodes with closest possible candidates.
 
 class vpnodeVP(vpnode):
@@ -140,7 +139,6 @@ class VPtree():
                 current = current.leftChild
         return current.pkList
     
-
 """
 if __name__ == "__main__":
     data = np.random.rand(200) 
@@ -172,4 +170,3 @@ if __name__ == "__main__":
     
     assert closest in subset
 """
-

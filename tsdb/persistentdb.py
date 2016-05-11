@@ -32,7 +32,13 @@ def metafiltered(d, schema, fieldswanted):
         
 class PersistentDB(object):
 
-    def __init__(self, schema, pkfield, f='data', overwrite=False):
+    def __init__(self, schema, pkfield, f='data', overwrite=False, numvps=5):
+        # Augment the schema by adding an indicator column for vantage points
+        schema['vp'] = {'convert': bool, 'index': 1, 'default': False}
+        # Augment the schema by adding columns for 5 Vantage Points
+        for i in range(numvps):
+            schema["d_vp-{}".format(i)] = {'convert': float, 'index': 1, 'default': 0.0}
+        
         self.schema = schema
         self.validfields = ['ts']
         self.pkfield = pkfield

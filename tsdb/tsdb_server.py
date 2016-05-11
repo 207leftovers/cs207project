@@ -108,7 +108,13 @@ class TSDBProtocol(asyncio.Protocol):
         print("S> list of triggers to run", lot)
         for tname, t, arg, target in lot:
             for pk in rowmatch:
-                row = self.server.db.rows[pk]
+                a_row = self.server.db._trees['pk'].get_as_row(pk)
+
+                row = a_row.row.copy()
+                row['pk'] = a_row.pk
+                row['ts'] = a_row.ts
+                
+                #row = self.server.db.rows[pk]
                 task = asyncio.ensure_future(t(pk, row, arg))
                 task.add_done_callback(trigger_callback_maker(pk, target, self.server.db.upsert_meta))
 

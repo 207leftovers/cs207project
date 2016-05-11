@@ -22,11 +22,10 @@ schema = {
   'vp': {'convert': bool, 'index': 1, 'default': False}
 }
 
-NUMVPS = 5
-
+#NUMVPS = 5
 # we augment the schema by adding columns for 5 vantage points
-for i in range(NUMVPS):
-    schema["d_vp-{}".format(i)] = {'convert': float, 'index': 1, 'default': 0}
+#for i in range(NUMVPS):
+#    schema["d_vp-{}".format(i)] = {'convert': float, 'index': 1, 'default': 0}
     
 class Test_TSDB_Protocol():
 
