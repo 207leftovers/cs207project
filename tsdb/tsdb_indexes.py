@@ -361,11 +361,13 @@ class ArrayBinaryTree(BaseTree):
         
     def get(self, key):
         "Get value array for a key"
-        #your code here
         #if tree is not locked by another writer
         #refresh the references and get new tree if needed
-        if not self._storage.locked:
-            self._refresh_tree_ref()
+        
+        # TODO!!!!
+        #if not self._storage.locked:
+        #    self._refresh_tree_ref()
+            
         #get the top level node
         node = self._follow(self._tree_ref)
         #traverse until you find appropriate node
@@ -418,7 +420,6 @@ class ArrayBinaryTree(BaseTree):
             new_values = self._follow(a_value_ref).split(' ')
             existing_values = self._follow(node.value_ref).split(' ')
             existing_values.extend(new_values)
-            print('ALL VALUES', key, existing_values)
             a_value_ref = ValueRef(str.join(' ', existing_values))
             new_node = BinaryNode.from_node(node, value_ref=a_value_ref)
         return BinaryNodeRef(referent=new_node)
@@ -430,7 +431,6 @@ class ArrayBinaryTree(BaseTree):
         #if self._storage.lock():
         #    self._refresh_tree_ref()
         node = self._follow(self._tree_ref)
-        print("DELETE", key, str(value))
         self._tree_ref = self._delete(node, key, str(value))
         
     def _delete(self, node, key, value):

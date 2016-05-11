@@ -78,7 +78,6 @@ def test_rollback():
         e1 = e
     assert str(e1) == ''
     assert type(e1).__name__ == 'KeyError'  
-
     
 def test_insert():
     db = PersistentDB(schema, 'pk', overwrite=True)
@@ -176,6 +175,24 @@ def test_upsert():
     assert(row3.ts == ats4)
     assert(row3.row['order'] == 1)
 
+def test_indexes():
+    db = PersistentDB(schema, 'pk', overwrite=True)
+    tid = db.begin_transaction()
+    
+    db.insert_ts(tid, 1, ats1)
+    db.insert_ts(tid, 2, ats2)
+    db.insert_ts(tid, 0, ats4)
+    
+    db.upsert_meta(tid, 2, {'order': 2, 'blarg':79})
+    db.upsert_meta(tid, 3, {'ts': ats4, 'not_there': 3, 'order': 1})
+    
+    assert(db._trees['order'].get(0) == '1 0')
+    assert(db._trees['order'].get(1) == '3')
+    assert(db._trees['order'].get(2) == '2')
+    
+    assert(db._trees['blarg'].get(0) == '1 0 3')
+    assert(db._trees['blarg'].get(79) == '2')
+        
 def a_test_select_basic_operations():
     db = PersistentDB(schema, 'pk', overwrite=True)
     tid = db.begin_transaction()

@@ -192,13 +192,12 @@ class PersistentDB(object):
         "Implement upserting field values, as long as the fields are in the schema."
         self.check_tid_open(tid)
         
-        old_row = None
-        
         if self._trees['pk'].has_key(pk):
             # Get the row if it already exists
             row_str = self._trees['pk'].get(pk)
             row = DBRow.row_from_string(row_str)
-            old_row = row
+            # Delete the old indices
+            self.delete_indices(pk, row)
         else:
             # Create the row if it doesn't exist
             row = DBRow(pk, self.defaults)
@@ -210,10 +209,7 @@ class PersistentDB(object):
                 row.update(key, meta[key])
                 
         self._trees['pk'].set(pk, row.to_string())
-
-        # Delete the old indices
-        if old_row is not None:
-            self.delete_indices(pk, old_row)
+        
         # Update with the new indices
         self.update_indices(pk, row)
         
@@ -222,14 +218,12 @@ class PersistentDB(object):
         rr = row.row
         for field in rr.keys():
             v = rr[field]
-            print('FIELD', field)
             self._trees[field].set(v, pk)
             
     def delete_indices(self, pk, row):
         rr = row.row
         for field in rr.keys():
             v = rr[field]
-            print('FIELD', field)
             self._trees[field].delete(v, pk)
     
 class old_DictDB:
