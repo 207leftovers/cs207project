@@ -35,7 +35,6 @@ class TSDBProtocol(asyncio.Protocol):
         
     def _insert_ts(self, op):
         try:
-            print(op['tid'])
             self.server.db.insert_ts(op['tid'], op['pk'], op['ts'])
         except ValueError as e:
             return TSDBOp_Return(TSDBStatus.INVALID_KEY, op['op'])
@@ -162,7 +161,6 @@ class TSDBProtocol(asyncio.Protocol):
         data = yield from request.json()
         status = TSDBStatus.OK  # until proven otherwise.
         response = TSDBOp_Return(status, None)  # until proven otherwise.
-
 
         msg = data
 
