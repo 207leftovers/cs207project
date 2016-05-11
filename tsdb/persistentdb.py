@@ -218,14 +218,15 @@ class PersistentDB(object):
         rr = row.row
         for field in rr.keys():
             v = rr[field]
-            if v == None:
+            if v is not None:
                 self._trees[field].set(v, pk)
             
     def delete_indices(self, pk, row):
         rr = row.row
         for field in rr.keys():
             v = rr[field]
-            self._trees[field].delete(v, pk)
+            if v is not None:
+                self._trees[field].delete(v, pk)
     
 class old_DictDB:
     "Database implementation in a dict"
