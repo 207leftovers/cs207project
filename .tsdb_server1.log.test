@@ -1,4 +1,3 @@
-Generating LALR tables
 Traceback (most recent call last):
   File "go_server.py", line 2, in <module>
     from tsdb import TSDBServer, DictDB
