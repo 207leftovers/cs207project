@@ -16,7 +16,7 @@ class vpnode():
         if self.rightChild == None and self.leftChild == None:
             return [(self, None, None)]
         else:
-            return [(self, self.leftChild, self.rightChild)] + self.leftChild.preorder() +                    self.rightChild.preorder()
+            return [(self, self.leftChild, self.rightChild)] + self.leftChild.preorder() +  self.rightChild.preorder()
 
 
 #Since a VP tree has two kind of nodes - non-leaf nodes with vantage points and leaf nodes with closest possible candidates.
@@ -50,7 +50,7 @@ class vpnodeLeaf(vpnode):
 
 
 #Building the tree class
-class vptree():
+class VPtree():
     """
     Main tree class
     """
@@ -141,7 +141,7 @@ class vptree():
         return current.pkList
     
 
-
+"""
 if __name__ == "__main__":
     data = np.random.rand(200) 
     dataDict = {}
@@ -151,13 +151,11 @@ if __name__ == "__main__":
     testvps = ['key7', 'key10', 'key45', 'key73']
     #creating distance function
     def absdist(VP,allPk):
-        """
-        Implementing basic absolute distance function
-        """
+        #Implementing basic absolute distance function
         x = dataDict[VP]
         y = np.array([dataDict[key] for key in allPk])
         return np.abs(x-y)
-    tree = vptree(allPk, testvps, absdist)
+    tree = VPtree(allPk, testvps, absdist)
 
     vpt = tree.gen_graph()
     vpt.render("vptree.gv")
@@ -173,4 +171,5 @@ if __name__ == "__main__":
     closest = min(allPk, key = lambda k:allDists[allPk.index(k)])
     
     assert closest in subset
+"""
 

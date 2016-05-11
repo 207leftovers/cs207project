@@ -19,7 +19,8 @@ install:
     - pip install pytest-cov
     - pip install ply
     - pip install aiohttp
-    - pip install asynctest    
+    - pip install asynctest
+    - pip install graphviz
 script:
     - py.test --cov timeseries --cov pype
     
