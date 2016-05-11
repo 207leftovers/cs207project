@@ -76,8 +76,6 @@ class PersistentDB(object):
             default = schema[s]['default']
             
             if indexinfo is not None or s=='pk':
-                self.defaults[s] = default
-            
                 # Use binary search trees for highcard/numeric
                 # TODO:
                 # Use bitmaps for lowcard/str_or_factor
@@ -88,12 +86,13 @@ class PersistentDB(object):
                     self._storage[s] = Storage(f)
                     self._trees[s] = BinaryTree(self._storage[s])
                 else:
-                    # if convert in ():
-                    # else:
-                    #    self._trees[s] = BitMask(self._storage[s])
+                    self.defaults[s] = default
                     f = self.open_file(path_to_db_files + s, overwrite)
                     self._storage[s] = Storage(f)
                     self._trees[s] = ArrayBinaryTree(self._storage[s])
+                    # if convert in ():
+                    # else:
+                    #    self._trees[s] = BitMask(self._storage[s])
                 
     def open_file(self, filename, overwrite):
         try:
@@ -170,7 +169,7 @@ class PersistentDB(object):
         else:
             row = DBRow(pk, self.defaults, ts)
             self._trees['pk'].set(pk, row.to_string())
-            self.update_indices(pk, row, True)
+            self.update_indices(pk, row)
 
     # Delete a timeseries for a specific primary key
     def delete_ts(self, tid, pk):
@@ -193,10 +192,13 @@ class PersistentDB(object):
         "Implement upserting field values, as long as the fields are in the schema."
         self.check_tid_open(tid)
         
+        old_row = None
+        
         if self._trees['pk'].has_key(pk):
             # Get the row if it already exists
             row_str = self._trees['pk'].get(pk)
             row = DBRow.row_from_string(row_str)
+            old_row = row
         else:
             # Create the row if it doesn't exist
             row = DBRow(pk, self.defaults)
@@ -209,17 +211,26 @@ class PersistentDB(object):
                 
         self._trees['pk'].set(pk, row.to_string())
 
-        # Update the indices
-        self.update_indices(pk, row, False)
+        # Delete the old indices
+        if old_row is not None:
+            self.delete_indices(pk, old_row)
+        # Update with the new indices
+        self.update_indices(pk, row)
         
-    def update_indices(self, pk, row, new):
+    def update_indices(self, pk, row):
         "Update the non-pk indices"
-        for field in row.row.keys():
-            v = row[field]
-            if field in self.indexes:
-                idx = self.indexes[field]
-                idx[v].add(pk)
-        
+        rr = row.row
+        for field in rr.keys():
+            v = rr[field]
+            print('FIELD', field)
+            self._trees[field].set(v, pk)
+            
+    def delete_indices(self, pk, row):
+        rr = row.row
+        for field in rr.keys():
+            v = rr[field]
+            print('FIELD', field)
+            self._trees[field].delete(v, pk)
     
 class old_DictDB:
     "Database implementation in a dict"
@@ -234,19 +245,7 @@ class old_DictDB:
 
     
                 
-    def delete_indices(self, pk):
-        row = self.rows[pk]
-        for field in row:
-            v = row[field]
-            if field in self.indexes:
-                idx = self.indexes[field]
-                
-                # Remove this pk from this index value's dict
-                idx[v].remove(pk)
-                
-                # If this value has no more rows, then remove it
-                if len(idx[v]) == 0:
-                    del idx[v]
+    
 
     def select(self, tid, meta, fields, additional):
         self.check_tid_open(tid)

@@ -98,6 +98,104 @@ class BinaryNode(object):
         #the whole tree
         self.left_ref.store(storage)
         self.right_ref.store(storage)
+
+class Storage(object):
+    SUPERBLOCK_SIZE = 4096
+    INTEGER_FORMAT = "!Q"
+    INTEGER_LENGTH = 8
+
+    def __init__(self, f):
+        self._f = f
+        self.locked = False
+        #we ensure that we start in a sector boundary
+        self._ensure_superblock()
+
+    def _ensure_superblock(self):
+        "Guarantee that the next write will start on a sector boundary"
+        self.lock()
+        self._seek_end()
+        end_address = self._f.tell()
+        if end_address < self.SUPERBLOCK_SIZE:
+            self._f.write(b'\x00' * (self.SUPERBLOCK_SIZE - end_address))
+        self.unlock()
+
+    def lock(self):
+        "If not locked, lock the file for writing"
+        if not self.locked:
+            portalocker.lock(self._f, portalocker.LOCK_EX)
+            self.locked = True
+            return True
+        else:
+            return False
+
+    def unlock(self):
+        if self.locked:
+            self._f.flush()
+            portalocker.unlock(self._f)
+            self.locked = False
+
+    def _seek_end(self):
+        self._f.seek(0, os.SEEK_END)
+
+    def _seek_superblock(self):
+        "Go to beginning of file which is on sec boundary"
+        self._f.seek(0)
+
+    def _bytes_to_integer(self, integer_bytes):
+        return struct.unpack(self.INTEGER_FORMAT, integer_bytes)[0]
+
+    def _integer_to_bytes(self, integer):
+        return struct.pack(self.INTEGER_FORMAT, integer)
+
+    def _read_integer(self):
+        return self._bytes_to_integer(self._f.read(self.INTEGER_LENGTH))
+
+    def _write_integer(self, integer):
+        self.lock()
+        self._f.write(self._integer_to_bytes(integer))
+
+    def write(self, data):
+        "Write data to disk, returning the adress at which you wrote it"
+        #first lock, get to end, get address to return, write size
+        #write data, unlock <==WRONG, dont want to unlock here
+        #your code here
+        self.lock()
+        self._seek_end()
+        object_address = self._f.tell()
+        self._write_integer(len(data))
+        self._f.write(data)
+        return object_address
+
+    def read(self, address):
+        self._f.seek(address)
+        length = self._read_integer()
+        data = self._f.read(length)
+        return data
+
+    def commit_root_address(self, root_address):
+        self.lock()
+        self._f.flush()
+        #make sure you write root address at position 0
+        self._seek_superblock()
+        #write is atomic because we store the address on a sector boundary.
+        self._write_integer(root_address)
+        self._f.flush()
+        self.unlock()
+
+    def get_root_address(self):
+        #read the first integer in the file
+        #your code here
+        self._seek_superblock()
+        root_address = self._read_integer()
+        return root_address
+
+    def close(self):
+        self.unlock()
+        self._f.close()
+
+    @property
+    def closed(self):
+        return self._f.closed
         
 class BaseTree(object):
     def __init__(self, storage):
@@ -243,107 +341,14 @@ class BinaryTree(BaseTree):
             else:
                 return node.right_ref
         return BinaryNodeRef(referent=new_node)
-
-class Storage(object):
-    SUPERBLOCK_SIZE = 4096
-    INTEGER_FORMAT = "!Q"
-    INTEGER_LENGTH = 8
-
-    def __init__(self, f):
-        self._f = f
-        self.locked = False
-        #we ensure that we start in a sector boundary
-        self._ensure_superblock()
-
-    def _ensure_superblock(self):
-        "Guarantee that the next write will start on a sector boundary"
-        self.lock()
-        self._seek_end()
-        end_address = self._f.tell()
-        if end_address < self.SUPERBLOCK_SIZE:
-            self._f.write(b'\x00' * (self.SUPERBLOCK_SIZE - end_address))
-        self.unlock()
-
-    def lock(self):
-        "If not locked, lock the file for writing"
-        if not self.locked:
-            portalocker.lock(self._f, portalocker.LOCK_EX)
-            self.locked = True
-            return True
-        else:
-            return False
-
-    def unlock(self):
-        if self.locked:
-            self._f.flush()
-            portalocker.unlock(self._f)
-            self.locked = False
-
-    def _seek_end(self):
-        self._f.seek(0, os.SEEK_END)
-
-    def _seek_superblock(self):
-        "Go to beginning of file which is on sec boundary"
-        self._f.seek(0)
-
-    def _bytes_to_integer(self, integer_bytes):
-        return struct.unpack(self.INTEGER_FORMAT, integer_bytes)[0]
-
-    def _integer_to_bytes(self, integer):
-        return struct.pack(self.INTEGER_FORMAT, integer)
-
-    def _read_integer(self):
-        return self._bytes_to_integer(self._f.read(self.INTEGER_LENGTH))
-
-    def _write_integer(self, integer):
-        self.lock()
-        self._f.write(self._integer_to_bytes(integer))
-
-    def write(self, data):
-        "Write data to disk, returning the adress at which you wrote it"
-        #first lock, get to end, get address to return, write size
-        #write data, unlock <==WRONG, dont want to unlock here
-        #your code here
-        self.lock()
-        self._seek_end()
-        object_address = self._f.tell()
-        self._write_integer(len(data))
-        self._f.write(data)
-        return object_address
-
-    def read(self, address):
-        self._f.seek(address)
-        length = self._read_integer()
-        data = self._f.read(length)
-        return data
-
-    def commit_root_address(self, root_address):
-        self.lock()
-        self._f.flush()
-        #make sure you write root address at position 0
-        self._seek_superblock()
-        #write is atomic because we store the address on a sector boundary.
-        self._write_integer(root_address)
-        self._f.flush()
-        self.unlock()
-
-    def get_root_address(self):
-        #read the first integer in the file
-        #your code here
-        self._seek_superblock()
-        root_address = self._read_integer()
-        return root_address
-
-    def close(self):
-        self.unlock()
-        self._f.close()
-
-    @property
-    def closed(self):
-        return self._f.closed
     
 class ArrayBinaryTree(BaseTree):
     "Immutable Array Binary Tree class. Constructs new tree on changes, multiple values per key"
+    
+    def __init__(self, storage):
+        self._storage = storage
+        self._refresh_tree_ref()
+        #self._convert = convert
         
     def has_key(self, key):
         "Checks if the key is in the tree"
@@ -373,15 +378,18 @@ class ArrayBinaryTree(BaseTree):
                 return self._follow(node.value_ref)
         raise KeyError
 
-    def _set(self, key, value):
+    def set(self, key, value):
         "Set a new value in the tree. Will cause a new tree"
         # Try to lock the tree. If we succeed make sure
         # we dont lose updates from any other process
-        if self._storage.lock():
-            self._refresh_tree_ref()
+        
+        # TODO: PUT THESE BACK
+        #if self._storage.lock():
+        #    self._refresh_tree_ref()
+
         # Get current top-level node and make a value-ref
         node = self._follow(self._tree_ref)
-        value_ref = ValueRef([value])
+        value_ref = ValueRef(str(value))
         # Insert and get new tree ref
         self._tree_ref = self._insert(node, key, value_ref)
         
@@ -407,20 +415,23 @@ class ArrayBinaryTree(BaseTree):
                     self._follow(node.right_ref), key, a_value_ref))
         else: 
             # Update an existing node
-            new_values = self._follow(a_value_ref)
-            existing_values = self._follow(node.value_ref)
-            all_values = existing_values.extend(new_values)
-            a_value_ref = ValueRef(all_values)
+            new_values = self._follow(a_value_ref).split(' ')
+            existing_values = self._follow(node.value_ref).split(' ')
+            existing_values.extend(new_values)
+            print('ALL VALUES', key, existing_values)
+            a_value_ref = ValueRef(str.join(' ', existing_values))
             new_node = BinaryNode.from_node(node, value_ref=a_value_ref)
         return BinaryNodeRef(referent=new_node)
 
     def delete(self, key, value):
         "Delete value from node with key, creating new tree and path"
         "If node has no more values, then delete the node"
-        if self._storage.lock():
-            self._refresh_tree_ref()
+        # TODO: !!!!
+        #if self._storage.lock():
+        #    self._refresh_tree_ref()
         node = self._follow(self._tree_ref)
-        self._tree_ref = self._delete(node, key, value)
+        print("DELETE", key, str(value))
+        self._tree_ref = self._delete(node, key, str(value))
         
     def _delete(self, node, key, value):
         "Underlying delete implementation"
@@ -440,14 +451,14 @@ class ArrayBinaryTree(BaseTree):
                     self._follow(node.right_ref), key, value))
         else:
             "Got the right node, now remove the value from it"
-            values = self._follow(node.value_ref)
+            values = self._follow(node.value_ref).split(' ')
             if value not in values:
                 raise ValueError('Could not remove value ', value ,' from node with key', key)
             else:
                 values.remove(value)
                 if len(values) > 0:
                     "We still have multiple values in this node, so restore it"
-                    a_value_ref = ValueRef(values)
+                    a_value_ref = ValueRef(str.join(' ', values))
                     new_node = BinaryNode.from_node(node, value_ref=a_value_ref)
                 else:
                     "This node can be disposed of as it no longer is storing anything"
