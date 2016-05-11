@@ -186,6 +186,8 @@ def test_indexes():
     db.upsert_meta(tid, 2, {'order': 2, 'blarg':79})
     db.upsert_meta(tid, 3, {'ts': ats4, 'not_there': 3, 'order': 1})
     
+    assert(db._trees['pk'].get_all_keys() == [1, 0, 2, 3])
+    
     assert(db._trees['order'].get(0) == '1 0')
     assert(db._trees['order'].get(1) == '3')
     assert(db._trees['order'].get(2) == '2')
@@ -275,15 +277,15 @@ def test_select_basic_additional():
     db.upsert_meta(tid, 3, {'useless': 5})
     
     # Limit to 2 results
-    ids1, fields1 = db.select(tid, {'pk': {'>': 0}},None,{'limit':2})
+    ids1, fields1 = db.select(tid, {'pk': {'>': 0}}, None, {'limit':2})
     assert(ids1 == [1, 2])
     
     # Order Ascending
-    ids2, fields2 = db.select(tid, {'pk': {'>': 0}},None,{'sort_by':'+useless'})
+    ids2, fields2 = db.select(tid, {'pk': {'>': 0}}, None, {'sort_by':'+useless'})
     assert(ids2 == [1, 2, 3])
     
     # Order Descending
-    ids3, fields3 = db.select(tid, {'pk': {'>': 0}},None,{'sort_by':'-useless'})
+    ids3, fields3 = db.select(tid, {'pk': {'>': 0}}, None, {'sort_by':'-useless'})
     assert(ids3 == [3, 2, 1])
     
 def test_complex():

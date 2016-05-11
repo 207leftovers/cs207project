@@ -238,6 +238,21 @@ class BinaryTree(BaseTree):
             return False
         return True
     
+    def get_all_keys(self):
+        keys = []
+        
+        if not self._storage.locked:
+            self._refresh_tree_ref()
+        nodes = [self._follow(self._tree_ref)]
+        while len(nodes) > 0:
+            node = nodes.pop(0)
+            if node is not None:
+                nodes.append(self._follow(node.left_ref))
+                nodes.append(self._follow(node.right_ref))
+                keys.append(node.key)
+                
+        return keys
+    
     def get_as_row(self, key):
         "Get the value for a key as a DBRow"
         return DBRow.row_from_string(self.get(key))

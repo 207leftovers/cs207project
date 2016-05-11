@@ -191,6 +191,7 @@ class PersistentDB(object):
     def upsert_meta(self, tid, pk, meta):
         "Implement upserting field values, as long as the fields are in the schema."
         self.check_tid_open(tid)
+        self._assert_not_closed('pk')
         
         if self._trees['pk'].has_key(pk):
             # Get the row if it already exists
@@ -227,24 +228,11 @@ class PersistentDB(object):
             v = rr[field]
             if v is not None:
                 self._trees[field].delete(v, pk)
-    
-class old_DictDB:
-    "Database implementation in a dict"
-    def __init__(self, schema, pkfield):
-        self.indexes = {}
-        
-    def index_bulk(self, pks=[]):
-        if len(pks) == 0:
-            pks = self.rows
-        for pkid in self.pks:
-            self.update_indices(pkid)
-
-    
                 
-    
-
+                
     def select(self, tid, meta, fields, additional):
         self.check_tid_open(tid)
+        self._assert_not_closed('pk')
         
         # If fields is None: return only pks like so: 
         #     [pk1,pk2],[{},{}]
@@ -263,8 +251,29 @@ class old_DictDB:
         # which will give you the top 10 in the current sort order.
         result_set = []
 
+        pks = set(self._trees['pk'].get_all_keys())
         # META
         # Select the keys that matches the metadata
+        for meta_key in meta.keys():
+            if meta_key == 'pk':
+                # PKs
+                # range operators are stored in a dict
+                for operator, value in meta[meta_key].items():
+                    some_pks = set()
+                    for pk in pks:
+                        if pk OPMAP[operator] value:
+                            some_pks.append(pk)
+                    pks = some_pks
+            else:
+                # Non PK lookups
+                
+                
+                
+                
+                
+                        
+        
+        
         for pk in self.rows.keys():
             satisfied = True
             for meta_key in meta.keys():
@@ -358,3 +367,11 @@ class old_DictDB:
                 matchedfielddicts_sorted.append(result_sorted[x][1])
 
             return result_set_sorted, matchedfielddicts_sorted
+    
+class old_DictDB:
+
+    def index_bulk(self, pks=[]):
+        if len(pks) == 0:
+            pks = self.rows
+        for pkid in self.pks:
+            self.update_indices(pkid)
