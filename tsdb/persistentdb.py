@@ -270,6 +270,7 @@ class PersistentDB(object):
             elif meta_key in self.validfields:
                 # Non PK lookups
                 print('GETTING ALL KEYS', meta_key)
+                print('GETTING 0', self._trees[meta_key].get(0))
                 all_field_keys = self._trees[meta_key].get_all_keys()
                 print(meta_key, all_field_keys)
                 # range operators are stored in a dict
@@ -351,12 +352,14 @@ class PersistentDB(object):
                         order_list.append(self._trees['pk'].get_as_row(pk).pk)
                     elif sorted_by in self.validfields:
                         order_list.append(self._trees['pk'].get_as_row(pk).row[sorted_by])
-                    
+                    else:
+                        order_list.append(0)
                 result_tuple = []
 
                 # Then we combine everything into a tuple
-                for x in range(len(pks)):
-                    result_tuple.append((pks[x], matchedfielddicts[x], order_list[x]))
+                print(len(pks), len(matchedfielddicts), len(order_list))
+                for i, x in enumerate(pks):
+                    result_tuple.append((x, matchedfielddicts[i], order_list[i]))
 
                 result_sorted = sorted(result_tuple, key=lambda x: x[2], reverse=is_decreasing)
 

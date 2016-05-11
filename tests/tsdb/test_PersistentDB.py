@@ -246,7 +246,7 @@ def test_select_basic_fields():
     assert(fields2[1]['ts'] == ats3)
     
     # No results
-    ids3, fields3 = db.select(tid, {'blarg': {'=': 1}}, ['ts'], None)
+    ids3, fields3 = db.select(tid, {'blarg': {'==': 1}}, ['ts'], None)
     assert(ids3 == [])
     
     # None Field List (just pks)
@@ -308,10 +308,10 @@ def test_complex():
     
     for i in range(100):
         db.insert_ts(tid, i, ats1)
-        db.upsert_meta(tid, i, {'useless': i})
+        db.upsert_meta(tid, i, {'blarg': i})
         db.upsert_meta(tid, i, {'order': -i})
 
-    ids1, fields1 = db.select(tid, {'pk': {'>': 10, '<=' : 50}},None,{'limit':10,'sort_by':'-useless'})
+    ids1, fields1 = db.select(tid, {'pk': {'>': 10, '<=' : 50}},None,{'limit':10,'sort_by':'-blarg'})
     assert(ids1 == [50, 49, 48, 47, 46, 45, 44, 43, 42, 41])
     
     ids2, fields2 = db.select(tid, meta={}, fields=[], additional={'limit':15,'sort_by': '-order'})

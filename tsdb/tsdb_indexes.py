@@ -208,24 +208,6 @@ class BaseTree(object):
         self._tree_ref.store(self._storage)
         # Make sure address of new tree is stored
         self._storage.commit_root_address(self._tree_ref.address)
-
-    def get_all_keys(self):
-        keys = []
-        
-        if not self._storage.locked:
-            self._refresh_tree_ref()
-            
-        nodes = [self._follow(self._tree_ref)]
-        
-        # Loop through all nodes
-        while len(nodes) > 0:
-            node = nodes.pop(0)
-            if node is not None:
-                nodes.append(self._follow(node.left_ref))
-                nodes.append(self._follow(node.right_ref))
-                print(node.key)
-                keys.append(node.key)
-        return keys
         
     def _refresh_tree_ref(self):
         "Get reference to new tree if it has changed"
@@ -246,6 +228,25 @@ class BaseTree(object):
         
 class BinaryTree(BaseTree):
     "Immutable Binary Tree class. Constructs new tree on changes"
+    
+    def get_all_keys(self):
+        keys = []
+        
+        if not self._storage.locked:
+            self._refresh_tree_ref()
+            
+        nodes = [self._follow(self._tree_ref)]
+        
+        # Loop through all nodes
+        while len(nodes) > 0:
+            node = nodes.pop(0)
+            print("NODE", node)
+            if node is not None:
+                nodes.append(self._follow(node.left_ref))
+                nodes.append(self._follow(node.right_ref))
+                print(node.key)
+                keys.append(node.key)
+        return keys
     
     def has_key(self, key):
         "Checks if the key is in the tree"
@@ -368,6 +369,26 @@ class ArrayBinaryTree(BaseTree):
         self._refresh_tree_ref()
         self._convert = convert
         
+    def get_all_keys(self):
+        keys = []
+        
+        # TODO!!!!
+        #if not self._storage.locked:
+        #    self._refresh_tree_ref()
+            
+        nodes = [self._follow(self._tree_ref)]
+        
+        # Loop through all nodes
+        while len(nodes) > 0:
+            node = nodes.pop(0)
+            print("NODE", node)
+            if node is not None:
+                nodes.append(self._follow(node.left_ref))
+                nodes.append(self._follow(node.right_ref))
+                print(node.key)
+                keys.append(node.key)
+        return keys
+        
     def has_key(self, key):
         "Checks if the key is in the tree"
         #return key in self._keys
@@ -379,6 +400,7 @@ class ArrayBinaryTree(BaseTree):
         
     def get(self, key):
         value_str = self._get(key)
+        print("VALUE STRING", value_str)
         value_list = value_str.split(' ')
         value_arr = []
         for value in value_list:
