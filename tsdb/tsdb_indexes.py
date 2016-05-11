@@ -240,11 +240,9 @@ class BinaryTree(BaseTree):
         # Loop through all nodes
         while len(nodes) > 0:
             node = nodes.pop(0)
-            print("NODE", node)
             if node is not None:
                 nodes.append(self._follow(node.left_ref))
                 nodes.append(self._follow(node.right_ref))
-                print(node.key)
                 keys.append(node.key)
         return keys
     
@@ -381,11 +379,9 @@ class ArrayBinaryTree(BaseTree):
         # Loop through all nodes
         while len(nodes) > 0:
             node = nodes.pop(0)
-            print("NODE", node)
             if node is not None:
                 nodes.append(self._follow(node.left_ref))
                 nodes.append(self._follow(node.right_ref))
-                print(node.key)
                 keys.append(node.key)
         return keys
         
@@ -400,7 +396,6 @@ class ArrayBinaryTree(BaseTree):
         
     def get(self, key):
         value_str = self._get(key)
-        print("VALUE STRING", value_str)
         value_list = value_str.split(' ')
         value_arr = []
         for value in value_list:
@@ -468,7 +463,6 @@ class ArrayBinaryTree(BaseTree):
             new_values = self._follow(a_value_ref).split(' ')
             existing_values = self._follow(node.value_ref).split(' ')
             existing_values.extend(new_values)
-            print('EXISTING', existing_values)
             a_value_ref = ValueRef(str.join(' ', existing_values))
             new_node = BinaryNode.from_node(node, value_ref=a_value_ref)
         return BinaryNodeRef(referent=new_node)

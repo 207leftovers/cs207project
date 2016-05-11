@@ -251,8 +251,6 @@ class PersistentDB(object):
         # where order must be in the schema AND have an index. 
         #     (b) limit: 'limit':10
         # which will give you the top 10 in the current sort order.
-        #result_set = []
-        print("-----------")
 
         # META
         pks = set(self._trees['pk'].get_all_keys())
@@ -269,13 +267,9 @@ class PersistentDB(object):
                     pks = some_pks
             elif meta_key in self.validfields:
                 # Non PK lookups
-                print('GETTING ALL KEYS', meta_key)
-                print('GETTING 0', self._trees[meta_key].get(0))
                 all_field_keys = self._trees[meta_key].get_all_keys()
-                print(meta_key, all_field_keys)
                 # range operators are stored in a dict
                 for operator, value in meta[meta_key].items():  
-                    print
                     some_field_keys = set()
                 
                     for field_key in all_field_keys:
@@ -291,7 +285,6 @@ class PersistentDB(object):
                 # Now update the over-all set of pks by finding the intersection
                 pks = pks.intersection(some_pks)
                 
-        print("PKS", pks)
         matchedfielddicts = []
         
         # FIELDS
@@ -357,7 +350,6 @@ class PersistentDB(object):
                 result_tuple = []
 
                 # Then we combine everything into a tuple
-                print(len(pks), len(matchedfielddicts), len(order_list))
                 for i, x in enumerate(pks):
                     result_tuple.append((x, matchedfielddicts[i], order_list[i]))
 
@@ -381,11 +373,3 @@ class PersistentDB(object):
                 matchedfielddicts_sorted.append(result_sorted[x][1])
 
             return result_set_sorted, matchedfielddicts_sorted
-    
-class old_DictDB:
-
-    def index_bulk(self, pks=[]):
-        if len(pks) == 0:
-            pks = self.rows
-        for pkid in self.pks:
-            self.update_indices(pkid)
