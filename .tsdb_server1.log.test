@@ -1,5 +1,4 @@
-Generating LALR tables
-Traceback (most recent call last):
-  File "go_server.py", line 2, in <module>
-    from tsdb import TSDBServer, DictDB
-ImportError: cannot import name 'DictDB'
+  File "go_server.py", line 16
+    'sig_epsilon_estimate': {'convert': float, 'index': 1, 'default': 0.0},
+                         ^
+SyntaxError: invalid syntax

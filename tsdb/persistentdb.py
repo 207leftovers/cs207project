@@ -34,6 +34,7 @@ class PersistentDB(object):
 
     def __init__(self, schema, pkfield, f='data', overwrite=False):
         self.schema = schema
+        self.validfields = ['ts']
         self.pkfield = pkfield
        
         self.defaults = {}
@@ -76,6 +77,7 @@ class PersistentDB(object):
             default = schema[s]['default']
             
             if indexinfo is not None or s=='pk':
+                self.validfields.append(s)
                 # Use binary search trees for highcard/numeric
                 # TODO:
                 # Use bitmaps for lowcard/str_or_factor
@@ -205,7 +207,7 @@ class PersistentDB(object):
             
         # Look through the fields and upsert their values
         for key in meta:         
-            if key in self.schema:
+            if key in self.validfields:
                 self.tt[tid].add(key)
                 row.update(key, meta[key])
                 
@@ -249,10 +251,11 @@ class PersistentDB(object):
         # where order must be in the schema AND have an index. 
         #     (b) limit: 'limit':10
         # which will give you the top 10 in the current sort order.
-        result_set = []
+        #result_set = []
+        print("-----------")
 
-        pks = set(self._trees['pk'].get_all_keys())
         # META
+        pks = set(self._trees['pk'].get_all_keys())
         # Select the keys that matches the metadata
         for meta_key in meta.keys():
             if meta_key == 'pk':
@@ -261,64 +264,69 @@ class PersistentDB(object):
                 for operator, value in meta[meta_key].items():
                     some_pks = set()
                     for pk in pks:
-                        if pk OPMAP[operator] value:
-                            some_pks.append(pk)
+                        if OPMAP[operator](pk, value):
+                            some_pks |= set([pk])
                     pks = some_pks
-            else:
+            elif meta_key in self.validfields:
                 # Non PK lookups
+                print('GETTING ALL KEYS', meta_key)
+                all_field_keys = self._trees[meta_key].get_all_keys()
+                print(meta_key, all_field_keys)
+                # range operators are stored in a dict
+                for operator, value in meta[meta_key].items():  
+                    print
+                    some_field_keys = set()
                 
+                    for field_key in all_field_keys:
+                        if OPMAP[operator](field_key, value):
+                            some_field_keys |= set([field_key])
+                    all_field_keys = some_field_keys
+                    
+                some_pks = set()    
+                # Now gather all PKs for these field keys
+                for field_key in all_field_keys:
+                    some_pks |= set(self._trees[meta_key].get(field_key))
+                    
+                # Now update the over-all set of pks by finding the intersection
+                pks = pks.intersection(some_pks)
                 
-                
-                
-                
-                        
-        
-        
-        for pk in self.rows.keys():
-            satisfied = True
-            for meta_key in meta.keys():
-                if meta_key not in self.rows[pk].keys():
-                    satisfied = False
-                else:
-                    # range operators are stored in a dict
-                    if isinstance(meta[meta_key], dict):
-                        for operator, value in meta[meta_key].items():  
-                            if (not OPMAP[operator](self.rows[pk][meta_key], value)):
-                                satisfied = False
-
-                    else:
-                        if self.rows[pk][meta_key] is not meta[meta_key]:
-                            satisfied = False
-            if satisfied is True:
-                result_set.append(pk)
-
+        print("PKS", pks)
         matchedfielddicts = []
         
         # FIELDS
         # select the correct fields
-        for pk in result_set:
+        for pk in pks:
             matched_field = {}
             # If fields is None, just return the primary keys
             if fields == None:
                 # Do nothing
                 pass
             elif len(fields) is 0:
-                for row_field in self.rows[pk]:
-
-                    #skip the ts 
+                # Get all fields but the TimeSeries
+                for row_field in self.validfields:
+                    # Skip the ts 
                     if row_field is 'ts':
                         continue
-                    matched_field[row_field] = self.rows[pk][row_field]                    
+                    if row_field is 'pk':
+                        matched_field[row_field] = self._trees['pk'].get_as_row(pk).pk
+                    else:
+                        matched_field[row_field] = self._trees['pk'].get_as_row(pk).row[row_field]
             else:
+                # Only get the indicated fields
                 for field in fields:
-                    if field in self.rows[pk]:
-                        matched_field[field] = self.rows[pk][field]
+                    if field in self.validfields:
+                        if field is 'pk':
+                            matched_field[field] = self._trees['pk'].get_as_row(pk).pk
+                        elif field is 'ts':
+                            matched_field[field] = self._trees['pk'].get_as_row(pk).ts
+                        else:
+                            matched_field[field] = self._trees['pk'].get_as_row(pk).row[field]
 
             matchedfielddicts.append(matched_field)
 
         # ADDITIONAL
         if additional is None:
-            return result_set, matchedfielddicts
+            return list(pks), matchedfielddicts
         else:
             # We have to do sorting and limiting
             result_sorted = []
@@ -338,21 +346,24 @@ class PersistentDB(object):
                 sorted_by = sorted_by[1:]
 
                 # Get the order for the result_set
-                for pk in result_set:
-                    order_list.append(self.rows[pk][sorted_by])
-
+                for pk in pks:
+                    if sorted_by is 'pk':
+                        order_list.append(self._trees['pk'].get_as_row(pk).pk)
+                    elif sorted_by in self.validfields:
+                        order_list.append(self._trees['pk'].get_as_row(pk).row[sorted_by])
+                    
                 result_tuple = []
 
                 # Then we combine everything into a tuple
-                for x in range(len(result_set)):
-                    result_tuple.append((result_set[x], matchedfielddicts[x], order_list[x]))
+                for x in range(len(pks)):
+                    result_tuple.append((pks[x], matchedfielddicts[x], order_list[x]))
 
                 result_sorted = sorted(result_tuple, key=lambda x: x[2], reverse=is_decreasing)
 
             else:
                 # We are going to skip sorting and move on to limiting
-                for x in range(len(result_set)):
-                    result_sorted.append((result_set[x], matchedfielddicts[x]))
+                for i, x in enumerate(pks):
+                    result_sorted.append((x, matchedfielddicts[i]))
 
             # LIMITING
             if 'limit' in additional.keys():

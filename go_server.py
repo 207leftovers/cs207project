@@ -9,7 +9,7 @@ schema = {
   'ts': {'convert': identity, 'index': None, 'default': None},
   'order': {'convert': int, 'index': 1, 'default': 0},
   'blarg': {'convert': int, 'index': 1, 'default': 0},
-  'useless': {'convert': identity, 'index': None, 'default': 0},
+  'useless': {'convert': identity, 'index': None, 'default': 0}, # This will be ignored becuase there is no index
   'mean': {'convert': float, 'index': 1, 'default': 0.0},
   'std': {'convert': float, 'index': 1, 'default': 0.0},
   'vp': {'convert': bool, 'index': 1, 'default': False}

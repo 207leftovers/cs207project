@@ -232,37 +232,47 @@ def test_select_basic_fields():
     db.insert_ts(tid, 2, ats2)
     db.insert_ts(tid, 3, ats3)
     
-    db.upsert_meta(tid, 2, {'useless': 2})
+    db.upsert_meta(tid, 2, {'useless': 2, 'order': 2})
     
     # One result
-    ids1, fields1 = db.select(tid, {'pk': {'==': 1}},['ts'],None)
+    ids1, fields1 = db.select(tid, {'pk': {'==': 1}}, ['ts'], None)
     assert(ids1 == [1])
     assert(fields1[0]['ts'] == ats1)
     
     # Two results
-    ids2, fields2 = db.select(tid, {'pk': {'>': 1}},['ts'],None)
+    ids2, fields2 = db.select(tid, {'pk': {'>': 1}}, ['ts'], None)
     assert(ids2 == [2,3])
     assert(fields2[0]['ts'] == ats2)
     assert(fields2[1]['ts'] == ats3)
     
     # No results
-    ids3, fields3 = db.select(tid, {'blarg': {'=': 1}},['ts'],None)
+    ids3, fields3 = db.select(tid, {'blarg': {'=': 1}}, ['ts'], None)
     assert(ids3 == [])
     
     # None Field List (just pks)
-    ids4, fields4 = db.select(tid, {'pk':{'>': 0}},None,None)
+    ids4, fields4 = db.select(tid, {'pk': {'>': 0}}, None, None)
     assert(ids4 == [1, 2, 3])
     assert(fields4 == [{}, {}, {}])
     
     # Empty Field List (everything but ts)
-    ids5, fields5 = db.select(tid, {'pk':{'>': 0}},[],None)
+    ids5, fields5 = db.select(tid, {'pk': {'>': 0}}, [], None)
     assert(ids5 == [1, 2, 3])
-    assert(fields5 == [{'pk': 1}, {'pk': 2, 'useless': 2}, {'pk': 3}])
+    assert(fields5[0]['pk'] == 1)
+    assert(fields5[0]['mean'] == 0)
+    assert(fields5[1]['pk'] == 2)
+    assert(fields5[2]['pk'] == 3)
+    
+    # Named Field List (just that field) - since useless is not indexed, this will return everything
+    ids6, fields6 = db.select(tid, {'useless': {'>': 0}}, ['useless'], None)
+    assert(ids6 == [1, 2, 3])
+    assert(fields6 == [{},{},{}])
+    
+    assert(db._trees['order'].get(2) == [2])
     
     # Named Field List (just that field)
-    ids6, fields6 = db.select(tid, {'useless':{'>': 0}},['useless'],None)
+    ids6, fields6 = db.select(tid, {'order': {'>': 0}}, ['order'], None)
     assert(ids6 == [2])
-    assert(fields6 == [{'useless': 2}])
+    assert(fields6 == [{'order': 2}])
     
 def test_select_basic_additional():
     db = PersistentDB(schema, 'pk', overwrite=True)
@@ -272,20 +282,24 @@ def test_select_basic_additional():
     db.insert_ts(tid, 2, ats2)
     db.insert_ts(tid, 3, ats3)
     
-    db.upsert_meta(tid, 1, {'useless': 1})
-    db.upsert_meta(tid, 2, {'useless': 3})
-    db.upsert_meta(tid, 3, {'useless': 5})
+    db.upsert_meta(tid, 1, {'order': 1})
+    db.upsert_meta(tid, 2, {'order': 3})
+    db.upsert_meta(tid, 3, {'order': 5})
     
     # Limit to 2 results
     ids1, fields1 = db.select(tid, {'pk': {'>': 0}}, None, {'limit':2})
     assert(ids1 == [1, 2])
-    
-    # Order Ascending
+
+    # Useless Ascending
     ids2, fields2 = db.select(tid, {'pk': {'>': 0}}, None, {'sort_by':'+useless'})
     assert(ids2 == [1, 2, 3])
     
+    # Order Ascending
+    ids2, fields2 = db.select(tid, {'pk': {'>': 0}}, None, {'sort_by':'+order'})
+    assert(ids2 == [1, 2, 3])
+    
     # Order Descending
-    ids3, fields3 = db.select(tid, {'pk': {'>': 0}}, None, {'sort_by':'-useless'})
+    ids3, fields3 = db.select(tid, {'pk': {'>': 0}}, None, {'sort_by':'-order'})
     assert(ids3 == [3, 2, 1])
     
 def test_complex():

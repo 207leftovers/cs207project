@@ -209,6 +209,24 @@ class BaseTree(object):
         # Make sure address of new tree is stored
         self._storage.commit_root_address(self._tree_ref.address)
 
+    def get_all_keys(self):
+        keys = []
+        
+        if not self._storage.locked:
+            self._refresh_tree_ref()
+            
+        nodes = [self._follow(self._tree_ref)]
+        
+        # Loop through all nodes
+        while len(nodes) > 0:
+            node = nodes.pop(0)
+            if node is not None:
+                nodes.append(self._follow(node.left_ref))
+                nodes.append(self._follow(node.right_ref))
+                print(node.key)
+                keys.append(node.key)
+        return keys
+        
     def _refresh_tree_ref(self):
         "Get reference to new tree if it has changed"
         self._tree_ref = BinaryNodeRef(
@@ -237,21 +255,6 @@ class BinaryTree(BaseTree):
         except:
             return False
         return True
-    
-    def get_all_keys(self):
-        keys = []
-        
-        if not self._storage.locked:
-            self._refresh_tree_ref()
-        nodes = [self._follow(self._tree_ref)]
-        while len(nodes) > 0:
-            node = nodes.pop(0)
-            if node is not None:
-                nodes.append(self._follow(node.left_ref))
-                nodes.append(self._follow(node.right_ref))
-                keys.append(node.key)
-                
-        return keys
     
     def get_as_row(self, key):
         "Get the value for a key as a DBRow"
@@ -435,6 +438,7 @@ class ArrayBinaryTree(BaseTree):
             new_values = self._follow(a_value_ref).split(' ')
             existing_values = self._follow(node.value_ref).split(' ')
             existing_values.extend(new_values)
+            print('EXISTING', existing_values)
             a_value_ref = ValueRef(str.join(' ', existing_values))
             new_node = BinaryNode.from_node(node, value_ref=a_value_ref)
         return BinaryNodeRef(referent=new_node)
