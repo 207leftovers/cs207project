@@ -1,3 +1,4 @@
+Generating LALR tables
 Traceback (most recent call last):
   File "rest_server.py", line 2, in <module>
     from tsdb import TSDBServer, DictDB

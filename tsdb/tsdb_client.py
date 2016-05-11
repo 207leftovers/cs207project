@@ -14,7 +14,7 @@ class TSDBClient(object):
         tx = TSDBOp_BeginTransaction()
         return await self._send(tx.to_json())
     
-     async def commit(self, tid):
+    async def commit(self, tid):
         commit_op = TSDBOp_Commit(tid)
         return await self._send(commit_op.to_json()) 
     
