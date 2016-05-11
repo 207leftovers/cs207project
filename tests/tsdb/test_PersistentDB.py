@@ -188,12 +188,12 @@ def test_indexes():
     
     assert(db._trees['pk'].get_all_keys() == [1, 0, 2, 3])
     
-    assert(db._trees['order'].get(0) == '1 0')
-    assert(db._trees['order'].get(1) == '3')
-    assert(db._trees['order'].get(2) == '2')
+    assert(db._trees['order'].get(0) == [1, 0])
+    assert(db._trees['order'].get(1) == [3])
+    assert(db._trees['order'].get(2) == [2])
     
-    assert(db._trees['blarg'].get(0) == '1 0 3')
-    assert(db._trees['blarg'].get(79) == '2')
+    assert(db._trees['blarg'].get(0) == [1, 0, 3])
+    assert(db._trees['blarg'].get(79) == [2])
         
 def test_select_basic_operations():
     db = PersistentDB(schema, 'pk', overwrite=True)
@@ -221,7 +221,7 @@ def test_select_basic_operations():
     ids6, fields6 = db.select(tid, {'pk': {'>=': 2}},None,None)
     assert(ids6 == [2, 3])
     
-    ids7, fields7 = db.select(tid, {'pk': {'>': 1, '<': 3}},None,None)
+    ids7, fields7 = db.select(tid, {'pk': {'>': 1, '<': 3}}, None, None)
     assert(ids7 == [2])
 
 def test_select_basic_fields():
@@ -270,9 +270,9 @@ def test_select_basic_fields():
     assert(db._trees['order'].get(2) == [2])
     
     # Named Field List (just that field)
-    ids6, fields6 = db.select(tid, {'order': {'>': 0}}, ['order'], None)
-    assert(ids6 == [2])
-    assert(fields6 == [{'order': 2}])
+    ids7, fields7 = db.select(tid, {'order': {'>': 0}}, ['order'], None)
+    assert(ids7 == [2])
+    assert(fields7 == [{'order': 2}])
     
 def test_select_basic_additional():
     db = PersistentDB(schema, 'pk', overwrite=True)

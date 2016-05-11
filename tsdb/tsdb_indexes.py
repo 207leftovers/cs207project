@@ -363,10 +363,10 @@ class BinaryTree(BaseTree):
 class ArrayBinaryTree(BaseTree):
     "Immutable Array Binary Tree class. Constructs new tree on changes, multiple values per key"
     
-    def __init__(self, storage):
+    def __init__(self, storage, convert):
         self._storage = storage
         self._refresh_tree_ref()
-        #self._convert = convert
+        self._convert = convert
         
     def has_key(self, key):
         "Checks if the key is in the tree"
@@ -378,6 +378,14 @@ class ArrayBinaryTree(BaseTree):
         return True
         
     def get(self, key):
+        value_str = self._get(key)
+        value_list = value_str.split(' ')
+        value_arr = []
+        for value in value_list:
+            value_arr.append(self._convert(value))
+        return value_arr
+        
+    def _get(self, key):
         "Get value array for a key"
         #if tree is not locked by another writer
         #refresh the references and get new tree if needed

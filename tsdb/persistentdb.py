@@ -91,7 +91,7 @@ class PersistentDB(object):
                     self.defaults[s] = default
                     f = self.open_file(path_to_db_files + s, overwrite)
                     self._storage[s] = Storage(f)
-                    self._trees[s] = ArrayBinaryTree(self._storage[s])
+                    self._trees[s] = ArrayBinaryTree(self._storage[s], convert)
                     # if convert in ():
                     # else:
                     #    self._trees[s] = BitMask(self._storage[s])
