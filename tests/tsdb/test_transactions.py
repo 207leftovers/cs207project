@@ -77,6 +77,8 @@ class TestTransactions(unittest.TestCase):
         assert(fields1[0]['ts'] == ats1)
         assert(fields1[0]['order'] == 0.0)
 
+        db.close()
+
     def test_closing(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
         first_tid = db.begin_transaction()
@@ -99,6 +101,8 @@ class TestTransactions(unittest.TestCase):
         assert(ids1 == [1])
         assert(fields1[0]['ts'] == ats1)
         assert(fields1[0]['order'] == 0.0)
+
+        db2.close()
 
     def test_close_commit(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
@@ -131,6 +135,7 @@ class TestTransactions(unittest.TestCase):
         e1 = ''
         try:
             db2 = PersistentDB(schema2, 'pk', overwrite=False)
+            db2.close()
         except Exception as e: 
             e1 = e
         assert type(e1).__name__ == 'ValueError'  

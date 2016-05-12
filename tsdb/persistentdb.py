@@ -48,7 +48,7 @@ class PersistentDB(object):
         # Transaction Table
         # "contains all transactions that are currently running and the Sequence Number of the last log entry they caused"
         self.tt = {}
-        
+
         # Load meta information if the path exists and we are not overwriting
         if os.path.exists(path_to_db_files+meta_info_filename) and not overwrite:
             with open(path_to_db_files+meta_info_filename, 'rb', buffering=0) as fd:
@@ -130,7 +130,7 @@ class PersistentDB(object):
         for field in open_fields:
             self._assert_not_closed(field)
             self._trees[field].commit()
-        
+            self._storage[field].unlock()
         # remove this tid from the transaction table
         del self.tt[tid]
         

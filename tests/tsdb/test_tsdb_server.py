@@ -116,7 +116,7 @@ class Test_TSDB_Protocol(unittest.TestCase):
         storedproc = getattr(mod,'main')
         
         assert(server.triggers['insert_ts'] ==  [('stats', storedproc, None, ['mean', 'std'])])
-        
+        db.close()
         #prot._insert_ts(TSDBOp_InsertTS(3, ats1))
         #time.sleep(1)
         #inserted_row = server.db.rows[3]
@@ -169,6 +169,7 @@ class Test_TSDB_Protocol(unittest.TestCase):
         delete_return2 = prot._delete_ts(delete_op)
         assert(delete_return2['op'] == 'delete_ts')
         assert(delete_return2['status'] == TSDBStatus.INVALID_KEY)
+        db.close()
 
     def test_protocol_triggers(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
@@ -193,6 +194,7 @@ class Test_TSDB_Protocol(unittest.TestCase):
         storedproc = getattr(mod,'main')
 
         assert(server.triggers['insert_ts'] ==  [])
+        db.close()
 
     def test_augmented_select(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
@@ -233,7 +235,8 @@ class Test_TSDB_Protocol(unittest.TestCase):
         assert(aug_select_return['op'] == 'augmented_select')
         assert(aug_select_return['status'] == TSDBStatus.OK)
         assert(aug_select_return['payload'] == {1: {'mean': 1.4142135623730403}})
-        
+        db.close()
+
     def test_simple_run(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
         server = TSDBServer(db)
@@ -259,8 +262,9 @@ class Test_TSDB_Protocol(unittest.TestCase):
         #print(payload['1'])
         #assert(payload['1']['std'] == 1.4142135623730951)
         #assert(payload['1']['mean'] == 2.0)
-        
-    def test_create_vp(self):
+        db.close()
+
+    def tedst_create_vp(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
         server = TSDBServer(db)
         prot = TSDBProtocol(server)
@@ -306,6 +310,7 @@ class Test_TSDB_Protocol(unittest.TestCase):
             assert(back['status'] == 0)
             prot._create_vp(TSDBOp_CreateVP(tid, vpkeys[i]))
         
+        db.close()
         
             
 

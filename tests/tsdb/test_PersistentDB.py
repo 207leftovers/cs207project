@@ -48,6 +48,7 @@ class TestPersistentDB(unittest.TestCase):
         
         second_tid = db.begin_transaction()
         assert(second_tid == 2)
+        db.close()
 
     def test_commit(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
@@ -55,6 +56,7 @@ class TestPersistentDB(unittest.TestCase):
         assert(first_tid == 1)
         db.insert_ts(first_tid, 1, ats1)
         db.commit(first_tid)
+        db.close()
 
     def test_rollback(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
@@ -75,6 +77,7 @@ class TestPersistentDB(unittest.TestCase):
             e1 = e
         assert str(e1) == ''
         assert type(e1).__name__ == 'KeyError'  
+        db.close()
 
     def test_insert(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
@@ -105,6 +108,7 @@ class TestPersistentDB(unittest.TestCase):
         assert type(e1).__name__ == 'ValueError'  
 
         db.commit(tid)
+        db.close()
 
     def test_delete(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
@@ -137,6 +141,7 @@ class TestPersistentDB(unittest.TestCase):
         # Check to ensure that PKs that have been deleted are no 
         # longer in the index
         #assert(db.indexes['pk'] == {4: {4}}) 
+        db.close()
 
     def test_upsert(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
@@ -182,6 +187,7 @@ class TestPersistentDB(unittest.TestCase):
         assert(row1.row['order'] == 0)
         assert(row2.ts == ats1)
         assert(row2.row['order'] == 1)
+        db.close()
 
     def test_indexes(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
@@ -203,6 +209,7 @@ class TestPersistentDB(unittest.TestCase):
 
         assert(db._trees['blarg'].get(0) == [1, 0, 3])
         assert(db._trees['blarg'].get(79) == [2])
+        db.close()
 
     def test_select_basic_operations(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
@@ -232,6 +239,7 @@ class TestPersistentDB(unittest.TestCase):
 
         ids7, fields7 = db.select(tid, {'pk': {'>': 1, '<': 3}}, None, None)
         assert(ids7 == [2])
+        db.close()
 
     def test_select_basic_fields(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
@@ -282,6 +290,7 @@ class TestPersistentDB(unittest.TestCase):
         ids7, fields7 = db.select(tid, {'order': {'>': 0}}, ['order'], None)
         assert(ids7 == [2])
         assert(fields7 == [{'order': 2}])
+        db.close()
 
     def test_select_basic_additional(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
@@ -310,6 +319,7 @@ class TestPersistentDB(unittest.TestCase):
         # Order Descending
         ids3, fields3 = db.select(tid, {'pk': {'>': 0}}, None, {'sort_by':'-order'})
         assert(ids3 == [3, 2, 1])
+        db.close()
 
     def test_complex(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
@@ -325,3 +335,4 @@ class TestPersistentDB(unittest.TestCase):
 
         ids2, fields2 = db.select(tid, meta={}, fields=[], additional={'limit':15,'sort_by': '-order'})
         assert(ids2 == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
+        db.close()
