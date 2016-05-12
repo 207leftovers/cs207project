@@ -85,7 +85,7 @@ class TSDBProtocol(asyncio.Protocol):
 
     def _augmented_select(self, op):
         "run a select and then synchronously run some computation on it"
-        loids, fields = self.server.db.select(op['tid'], op['md'], self.server.db.validfields, op['additional'])
+        loids, fields = self.server.db.select(op['tid'], op['md'], ['ts'], op['additional'])
         proc = op['proc']  # The module in procs
         arg = op['arg']  # An additional argument, could be a constant
         target = op['target'] # Not used to upsert any more, but rather to
@@ -102,7 +102,7 @@ class TSDBProtocol(asyncio.Protocol):
         return TSDBOp_Return(TSDBStatus.OK, op['op'], dict(zip(loids, results)))
 
     def _add_trigger(self, op):
-        print('Adding triggers')
+        print('S> Adding triggers')
         trigger_proc = op['proc']  # the module in procs
         trigger_onwhat = op['onwhat']  # on what? eg `insert_ts`
         trigger_target = op['target']  # if provided, this meta will be upserted
@@ -133,7 +133,6 @@ class TSDBProtocol(asyncio.Protocol):
                 row['pk'] = a_row.pk
                 row['ts'] = a_row.ts
                 
-                #row = self.server.db.rows[pk]
                 task = asyncio.ensure_future(t(pk, row, arg))
                 task.add_done_callback(trigger_callback_maker(tid, pk, target, self.server.db.upsert_meta))
 
