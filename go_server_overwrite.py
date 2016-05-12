@@ -14,7 +14,8 @@ schema = {
   'std': {'convert': float, 'index': 1, 'default': 0.0},
   'sig_epsilon_estimate': {'convert': float, 'index': 1, 'default': 0.0},
   'sig_eta_estimate': {'convert': float, 'index': 1, 'default': 0.0},
-  'prediction': {'convert': str, 'index': None, 'default': None}
+  'prediction': {'convert': str, 'index': None, 'default': None},
+  'period': {'convert': float, 'index': 1, 'default':0.0}
 }
 
 def main():
