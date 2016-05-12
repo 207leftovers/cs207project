@@ -65,4 +65,4 @@ target/
 *parsetab.py
 *db_files*
 .tsdb_server1.log.test
-.tsdb_server.log.test
+*.log.test
