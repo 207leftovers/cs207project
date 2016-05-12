@@ -1,9 +1,0 @@
-Generating LALR tables
-Exception in callback trigger_callback_maker.<locals>.callback_(<Task finishe...135623730951]>) at /home/zhiqian/Dropbox/CS 207/cs207project/tsdb/tsdb_server.py:14
-handle: <Handle trigger_callback_maker.<locals>.callback_(<Task finishe...135623730951]>) at /home/zhiqian/Dropbox/CS 207/cs207project/tsdb/tsdb_server.py:14>
-Traceback (most recent call last):
-  File "/home/zhiqian/anaconda/envs/py35/lib/python3.5/asyncio/events.py", line 125, in _run
-    self._callback(*self._args)
-  File "/home/zhiqian/Dropbox/CS 207/cs207project/tsdb/tsdb_server.py", line 17, in callback_
-    calltomake(pk, dict(zip(target, result)))
-TypeError: upsert_meta() missing 1 required positional argument: 'meta'
