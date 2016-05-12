@@ -29,7 +29,7 @@ class Test_TSDB_Client(asynctest.TestCase):
         #     http://stackoverflow.com/questions/3781851/run-a-python-script-from-another-python-script-passing-in-args
         # We need this log file for some reason, it throws exceptions without it
         self.server_log_file = open('.tsdb_server1.log.test','w')
-        self.server_proc = subprocess.Popen(['python', 'go_server.py'], 
+        self.server_proc = subprocess.Popen(['python', 'go_server_overwrite.py'], 
             stdout=self.server_log_file, stderr=subprocess.STDOUT)
         time.sleep(1)
     

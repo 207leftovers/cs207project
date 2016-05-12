@@ -21,7 +21,7 @@ schema = {
 #curl http://localhost:9999/ -X POST -d "pk=four&op=insert_ts&ts=[[0.0, 1.0, 4.0], [0.0, 0.0, 4.0]]" 
 
 def main():
-    db = PersistentDB(schema, 'pk', overwrite=True)
+    db = PersistentDB(schema, 'pk', overwrite=False)
     server = TSDBServer(db)
     server.rest_run()
 

@@ -17,10 +17,13 @@ schema = {
   'prediction': {'convert': identity, 'index': None, 'default': None}
 }
 
+#TEST this out by running
+#curl http://localhost:9999/ -X POST -d "pk=four&op=insert_ts&ts=[[0.0, 1.0, 4.0], [0.0, 0.0, 4.0]]" 
+
 def main():
-    db = PersistentDB(schema, 'pk', overwrite=False, numvps=5)
+    db = PersistentDB(schema, 'pk', overwrite=True)
     server = TSDBServer(db)
-    server.run()
+    server.rest_run()
 
 if __name__=='__main__':
     main()
