@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Generating LALR tables
 Error handling request
 Traceback (most recent call last):
@@ -12,3 +13,5 @@ Traceback (most recent call last):
   File "/Users/Avery/Dropbox/Harvard/CS207/cs207project/tsdb/persistentdb.py", line 246, in upsert_meta
     raise ValueError("TimeSeries with pk: ", pk, " not present in db")
 ValueError: ('TimeSeries with pk: ', 1, ' not present in db')
+=======
+>>>>>>> fix pk to strings errors
