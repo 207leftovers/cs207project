@@ -20,5 +20,6 @@ def test_p():
     row = {}
     data_irr, time_irr = basic_irregular(stopTime, numPoints, numSelPoints)
     row['ts'] = ts.TimeSeries(time_irr, data_irr)
+    print(period.proc_main(1, row, (t2, v2))[0])
     assert(np.abs(period.proc_main(1, row, (t2, v2))[0] - 6.28) < 0.5)
 
