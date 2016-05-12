@@ -235,7 +235,63 @@ class TSDBProtocol(asyncio.Protocol):
             except TypeError as e:
                 print('S> invalid operation')
                 response = TSDBOp_Return(TSDBStatus.INVALID_OPERATION, None)
+            try:
+                if status is TSDBStatus.OK:
+                    if isinstance(op, TSDBOp_BeginTransaction):
+                        response = self._begin_transaction(op)
+                    elif isinstance(op, TSDBOp_Commit):
+                        response = self._commit(op)    
+                    elif isinstance(op, TSDBOp_Rollback):
+                        response = self._rollback(op)
+                    elif isinstance(op, TSDBOp_CreateVP):
+                        response = self._create_vp(op)
+                    elif isinstance(op, TSDBOp_TSSimilaritySearch):
+                        response = self._ts_similarity_search(op)
+                    elif isinstance(op, TSDBOp_InsertTS):
+                        response = self._insert_ts(op)
+                    elif isinstance(op, TSDBOp_DeleteTS):
+                        response = self._delete_ts(op)
+                    elif isinstance(op, TSDBOp_UpsertMeta):
+                        response = self._upsert_meta(op)
+                    elif isinstance(op, TSDBOp_Select):
+                        response = self._select(op)
+                    elif isinstance(op, TSDBOp_AugmentedSelect):
+                        response = self._augmented_select(op)
+                    elif isinstance(op, TSDBOp_AddTrigger):
+                        response = self._add_trigger(op)
+                    elif isinstance(op, TSDBOp_RemoveTrigger):
+                        response = self._remove_trigger(op)
+                    else:
+                        response = TSDBOp_Return(TSDBStatus.UNKNOWN_ERROR, op['op'])          
+            except Exception as e:
+                response = TSDBOp_Return(TSDBStatus.UNKNOWN_ERROR, op['op'], e)
 
+
+            self.conn.write(serialize(response.to_json()))
+            self.conn.close()
+
+    def connection_lost(self, transport):
+        print('S> connection lost')
+
+    def rest_hello_world(self, request):
+        return web.Response(body=b"Hello world")
+
+    #@rest_handler
+    @asyncio.coroutine
+    def post_handler(self, request):
+        data = yield from request.json()
+        status = TSDBStatus.OK  # until proven otherwise.
+        response = TSDBOp_Return(status, None)  # until proven otherwise.
+
+        msg = data
+        print ("msg_received",msg)
+        try:
+            op = TSDBOp.from_json(msg)
+        except TypeError as e:
+            response = TSDBOp_Return(TSDBStatus.INVALID_OPERATION, None)
+
+        print ("STATUS IS", status)
+        try:
             if status is TSDBStatus.OK:
                 if isinstance(op, TSDBOp_BeginTransaction):
                     response = self._begin_transaction(op)
@@ -263,57 +319,8 @@ class TSDBProtocol(asyncio.Protocol):
                     response = self._remove_trigger(op)
                 else:
                     response = TSDBOp_Return(TSDBStatus.UNKNOWN_ERROR, op['op'])
-
-            self.conn.write(serialize(response.to_json()))
-            self.conn.close()
-
-    def connection_lost(self, transport):
-        print('S> connection lost')
-
-    def rest_hello_world(self, request):
-        return web.Response(body=b"Hello world")
-
-    #@rest_handler
-    @asyncio.coroutine
-    def post_handler(self, request):
-        data = yield from request.json()
-        status = TSDBStatus.OK  # until proven otherwise.
-        response = TSDBOp_Return(status, None)  # until proven otherwise.
-
-        msg = data
-
-        try:
-            op = TSDBOp.from_json(msg)
-        except TypeError as e:
-            response = TSDBOp_Return(TSDBStatus.INVALID_OPERATION, None)
-
-        if status is TSDBStatus.OK:
-            if isinstance(op, TSDBOp_BeginTransaction):
-                response = self._begin_transaction(op)
-            elif isinstance(op, TSDBOp_Commit):
-                response = self._commit(op)    
-            elif isinstance(op, TSDBOp_Rollback):
-                response = self._rollback(op)
-            elif isinstance(op, TSDBOp_CreateVP):
-                response = self._create_vp(op)
-            elif isinstance(op, TSDBOp_TSSimilaritySearch):
-                response = self._ts_similarity_search(op)
-            elif isinstance(op, TSDBOp_InsertTS):
-                response = self._insert_ts(op)
-            elif isinstance(op, TSDBOp_DeleteTS):
-                response = self._delete_ts(op)
-            elif isinstance(op, TSDBOp_UpsertMeta):
-                response = self._upsert_meta(op)
-            elif isinstance(op, TSDBOp_Select):
-                response = self._select(op)
-            elif isinstance(op, TSDBOp_AugmentedSelect):
-                response = self._augmented_select(op)
-            elif isinstance(op, TSDBOp_AddTrigger):
-                response = self._add_trigger(op)
-            elif isinstance(op, TSDBOp_RemoveTrigger):
-                response = self._remove_trigger(op)
-            else:
-                response = TSDBOp_Return(TSDBStatus.UNKNOWN_ERROR, op['op'])
+        except Exception as e:
+            response = TSDBOp_Return(TSDBStatus.UNKNOWN_ERROR, op['op'], e)
         return web.json_response(response.to_json())
 
 class TSDBServer(object):

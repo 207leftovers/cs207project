@@ -259,7 +259,6 @@ class PersistentDB(object):
                 row.update(key, meta[key])
                 
         self._trees['pk'].set(pk, row.to_string())
-        print ("ROW3", row.to_string())
         # Update with the new indices
         self.update_indices(pk, row)
         
