@@ -198,5 +198,6 @@ typemap = {
   'augmented_select': TSDBOp_AugmentedSelect,
   'add_trigger': TSDBOp_AddTrigger,
   'remove_trigger': TSDBOp_RemoveTrigger,
-  'create_vp': TSDBOp_CreateVP
+  'create_vp': TSDBOp_CreateVP,
+  'ts_similarity_search': TSDBOp_TSSimilaritySearch 
 }

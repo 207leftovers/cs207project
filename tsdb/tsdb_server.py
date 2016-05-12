@@ -142,8 +142,7 @@ class TSDBProtocol(asyncio.Protocol):
                 row['ts'] = a_row.ts
                 
                 task = asyncio.ensure_future(t(pk, row, arg))
-                result = task.add_done_callback(trigger_callback_maker(tid, pk, target, self.server.db.upsert_meta))
-                print('RESULT', result)
+                task.add_done_callback(trigger_callback_maker(tid, pk, target, self.server.db.upsert_meta))
 
     def _create_vp(self, op):
         tid = op['tid']

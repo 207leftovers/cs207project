@@ -73,8 +73,6 @@ class PersistentDB(object):
             self.read_meta_from_dist()
             # Ensure the schema matches (uness the passed in schema was None)
             if (schema is not None) and len(schema) != len(self.schema):
-                print(self.schema)
-                print(schema)
                 raise ValueError("Schemas don't match")
             if self.pkfield != pkfield:
                 raise ValueError("PKs don't match")
