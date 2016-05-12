@@ -83,7 +83,7 @@ class TSDBOp_InsertTS(TSDBOp):
     
 class TSDBOp_DeleteTS(TSDBOp):
     def __init__(self, tid, pk):
-        super().__init__('delete_ts')
+        super().__init__('delete_ts', tid)
         self['pk'] = pk
 
     @classmethod

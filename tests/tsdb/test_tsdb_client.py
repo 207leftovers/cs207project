@@ -44,7 +44,7 @@ class Test_TSDB_Client(asynctest.TestCase):
         self.server_log_file.close()
         time.sleep(1)
     
-    async def simple_run(self):
+    async def test_simple_run(self):
         # Data
         t = [0,1,2,3,4]
         v = [1.0,2.0,3.0,2.0,1.0]
@@ -85,11 +85,9 @@ class Test_TSDB_Client(asynctest.TestCase):
         await client.insert_ts(tid, 2, ats)
         status, payload = await client.select(tid, {'pk':{'==':2}}, ['ts','mean','std'], None)
         assert(ts.TimeSeries(payload['2']['ts'][0], payload['2']['ts'][1]) == ats)
-        assert('std' not in payload['2'])
-        assert('mean' not in payload['2'])
         
         # Delete 
-        await client.delete_ts(1)
+        await client.delete_ts(tid, 1)
         status, payload = await client.select(tid, {'pk':{'==':1}}, ['ts','mean','std'], None)
         assert(status == 0)
         assert(payload == {})

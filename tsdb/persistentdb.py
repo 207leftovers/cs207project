@@ -64,7 +64,10 @@ class PersistentDB(object):
         # Load meta information if the path exists and we are not overwriting
         if os.path.exists(path_to_db_files+meta_info_filename) and not overwrite:
             with open(path_to_db_files+meta_info_filename, 'rb', buffering=0) as fd:
-                self.pkfield, self.schema = pickle.load(fd)
+                try: self.pkfield, self.schema = pickle.load(fd)
+                except EOFError: 
+                    pass
+                #self.pkfield, self.schema = pickle.load(fd)
                 # Ensure the schema matches 
                 if (schema is not None) and (schema != self.schema):
                     raise ValueError("Schemas don't match")
@@ -304,6 +307,7 @@ class PersistentDB(object):
                 
         matchedfielddicts = []
         
+        print ("MATCH",matchedfielddicts)
         # FIELDS
         # select the correct fields
         for pk in pks:
