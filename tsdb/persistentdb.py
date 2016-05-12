@@ -19,26 +19,17 @@ OPMAP = {
     '>=': operator.ge
 }
 
-def metafiltered(d, schema, fieldswanted):
-    d2 = {}
-    if len(fieldswanted) == 0:
-        keys = [k for k in d.keys() if k != 'ts']
-    else:
-        keys = [k for k in d.keys() if k in fieldswanted]
-    for k in keys:
-        if k in schema:
-            d2[k] = schema[k]['convert'](d[k])
-    return d2
-        
 class PersistentDB(object):
 
     def __init__(self, schema, pkfield, f='data', overwrite=False, numvps=5):
+
         # Augment the schema by adding an indicator column for vantage points
         schema['vp'] = {'convert': bool, 'index': 1, 'default': False}
         # Augment the schema by adding columns for 5 Vantage Points
         for i in range(numvps):
             schema["d_vp-{}".format(i)] = {'convert': float, 'index': 1, 'default': 0.0}
-        
+   
+
         self.schema = schema
         self.validfields = ['ts']
         self.pkfield = pkfield
@@ -55,8 +46,7 @@ class PersistentDB(object):
             os.makedirs(path_to_db_files)
         
         # The highest transaction sequence number
-        self.tid_seq = 0
-        
+        self.tid_seq = 0        
         # Transaction Table
         # "contains all transactions that are currently running and the Sequence Number of the last log entry they caused"
         self.tt = {}
@@ -71,7 +61,7 @@ class PersistentDB(object):
                 # Ensure the schema matches 
                 if (schema is not None) and (schema != self.schema):
                     raise ValueError("Schemas don't match")
-                if self.pkfield != pk_field:
+                if self.pkfield != pkfield:
                     raise ValueError("PKs don't match")
         else:
             pass
@@ -152,6 +142,7 @@ class PersistentDB(object):
         self.check_tid_open(tid)
         
         open_fields = self.tt[tid]
+        #print (open_fields)
         for field in open_fields:
             self._assert_not_closed(field)
             self._storage[field].unlock()
@@ -163,7 +154,8 @@ class PersistentDB(object):
             raise ValueError('Database closed:', field)
 
     def close(self):
-        self._storage.close()
+        for key in self._storage.keys():
+            self._storage[key].close()
 
     def get(self, key):
         #self._assert_not_closed()
@@ -313,7 +305,6 @@ class PersistentDB(object):
                 
         matchedfielddicts = []
         
-        print ("MATCH",matchedfielddicts)
         # FIELDS
         # select the correct fields
         for pk in pks:
@@ -344,7 +335,6 @@ class PersistentDB(object):
                             matched_field[field] = self._trees['pk'].get_as_row(pk).row[field]
 
             matchedfielddicts.append(matched_field)
-        print (matchedfielddicts)
         # ADDITIONAL
         if additional is None:
             return list(pks), matchedfielddicts

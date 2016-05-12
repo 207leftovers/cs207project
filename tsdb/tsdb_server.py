@@ -14,7 +14,6 @@ def trigger_callback_maker(pk, target, tid, calltomake):
     def callback_(future):
         result = future.result()
         if target is not None:
-            print ("HEREEE",target, result)
             calltomake(tid, pk, dict(zip(target, result)))
         return result
     return callback_
@@ -229,6 +228,9 @@ class TSDBServer(object):
             listener.close()
             loop.close()
 
+            #closing server db 
+            self.db.close()
+
     def rest_run(self):
         loop = asyncio.get_event_loop()
         app = web.Application()
@@ -248,6 +250,9 @@ class TSDBServer(object):
         finally:
             listener.close()
             loop.close()
+
+            #closing server db 
+            self.db.close()
 
 if __name__=='__main__':
     empty_schema = {'pk': {'convert': lambda x: x, 'index': None}}
