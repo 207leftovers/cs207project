@@ -71,7 +71,7 @@ class Test_TSDB_Protocol(unittest.TestCase):
         assert(insert_return['status'] == TSDBStatus.OK)
         assert(insert_return['payload'] == None)
 
-        assert(server.db._trees['pk'].get_as_row(1).pk == 1)
+        assert(server.db._trees['pk'].get_as_row(1).pk == "1")
         assert(server.db._trees['pk'].get_as_row(1).ts == ats1)
         
         # Add some more data
@@ -94,8 +94,8 @@ class Test_TSDB_Protocol(unittest.TestCase):
         print("Here", select_return)
         assert(select_return['op'] == 'select')
         assert(select_return['status'] == TSDBStatus.OK)
-        assert(select_return['payload'][1] == {})
-        assert(select_return['payload'][2] == {})
+        assert(select_return['payload']["1"] == {})
+        assert(select_return['payload']["2"] == {})
         
         # Test Protocol Select
         metadata_dict = {'pk': {'>': 0}}
@@ -105,8 +105,8 @@ class Test_TSDB_Protocol(unittest.TestCase):
         select_return = prot._select(select_op)
         assert(select_return['op'] == 'select')
         assert(select_return['status'] == TSDBStatus.OK)
-        assert(select_return['payload'][1]['ts'] == ats1)
-        assert(select_return['payload'][2]['ts'] == ats1)
+        assert(select_return['payload']["1"]['ts'] == ats1)
+        assert(select_return['payload']["2"]['ts'] == ats1)
         
         # Test Add Trigger
         add_trigger_op = TSDBOp_AddTrigger(tid, 'stats', 'insert_ts', ['mean', 'std'], None)
@@ -138,7 +138,7 @@ class Test_TSDB_Protocol(unittest.TestCase):
         ats2 = ts.TimeSeries(t2, v2)
 
         insert_op = {}
-        insert_op['pk'] = 1
+        insert_op['pk'] = "1"
         insert_op['ts'] = ats1
         insert_op['op'] = 'insert_ts'
         insert_op['tid'] = tid
@@ -148,7 +148,7 @@ class Test_TSDB_Protocol(unittest.TestCase):
         assert(insert_return['op'] == 'insert_ts')
         assert(insert_return['status'] == TSDBStatus.OK)
         assert(insert_return['payload'] == None)
-        assert(server.db._trees['pk'].get_as_row(1).pk == 1)
+        assert(server.db._trees['pk'].get_as_row(1).pk == "1")
         assert(server.db._trees['pk'].get_as_row(1).ts == ats1)
 
         insert_return2 = prot._insert_ts(insert_op)
@@ -156,7 +156,7 @@ class Test_TSDB_Protocol(unittest.TestCase):
         assert(insert_return2['status'] == TSDBStatus.INVALID_KEY)
 
         delete_op = {}
-        delete_op['pk'] = 1
+        delete_op['pk'] = "1"
         delete_op['op'] = 'delete_ts'
         delete_op['tid'] = tid
 
@@ -222,7 +222,7 @@ class Test_TSDB_Protocol(unittest.TestCase):
         assert(insert_return['status'] == TSDBStatus.OK)
         assert(insert_return['payload'] == None)
         
-        assert(server.db._trees['pk'].get_as_row(1).pk == 1)
+        assert(server.db._trees['pk'].get_as_row(1).pk == "1")
         assert(server.db._trees['pk'].get_as_row(1).ts == ats1)
 
         # Test Protocol Select (None fields)
@@ -234,7 +234,7 @@ class Test_TSDB_Protocol(unittest.TestCase):
 
         assert(aug_select_return['op'] == 'augmented_select')
         assert(aug_select_return['status'] == TSDBStatus.OK)
-        assert(aug_select_return['payload'] == {1: {'mean': 1.4142135623730403}})
+        assert(aug_select_return['payload'] == {"1": {'mean': 1.4142135623730403}})
         db.close()
 
     def test_simple_run(self):

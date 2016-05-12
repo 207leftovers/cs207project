@@ -62,10 +62,10 @@ async def test2():
     await client.add_trigger(tid, 'stats', 'insert_ts', ['mean', 'std'], None)
         
     # Insert
-    await client.insert_ts(tid, 1, ats)
+    await client.insert_ts(tid, "1", ats)
         
     # Select
-    status, payload = await client.select(tid, {'pk':{'==':1}}, ['ts','mean','std'], None)
+    status, payload = await client.select(tid, {'pk':{'==':"1"}}, ['ts','mean','std'], None)
     assert(status == 0)
 
     assert(ts.TimeSeries(payload['1']['ts'][0], payload['1']['ts'][1]) == ats)
@@ -73,7 +73,7 @@ async def test2():
     assert(payload['1']['mean'] == 2.0)
     
     # Upsert
-    await client.upsert_meta(tid, 1, {'order':1})
+    await client.upsert_meta(tid, "1", {'order':1})
     status, payload = await client.select(tid, {'order':{'==':1}}, ['pk', 'order'], None)
     assert(status == 0)
     assert(payload['1']['order'] == 1)
@@ -82,15 +82,15 @@ async def test2():
     await client.remove_trigger(tid, 'stats', 'insert_ts')
     
     # Insert (No Trigger)
-    await client.insert_ts(tid, 2, ats)
-    status, payload = await client.select(tid, {'pk':{'==':2}}, ['ts','mean','std'], None)
+    await client.insert_ts(tid, "2", ats)
+    status, payload = await client.select(tid, {'pk':{'==':"2"}}, ['ts','mean','std'], None)
     assert(ts.TimeSeries(payload['2']['ts'][0], payload['2']['ts'][1]) == ats)
-    #assert('std' not in payload['2'])
+    assert(payload['2']['std'] == 0)
     #assert('mean' not in payload['2'])
     
     # Delete 
-    await client.delete_ts(tid, 1)
-    status, payload = await client.select(tid, {'pk':{'==':1}}, ['ts','mean','std'], None)
+    await client.delete_ts(tid, "1")
+    status, payload = await client.select(tid, {'pk':{'==':"1"}}, ['ts','mean','std'], None)
     assert(status == 0)
     assert(payload == {})
 if __name__=='__main__':

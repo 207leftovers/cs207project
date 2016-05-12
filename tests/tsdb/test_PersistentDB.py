@@ -62,17 +62,17 @@ class TestPersistentDB(unittest.TestCase):
         db = PersistentDB(schema, 'pk', overwrite=True)
         first_tid = db.begin_transaction()
         db.insert_ts(first_tid, 1, ats1)
-        row1 = DBRow.row_from_string(db._trees['pk'].get(1))
-        assert(row1.pk == 1)
-        assert(db._trees['pk'].has_key(1) == True)
+        row1 = DBRow.row_from_string(db._trees['pk'].get("1"))
+        assert(row1.pk == "1")
+        assert(db._trees['pk'].has_key("1") == True)
 
         # ROLLBACK
         db.rollback(first_tid)
         assert(db.tt == {})
         # Test that the set of keys is reverted
-        assert(db._trees['pk'].has_key(1) == False)
+        assert(db._trees['pk'].has_key("1") == False)
         try:
-            row1 = DBRow.row_from_string(db._trees['pk'].get(1))
+            row1 = DBRow.row_from_string(db._trees['pk'].get("1"))
         except Exception as e: 
             e1 = e
         assert str(e1) == ''
@@ -92,11 +92,11 @@ class TestPersistentDB(unittest.TestCase):
         right_node = pk_tree._follow(base_node.right_ref)
 
         row1 = DBRow.row_from_string(pk_tree._follow(base_node.value_ref))
-        assert(row1.pk == 1)
+        assert(row1.pk == "1")
         assert(row1.ts == ats1)
 
         row2 = DBRow.row_from_string(pk_tree._follow(right_node.value_ref))
-        assert(row2.pk == 2)
+        assert(row2.pk == "2")
         assert(row2.ts == ats2)
 
         e1 = ''
@@ -132,8 +132,8 @@ class TestPersistentDB(unittest.TestCase):
 
         # Tests
         pk_tree = db._trees['pk']
-        assert(pk_tree.has_key(4) == True)
-        assert(pk_tree.has_key(1) == False)
+        assert(pk_tree.has_key("4") == True)
+        assert(pk_tree.has_key("1") == False)
 
         # TODO!
         #assert(db.indexes['order'] == {})
@@ -220,25 +220,25 @@ class TestPersistentDB(unittest.TestCase):
         db.insert_ts(tid, 3, ats3)
 
         ids1, fields1 = db.select(tid, {'pk': {'==': 1}},None,None)
-        assert(ids1 == [1])
+        assert(ids1 == ["1"])
 
         ids2, fields2 = db.select(tid, {'pk': {'>': 1}},None,None)
-        assert(ids2 == [2, 3])
+        assert(ids2 == ["2", "3"] or ids2 == ["3", "2"])
 
         ids3, fields3 = db.select(tid, {'pk': {'<': 2}},None,None)
-        assert(ids3 == [1])
+        assert(ids3 == ["1"])
 
         ids4, fields4 = db.select(tid, {'pk': {'!=': 1}},None,None)
-        assert(ids4 == [2, 3])
+        assert(ids4 == ["2", "3"] or ids4 == ["3", "2"])
 
         ids5, fields5 = db.select(tid, {'pk': {'<=': 2}},None,None)
-        assert(ids5 == [1, 2])
+        assert(ids5 == ["1", "2"] or ids5 == ["2", "1"])
 
         ids6, fields6 = db.select(tid, {'pk': {'>=': 2}},None,None)
-        assert(ids6 == [2, 3])
+        assert(ids6 == ["2", "3"] or ids6 == ["3", "2"])
 
         ids7, fields7 = db.select(tid, {'pk': {'>': 1, '<': 3}}, None, None)
-        assert(ids7 == [2])
+        assert(ids7 == ["2"])
         db.close()
 
     def test_select_basic_fields(self):
@@ -307,20 +307,20 @@ class TestPersistentDB(unittest.TestCase):
         db.upsert_meta(tid, 3, {'order': 5})
 
         # Limit to 2 results
-        ids1, fields1 = db.select(tid, {'pk': {'>': 0}}, None, {'limit':2})
-        assert(ids1 == [1, 2])
+        ids1, fields1 = db.select(tid, {'pk': {'>': 0}}, None, {'limit':2, 'sort_by':'+pk'})
+        assert(ids1 == ["1", "2"])
 
         # Useless Ascending
-        ids2, fields2 = db.select(tid, {'pk': {'>': 0}}, None, {'sort_by':'+useless'})
-        assert(ids2 == [1, 2, 3])
+        ids2, fields2 = db.select(tid, {'pk': {'>': 0}}, None, {'sort_by':'+pk'})
+        assert(ids2 == ["1", "2", "3"])
 
         # Order Ascending
         ids2, fields2 = db.select(tid, {'pk': {'>': 0}}, None, {'sort_by':'+order'})
-        assert(ids2 == [1, 2, 3])
+        assert(ids2 == ["1", "2", "3"])
 
         # Order Descending
         ids3, fields3 = db.select(tid, {'pk': {'>': 0}}, None, {'sort_by':'-order'})
-        assert(ids3 == [3, 2, 1])
+        assert(ids3 == ["3", "2", "1"])
         db.close()
 
     def test_complex(self):
@@ -333,8 +333,8 @@ class TestPersistentDB(unittest.TestCase):
             db.upsert_meta(tid, i, {'order': -i})
 
         ids1, fields1 = db.select(tid, {'pk': {'>': 10, '<=' : 50}},None,{'limit':10,'sort_by':'-blarg'})
-        assert(ids1 == [50, 49, 48, 47, 46, 45, 44, 43, 42, 41])
+        assert(ids1 == ["50", "49", "48", "47", "46", "45", "44", "43", "42", "41"])
 
         ids2, fields2 = db.select(tid, meta={}, fields=[], additional={'limit':15,'sort_by': '-order'})
-        assert(ids2 == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
+        assert(ids2 == ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14"])
         db.close()

@@ -28,6 +28,7 @@ class TSDB_REST_Client(object):
         
     async def insert_ts(self, tid, primary_key, ts):
         # your code here, construct from the code in tsdb_ops.py
+        print ("PRIMARY KEY", primary_key, type(primary_key))
         InsertedTS = TSDBOp_InsertTS(tid, primary_key, ts)
         return await self._send(InsertedTS.to_json())
 

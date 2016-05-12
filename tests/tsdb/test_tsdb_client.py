@@ -53,30 +53,25 @@ class Test_TSDB_Client(asynctest.TestCase):
         # Setup Client
         client = TSDBClient()
         
-        # Begin Transaction
+        # Get Transaction ID
         status, tid = await client.begin_transaction()
-        assert(tid == 1)
             
         # Add Trigger
         await client.add_trigger(tid, 'stats', 'insert_ts', ['mean', 'std'], None)
             
         # Insert
-        await client.insert_ts(tid, 1, ats)
-
-        # TODO:
-        return
-        
+        await client.insert_ts(tid, "1", ats)
+            
         # Select
-        status, payload = await client.select(tid, {'pk':{'==':1}}, ['ts','mean','std'], None)
-        
+        status, payload = await client.select(tid, {'pk':{'==':"1"}}, ['ts','mean','std'], None)
         assert(status == 0)
+
         assert(ts.TimeSeries(payload['1']['ts'][0], payload['1']['ts'][1]) == ats)
-        print(payload['1'])
         assert(payload['1']['std'] == 1.4142135623730951)
         assert(payload['1']['mean'] == 2.0)
         
         # Upsert
-        await client.upsert_meta(tid, 1, {'order':1})
+        await client.upsert_meta(tid, "1", {'order':1})
         status, payload = await client.select(tid, {'order':{'==':1}}, ['pk', 'order'], None)
         assert(status == 0)
         assert(payload['1']['order'] == 1)
@@ -85,16 +80,16 @@ class Test_TSDB_Client(asynctest.TestCase):
         await client.remove_trigger(tid, 'stats', 'insert_ts')
         
         # Insert (No Trigger)
-        await client.insert_ts(tid, 2, ats)
-        status, payload = await client.select(tid, {'pk':{'==':2}}, ['ts','mean','std'], None)
+        await client.insert_ts(tid, "2", ats)
+        status, payload = await client.select(tid, {'pk':{'==':"2"}}, ['ts','mean','std'], None)
         assert(ts.TimeSeries(payload['2']['ts'][0], payload['2']['ts'][1]) == ats)
+        assert(payload['2']['std'] == 0)
+        #assert('mean' not in payload['2'])
         
         # Delete 
-        await client.delete_ts(tid, 1)
-        status, payload = await client.select(tid, {'pk':{'==':1}}, ['ts','mean','std'], None)
+        await client.delete_ts(tid, "1")
+        status, payload = await client.select(tid, {'pk':{'==':"1"}}, ['ts','mean','std'], None)
         assert(status == 0)
-        assert(payload == {})
-        
     # Modeled after go_client.py
     async def test_complex_run(self):
         print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
