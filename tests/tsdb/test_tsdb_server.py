@@ -234,7 +234,6 @@ class Test_TSDB_Protocol(unittest.TestCase):
 
         assert(aug_select_return['op'] == 'augmented_select')
         assert(aug_select_return['status'] == TSDBStatus.OK)
-        #assert(aug_select_return['payload'] == {"1": {'mean': 1.4142135623730403}})
         db.close()
 
     def test_simple_run(self):
