@@ -4,14 +4,14 @@ import timeseries as ts
 import time
 import unittest
 
-identity = lambda x: x
+#identity = lambda x: x
 
 schema = {
-  'pk': {'convert': identity, 'index': None, 'default': -1},  # Will be indexed anyways
-  'ts': {'convert': identity, 'index': None, 'default': None},
+  'pk': {'convert': str, 'index': None, 'default': -1},  # Will be indexed anyways
+  'ts': {'convert': str, 'index': None, 'default': None},
   'order': {'convert': int, 'index': 1, 'default': 0},
   'blarg': {'convert': int, 'index': 1, 'default': 0},
-  'useless': {'convert': identity, 'index': None, 'default': 0},
+  'useless': {'convert': str, 'index': None, 'default': 0},
   'mean': {'convert': float, 'index': 1, 'default': 0},
   'std': {'convert': float, 'index': 1, 'default': 0},
   'vp': {'convert': bool, 'index': 1, 'default': False}

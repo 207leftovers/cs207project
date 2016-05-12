@@ -9,6 +9,7 @@ import portalocker
 from tsdb.tsdb_row import *
 from tsdb.tsdb_indexes import *
 
+
 # This dictionary will help you in writing a generic select operation
 OPMAP = {
     '<': operator.lt,
@@ -21,6 +22,13 @@ OPMAP = {
 
 class PersistentDB(object):
 
+    def write_meta_to_disk(self):
+        with open(self.path_to_db_files+self.meta_info_filename, 'wb') as fd:
+                pickle.dump({
+                    'pkfield': self.pkfield,
+                    'schema': self.schema
+                }, fd)
+    
     def __init__(self, schema, pkfield, f='data', overwrite=False):
         # Augment the schema by adding an indicator column for vantage points
         schema['vp'] = {'convert': bool, 'index': 1, 'default': False}
@@ -37,7 +45,7 @@ class PersistentDB(object):
         self._storage = {}
         self._trees = {}
         
-        meta_info_filename = 'db_meta'
+        self.meta_info_filename = 'db_meta'
         
         self.path_to_db_files = 'db_files/' + f + '/'
         if not os.path.exists(self.path_to_db_files):
@@ -50,22 +58,24 @@ class PersistentDB(object):
         self.tt = {}
 
         # Load meta information if the path exists and we are not overwriting
-        if os.path.exists(self.path_to_db_files+meta_info_filename) and not overwrite:
-            with open(self.path_to_db_files+meta_info_filename, 'rb', buffering=0) as fd:
-                try: self.pkfield, self.schema = pickle.load(fd)
+        if os.path.exists(self.path_to_db_files+self.meta_info_filename) and not overwrite:
+            with open(self.path_to_db_files+self.meta_info_filename, 'rb', buffering=0) as fd:
+                try:
+                    d = pickle.load(fd)
+                    self.pkfield = d['pkfield']
+                    self.schema = d['schema']
                 except EOFError: 
-                    pass
-                # Ensure the schema matches 
-                if (schema is not None) and (schema != self.schema):
+                    raise EOFError
+                # Ensure the schema matches (uness the passed in schema was None)
+                if (schema is not None) and len(schema) != len(self.schema):
+                    print(self.schema)
+                    print(schema)
                     raise ValueError("Schemas don't match")
                 if self.pkfield != pkfield:
                     raise ValueError("PKs don't match")
         else:
-            pass
-            # TODO: !!!
             # Write the meta information to file
-            #with open(self.path_to_db_files+meta_info_filename,'wb',buffering=0) as fd:
-            #    pickle.dump((self.pkfield, dict(self.schema)), fd)
+            self.write_meta_to_disk()
 
         for s in schema:            
             indexinfo = schema[s]['index']
@@ -125,6 +135,9 @@ class PersistentDB(object):
     # Commit the transaction
     def commit(self, tid):
         self.check_tid_open(tid)
+        
+        # Update the meta data that is stored on disk
+        self.write_meta_to_disk()
 
         open_fields = self.tt[tid]
         for field in open_fields:
