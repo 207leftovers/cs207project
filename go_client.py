@@ -2,7 +2,6 @@
 from tsdb import TSDBClient
 import timeseries as ts
 import numpy as np
-
 from scipy.stats import norm
 
 # m is the mean, s is the standard deviation, and j is the jitter

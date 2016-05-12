@@ -76,14 +76,6 @@ class TestPersistentDB(unittest.TestCase):
         assert str(e1) == ''
         assert type(e1).__name__ == 'KeyError'  
 
-    def test_vps(self):
-        db = PersistentDB(schema, 'pk', overwrite=True, numvps=5)
-        tid = db.begin_transaction()
-
-        assert('d_vp-0' in db.schema)
-        assert('d_vp-4' in db.schema)
-        assert('d_vp-5' not in db.schema)
-
     def test_insert(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
         tid = db.begin_transaction()

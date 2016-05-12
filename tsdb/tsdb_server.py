@@ -10,12 +10,11 @@ import json
 import ast
 from aiohttp import web
 
-def trigger_callback_maker(pk, target, tid, calltomake):
+def trigger_callback_maker(pk, target, calltomake):
     def callback_(future):
         result = future.result()
         if target is not None:
-            print ("HEREEE",target, result)
-            calltomake(tid, pk, dict(zip(target, result)))
+            calltomake(pk, dict(zip(target, result)))
         return result
     return callback_
 
@@ -28,18 +27,33 @@ class TSDBProtocol(asyncio.Protocol):
 
     def _begin_transaction(self, op):
         tid = self.server.db.begin_transaction() 
-        print("S> Begin TX")
+        print("S> Begin Transaction")
         if tid > 0:
             return TSDBOp_Return(TSDBStatus.OK, op['op'], payload=tid)
         else:
             raise ValueError("TID", tid)
+            
+    def _commit(self, op):
+        try:
+            print("S> Commit", op['tod'])
+            self.server.db.commit(op['tid'])
+        except ValueError as e:
+            return TSDBOp_Return(TSDBStatus.INVALID_KEY, op['op'])
+        
+    def _rollback(self, op):
+        try:
+            print("S> Rollback ", op['tid'])
+            self.server.db.rollback(op['tid'])
+        except ValueError as e:
+            return TSDBOp_Return(TSDBStatus.INVALID_KEY, op['op'])
         
     def _insert_ts(self, op):
         try:
+            print("S> Insert TS: ", op['pk'])
             self.server.db.insert_ts(op['tid'], op['pk'], op['ts'])
         except ValueError as e:
             return TSDBOp_Return(TSDBStatus.INVALID_KEY, op['op'])
-        self._run_trigger('insert_ts', [op['pk']], op['tid'])
+        self._run_trigger('insert_ts', [op['pk']])
         return TSDBOp_Return(TSDBStatus.OK, op['op'])
     
     def _delete_ts(self, op):
@@ -47,17 +61,17 @@ class TSDBProtocol(asyncio.Protocol):
             self.server.db.delete_ts(op['tid'], op['pk'])
         except ValueError as e:
             return TSDBOp_Return(TSDBStatus.INVALID_KEY, op['op'])
-        self._run_trigger('delete_ts', [op['pk']], op['tid'])
+        self._run_trigger('delete_ts', [op['pk']])
         return TSDBOp_Return(TSDBStatus.OK, op['op'])
 
     def _upsert_meta(self, op):
         self.server.db.upsert_meta(op['tid'], op['pk'], op['md'])
-        self._run_trigger('upsert_meta', [op['pk']] , op['tid'])
+        self._run_trigger('upsert_meta', [op['pk']])
         return TSDBOp_Return(TSDBStatus.OK, op['op'])
 
     def _select(self, op):
         loids, fields = self.server.db.select(op['tid'], op['md'], op['fields'], op['additional'])
-        self._run_trigger('select', loids, op['tid'])
+        self._run_trigger('select', loids)
         if fields is not None:
             d = OrderedDict(zip(loids, fields))
             return TSDBOp_Return(TSDBStatus.OK, op['op'], d)
@@ -104,7 +118,7 @@ class TSDBProtocol(asyncio.Protocol):
                 trigs.remove(t)
         return TSDBOp_Return(TSDBStatus.OK, op['op'])
 
-    def _run_trigger(self, opname, rowmatch, tid):
+    def _run_trigger(self, opname, rowmatch):
         lot = self.server.triggers[opname]
         print("S> list of triggers to run", lot)
         for tname, t, arg, target in lot:
@@ -117,8 +131,42 @@ class TSDBProtocol(asyncio.Protocol):
                 
                 #row = self.server.db.rows[pk]
                 task = asyncio.ensure_future(t(pk, row, arg))
-                task.add_done_callback(trigger_callback_maker(pk, target,tid, self.server.db.upsert_meta))
+                task.add_done_callback(trigger_callback_maker(pk, target, self.server.db.upsert_meta))
 
+    def _create_vp(self, op):
+        tid = op['tid']
+        pk = op['pk']
+        
+        # Set this TimeSeries as a Vantage Point
+        try:
+            field, ts = self.server.db.create_vp(tid, pk)
+        except ValueError:
+            return TSDBOp_Return(TSDBStatus.INVALID_KEY, op['op'])
+        
+        # Add a trigger so all new TimeSeries will have the corr with this VP
+        trigger = self._add_trigger(TSDBOp_AddTrigger(tid, 'corr', 'insert_ts', [field], ts))
+        
+        if trigger['status'] is not TSDBStatus.OK:
+            return TSDBOp_Return(TSDBStatus.INVALID_KEY, op['op'])
+        
+        # Update all existing TimeSeries with the corr with this new VP
+        augment_op = TSDBOp_AugmentedSelect(tid, 'corr', [field], ts, {}, None)
+        
+        augment = self._augmented_select(augment_op)
+        if augment['status'] is not TSDBStatus.OK:
+            return TSDBOp_Return(TSDBStatus.INVALID_KEY, op['op'])
+        
+        for pk, metadata in augment['payload'].items():
+            upsert = self._upsert_meta(TSDBOp_UpsertMeta(tid, pk, metadata))
+
+            if upsert['status'] != TSDBStatus.OK:
+                return TSDBOp_Return(TSDBStatus.INVALID_OPERATION, op['op'])
+
+        return TSDBOp_Return(TSDBStatus.OK, op['op'])
+        # choose 5 distinct vantage point time series
+        #vpkeys = ["ts-{}".format(i) for i in np.random.choice(range(50), size=5, replace=False)]
+                
+                
     def connection_made(self, conn):
         print('S> connection made')
         self.conn = conn
@@ -180,6 +228,12 @@ class TSDBProtocol(asyncio.Protocol):
         if status is TSDBStatus.OK:
             if isinstance(op, TSDBOp_BeginTransaction):
                 response = self._begin_transaction(op)
+            elif isinstance(op, TSDBOp_Commit):
+                response = self._commit(op)    
+            elif isinstance(op, TSDBOp_Rollback):
+                response = self._rollback(op)
+            elif isinstance(op, TSDBOp_CreateVP):
+                response = self._create_vp(op)
             elif isinstance(op, TSDBOp_InsertTS):
                 response = self._insert_ts(op)
             elif isinstance(op, TSDBOp_DeleteTS):

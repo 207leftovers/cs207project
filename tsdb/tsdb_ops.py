@@ -164,12 +164,19 @@ class TSDBOp_RemoveTrigger(TSDBOp):
         self['proc'] = proc
         self['onwhat'] = onwhat
 
-
     @classmethod
     def from_json(cls, json_dict):
         return cls(json_dict['tid'], json_dict['proc'], json_dict['onwhat'])
 
+class TSDBOp_CreateVP(TSDBOp):
+    def __init__(self, tid, pk):
+        super().__init__('create_vp', tid)
+        self['pk'] = pk
 
+    @classmethod
+    def from_json(cls, json_dict):
+        return cls(json_dict['tid'], json_dict['pk'])
+    
 # This simplifies reconstructing TSDBOp instances from network data.
 typemap = {
   'begin_transaction': TSDBOp_BeginTransaction,
@@ -182,4 +189,5 @@ typemap = {
   'augmented_select': TSDBOp_AugmentedSelect,
   'add_trigger': TSDBOp_AddTrigger,
   'remove_trigger': TSDBOp_RemoveTrigger,
+  'create_vp': TSDBOp_CreateVP
 }
