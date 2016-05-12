@@ -2,7 +2,7 @@ import pkg_resources
 
 from timeseries.TimeSeries import *
 from timeseries.lazy import *
-
+from timeseries.set_compiler import *
 try:
     __version__ = pkg_resources.get_distribution(__name__).version
 except:
