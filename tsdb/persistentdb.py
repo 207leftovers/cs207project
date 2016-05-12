@@ -330,14 +330,11 @@ class PersistentDB(object):
                 pks = pks.intersection(some_pks)
         matchedfielddicts = []
         
-        print("PKS", pks)
-        print("VALID FIELDS", self.validfields)
-        
         # FIELDS
         # select the correct fields
         for pk in pks:
             pk_row = self._trees['pk'].get_as_row(pk)
-            print('ROW', pk_row.row)
+
             matched_field = {}
             # If fields is None, just return the primary keys
             if fields == None:
