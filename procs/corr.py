@@ -5,27 +5,28 @@ from ._corr import stand, kernel_corr
 
 import asyncio
 
-# this function is directly used for augmented selects
+# This function is directly used for augmented selects
 def proc_main(pk, row, arg):
-    #The argument is a time series. But due to serialization it does
-    #not come out as the "instance", and must be cast
-    print ("RRRRR")
-    print (*arg)
+    # The argument is a time series. But due to serialization it does
+    # not come out as the "instance", and must be cast
     argts = ts.TimeSeries(*arg)
-    #compute a standardized time series
+    
+    # Compute a standardized time series
     stand_argts = stand(argts, argts.mean(), argts.std())
-    # for each row in our select/etc, standardize the time series
+    
+    # For each row in our select/etc, standardize the time series
     stand_rowts = stand(row['ts'], row['ts'].mean(), row['ts'].std())
-    print(stand_argts, stand_rowts)
-    #compute the normalozed kernelized cross-correlation
+
+    # Compute the normalozed kernelized cross-correlation
     kerncorr = kernel_corr(stand_rowts, stand_argts, 5)
-    # compute a distance from it.
-    #The distance is given by np.sqrt(K(x,x) + K(y,y) - 2*K(x,y))
-    #since we are normalized the autocorrs are 1
+    
+    # Compute a distance from it.
+    # The distance is given by np.sqrt(K(x,x) + K(y,y) - 2*K(x,y))
+    # since we are normalized the autocorrs are 1
     kerndist = np.sqrt(2*(1-kerncorr))
     return [kerndist]
 
-#the function is wrapped in a coroutine for triggers
+# The function is wrapped in a coroutine for triggers
 async def main(pk, row, arg):
     return proc_main(pk, row, arg)
     
