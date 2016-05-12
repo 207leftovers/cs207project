@@ -63,7 +63,7 @@ class Test_TSDB_Client(asynctest.TestCase):
         await client.insert_ts(tid, "1", ats)
             
         # Select
-        status, payload = await client.select(tid, {'pk':{'==':"1"}}, ['ts','mean','std'], None)
+        status, payload = await client.select(tid, {'pk':{'==':'1'}}, ['ts','mean','std'], None)
         assert(status == 0)
 
         assert(ts.TimeSeries(payload['1']['ts'][0], payload['1']['ts'][1]) == ats)
@@ -142,31 +142,27 @@ class Test_TSDB_Client(asynctest.TestCase):
         # In this version, select has sprouted an additional keyword argument
         # to allow for sorting. Limits could also be enforced through this.
         select = await client.select(tid, fields=['order'], additional={'sort_by': '-order'})
-        print(select)
-        # TODO: DO NOT APPEAR TO BE IN ORDER
         for x in range(1, len(select[1])):
             assert(select[1][list(select[1].keys())[x]]['order'] <= select[1][list(select[1].keys())[x-1]]['order'])
     
-        # print('----------ORDER FIELD-----------')
-        # _, results = await client.select(fields=['order'])
-        # for k in results:
-        #     print(k, results[k])
+        # ALL FILEDS
+        #select = await client.select(tid, fields=[])
+        #assert(len(select[1]) == 50)
     
-        # print('---------ALL FILEDS------------')
-        # await client.select(fields=[])
-    
-        # print('------------TS with order 1---------')
-        # await client.select({'order': 1}, fields=['ts'])
+        # TODO:
+        # TS with order 1
+        #select = await client.select(tid, {'order': 1}, fields=['ts'])
+        #assert(len(select[1]) == 0)
     
         # print('------------All fields, blarg 1 ---------')
-        # await client.select({'blarg': 1}, fields=[])
+        # await client.select(tid, {'blarg': 1}, fields=[])
     
         # print('------------order 1 blarg 2 no fields---------')
-        # _, bla = await client.select({'order': 1, 'blarg': 2})
+        # _, bla = await client.select(tid, {'order': 1, 'blarg': 2})
         # print(bla)
     
         # print('------------order >= 4  order, blarg and mean sent back, also sorted---------')
-        # _, results = await client.select({'order': {'>=': 4}}, fields=['order', 'blarg', 'mean'], additional={'sort_by': '-order'})
+        # _, results = await client.select(tid, {'order': {'>=': 4}}, fields=['order', 'blarg', 'mean'], additional={'sort_by': '-order'})
         # for k in results:
         #     print(k, results[k])
 

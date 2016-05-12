@@ -78,7 +78,7 @@ class TSDBClient(object):
 
     async def _send_coro(self, msg, loop):
         # your code here
-        print ("C> sending:", msg)
+        #print ("C> sending:", msg)
         serialized_msg = serialize(msg)
 
         reader, writer = await asyncio.open_connection('127.0.0.1', self.port, loop = loop)
@@ -94,7 +94,7 @@ class TSDBClient(object):
         deserializer.append(data)
         if deserializer.ready():
             response = deserializer.deserialize()
-            print('C> response', response)
+            #print('C> response', response)
             status = TSDBStatus(response['status'])
             payload = response['payload']
 

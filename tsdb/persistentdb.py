@@ -328,6 +328,7 @@ class PersistentDB(object):
                     
                 # Now update the over-all set of pks by finding the intersection
                 pks = pks.intersection(some_pks)
+        
         matchedfielddicts = []
         
         # FIELDS
