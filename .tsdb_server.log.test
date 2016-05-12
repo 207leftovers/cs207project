@@ -1,22 +1,22 @@
 Generating LALR tables
-Exception in callback trigger_callback_maker.<locals>.callback_(<Task finishe...135623730951]>) at /Users/Avery/Dropbox/Harvard/CS207/cs207project/tsdb/tsdb_server.py:14
-handle: <Handle trigger_callback_maker.<locals>.callback_(<Task finishe...135623730951]>) at /Users/Avery/Dropbox/Harvard/CS207/cs207project/tsdb/tsdb_server.py:14>
+Exception in callback trigger_callback_maker.<locals>.callback_(<Task finishe...135623730951]>) at /home/zhiqian/Dropbox/CS 207/cs207project/tsdb/tsdb_server.py:14
+handle: <Handle trigger_callback_maker.<locals>.callback_(<Task finishe...135623730951]>) at /home/zhiqian/Dropbox/CS 207/cs207project/tsdb/tsdb_server.py:14>
 Traceback (most recent call last):
-  File "/Users/Avery/anaconda/envs/py35/lib/python3.5/asyncio/events.py", line 125, in _run
+  File "/home/zhiqian/anaconda/envs/py35/lib/python3.5/asyncio/events.py", line 125, in _run
     self._callback(*self._args)
-  File "/Users/Avery/Dropbox/Harvard/CS207/cs207project/tsdb/tsdb_server.py", line 17, in callback_
-    calltomake(pk, dict(zip(target, result)))
-TypeError: upsert_meta() missing 1 required positional argument: 'meta'
+  File "/home/zhiqian/Dropbox/CS 207/cs207project/tsdb/tsdb_server.py", line 17, in callback_
+    calltomake(tid, pk, dict(zip(target, result)))
+NameError: name 'tid' is not defined
 Error handling request
 Traceback (most recent call last):
-  File "/Users/Avery/anaconda/envs/py35/lib/python3.5/site-packages/aiohttp/server.py", line 266, in start
+  File "/home/zhiqian/anaconda/envs/py35/lib/python3.5/site-packages/aiohttp/server.py", line 266, in start
     yield from self.handle_request(message, payload)
-  File "/Users/Avery/anaconda/envs/py35/lib/python3.5/site-packages/aiohttp/web.py", line 90, in handle_request
+  File "/home/zhiqian/anaconda/envs/py35/lib/python3.5/site-packages/aiohttp/web.py", line 90, in handle_request
     resp = yield from handler(request)
-  File "/Users/Avery/Dropbox/Harvard/CS207/cs207project/tsdb/tsdb_server.py", line 244, in post_handler
+  File "/home/zhiqian/Dropbox/CS 207/cs207project/tsdb/tsdb_server.py", line 244, in post_handler
     response = self._select(op)
-  File "/Users/Avery/Dropbox/Harvard/CS207/cs207project/tsdb/tsdb_server.py", line 73, in _select
+  File "/home/zhiqian/Dropbox/CS 207/cs207project/tsdb/tsdb_server.py", line 73, in _select
     loids, fields = self.server.db.select(op['tid'], op['md'], op['fields'], op['additional'])
-  File "/Users/Avery/Dropbox/Harvard/CS207/cs207project/tsdb/persistentdb.py", line 353, in select
+  File "/home/zhiqian/Dropbox/CS 207/cs207project/tsdb/persistentdb.py", line 344, in select
     matched_field[field] = self._trees['pk'].get_as_row(pk).row[field]
 KeyError: 'ts'
