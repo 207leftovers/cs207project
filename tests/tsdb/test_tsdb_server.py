@@ -252,19 +252,20 @@ class Test_TSDB_Protocol(unittest.TestCase):
         prot._add_trigger(TSDBOp_AddTrigger(tid, 'stats', 'insert_ts', ['mean', 'std'], None))
             
         # Insert
-        prot._insert_ts(TSDBOp_InsertTS(tid, 1, ats))
+        prot._insert_ts(TSDBOp_InsertTS(tid, '1', ats))
 
         # Select
-        select_return = prot._select(TSDBOp_Select(tid, {'pk':{'==':1}}, ['ts','mean','std'], None))
+        select_return = prot._select(TSDBOp_Select(tid, {'pk': {'==': '1'}}, ['ts','mean','std'], None))
         
         assert(select_return['status'] == 0)
-        assert(ts.TimeSeries(select_return['payload']['1']['ts'][0], select_return['payload']['1']['ts'][1]) == ats)
+        assert(select_return['payload']['1']['ts'] == ats)
+        # TODO:
         #print(payload['1'])
         #assert(payload['1']['std'] == 1.4142135623730951)
         #assert(payload['1']['mean'] == 2.0)
         db.close()
 
-    def tedst_create_vp(self):
+    def test_create_vp(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
         server = TSDBServer(db)
         prot = TSDBProtocol(server)

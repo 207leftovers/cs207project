@@ -72,11 +72,6 @@ class TSDB_REST_Client(object):
     #call `_send` with a well formed message to send.
     #once again replace this function if appropriate
     async def _send(self, msg):
-        # loop = asyncio.get_event_loop()  
-        # coro = asyncio.ensure_future(self._run(msg))
-        # loop.run_until_complete(coro)  
-        # return coro.result()
-
         loop = asyncio.get_event_loop()
         status, payload_str = await self._run(msg)
         payload_dict = json.loads(payload_str, object_pairs_hook=OrderedDict)

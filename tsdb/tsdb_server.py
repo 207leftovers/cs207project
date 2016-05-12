@@ -235,6 +235,14 @@ class TSDBProtocol(asyncio.Protocol):
             if status is TSDBStatus.OK:
                 if isinstance(op, TSDBOp_BeginTransaction):
                     response = self._begin_transaction(op)
+                elif isinstance(op, TSDBOp_Commit):
+                    response = self._commit(op)    
+                elif isinstance(op, TSDBOp_Rollback):
+                    response = self._rollback(op)
+                elif isinstance(op, TSDBOp_CreateVP):
+                    response = self._create_vp(op)
+                elif isinstance(op, TSDBOp_TSSimilaritySearch):
+                    response = self._ts_similarity_search(op)
                 elif isinstance(op, TSDBOp_InsertTS):
                     response = self._insert_ts(op)
                 elif isinstance(op, TSDBOp_DeleteTS):
