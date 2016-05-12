@@ -9,7 +9,7 @@ async def main():
     print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
     client = TSDBClient()
 
-    await client.add_trigger('KalmanFilter', 'insert_ts', ['sig_epsilon_estimate', 'sig_eta_estimate'], None)#['mean', 'std'], None)#
+    await client.add_trigger('KalmanFilter', 'insert_ts', ['sig_epsilon_estimate', 'sig_eta_estimate'], None)#(1, 'KalmanFilter', 'insert_ts', ['sig_epsilon_estimate', 'sig_eta_estimate'], None)
 
     sigeta = np.random.normal(0,1,2000)
     sigeps = np.random.normal(0,10,2000)
@@ -17,8 +17,8 @@ async def main():
     mus = np.cumsum(sigeta)+20
     y = mus + sigeps
 
-    await client.insert_ts('one',ts.TimeSeries(y,np.arange(2000)))
-    await client.upsert_meta('one', {'order': 1, 'blarg': 1})
+    await client.insert_ts('one',ts.TimeSeries(y,np.arange(2000)))#(1, 'one',ts.TimeSeries(y,np.arange(2000)))
+    await client.upsert_meta('one', {'order': 1, 'blarg': 1})#(1, 'one', {'order': 1, 'blarg': 1})
 
     print('---------------------')
     await client.select(fields=[])

@@ -13,13 +13,13 @@ set_compiler.install()
 import pyximport
 pyximport.install()
 
-import filtering
+import KF
 
 
 def proc_main(pk, row, arg):
 
-	ts1 = np.array(row['ts'].values())
-	logL_LLy = lambda x: filtering.logL_LL(x[0], x[1], ts1)
+	ts1 = np.array(row['ts'].values()).astype(np.double)
+	logL_LLy = lambda x: KF.logL_LL(x[0], x[1], ts1)
 	sigma_epsilon, sigma_eta = scipy.optimize.fmin(logL_LLy,[ts1.std()/2,ts1.std()/2])
 	return [abs(sigma_epsilon), abs(sigma_eta)]
 

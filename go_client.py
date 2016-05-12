@@ -21,9 +21,9 @@ def main():
 
     # add a trigger. notice the argument. It does not do anything here but
     # could be used to save a shlep of data from client to server.
-    client.add_trigger('junk', 'insert_ts', None, 'db:one:ts')
+    client.add_trigger(1, 'junk', 'insert_ts', None, 'db:one:ts')
     # our stats trigger
-    client.add_trigger('stats', 'insert_ts', ['mean', 'std'], None)
+    client.add_trigger(2, 'stats', 'insert_ts', ['mean', 'std'], None)
     #Set up 50 time series
     mus = np.random.uniform(low=0.0, high=1.0, size=50)
     sigs = np.random.uniform(low=0.05, high=0.4, size=50)
@@ -44,7 +44,7 @@ def main():
     vpkeys = ["ts-{}".format(i) for i in np.random.choice(range(50), size=5, replace=False)]
     for i in range(5):
         # add 5 triggers to upsert distances to these vantage points
-        client.add_trigger('corr', 'insert_ts', ["d_vp-{}".format(i)], tsdict[vpkeys[i]])
+        client.add_trigger(i+3, 'corr', 'insert_ts', ["d_vp-{}".format(i)], tsdict[vpkeys[i]])
         # change the metadata for the vantage points to have meta['vp']=True
         metadict[vpkeys[i]]['vp']=True
     # Having set up the triggers, now inser the time series, and upsert the metadata
