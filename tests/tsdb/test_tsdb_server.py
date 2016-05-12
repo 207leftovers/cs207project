@@ -255,10 +255,9 @@ class Test_TSDB_Protocol(unittest.TestCase):
         select_return = prot._select(TSDBOp_Select(tid, {'pk':{'==':1}}, ['ts','mean','std'], None))
         
         assert(select_return['status'] == 0)
-        assert(ts.TimeSeries(select_return['payload']['1']['ts'][0], select_return['payload']['1']['ts'][1]) == ats)
-        #print(payload['1'])
-        #assert(payload['1']['std'] == 1.4142135623730951)
-        #assert(payload['1']['mean'] == 2.0)
+        assert(select_return['payload'][1]['ts'] == ats)
+        assert(select_return['payload'][1]['std'] == 1.4142135623730951)
+        assert(select_return['payload'][1]['mean'] == 2.0)
         
     def test_create_vp(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
