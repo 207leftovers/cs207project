@@ -229,12 +229,12 @@ class Test_TSDB_Protocol(unittest.TestCase):
         metadata_dict = {'pk': {'>': 0}}
         fields = None
         additional = None
-        aug_select_op = TSDBOp_AugmentedSelect(tid, 'corr', ['mean', 'std'], [t2,v2], metadata_dict, additional )
+        aug_select_op = TSDBOp_AugmentedSelect(tid, 'corr', ['dist'], [t2,v2], metadata_dict, additional )
         aug_select_return = prot._augmented_select(aug_select_op)
 
         assert(aug_select_return['op'] == 'augmented_select')
         assert(aug_select_return['status'] == TSDBStatus.OK)
-        assert(aug_select_return['payload'] == {1: {'mean': 1.4142135623730403}})
+        assert(aug_select_return['payload'] == {1: {'dist': 0.83485935360315389}})
         db.close()
 
     def test_simple_run(self):
@@ -317,6 +317,14 @@ class Test_TSDB_Protocol(unittest.TestCase):
         assert(len(select_return['payload']) == 5)
         
         similar = prot._ts_similarity_search(TSDBOp_TSSimilaritySearch(tid, 5, tsdict[vpkeys[0]]))
-        assert(len(similar['payload']) == 5)
-        
+        payload = similar['payload']
+        assert(len(payload) == 5)
+        assert(payload[vpkeys[0]] == 0.0)
+        keys = payload.keys()
+        prev = 0.0
+        print(payload)
+        for key in keys:
+            value = payload[key]
+            assert(value >= prev and value <= 1.0)
+            prev = value
         db.close()
