@@ -57,6 +57,14 @@ class TSDBClient(object):
         aug_select_op = TSDBOp_AugmentedSelect(tid, proc, target, arg, md, additional)
         return await self._send(aug_select_op.to_json())
 
+    async def create_vp(self, tid, pk):
+        create_vp_op = TSDBOp_CreateVP(tid, pk)
+        return await self._send(create_vp_op.to_json())
+    
+    async def ts_similarity_search(self, tid, limit, ts):
+        tsss_op = TSDBOp_TSSimilaritySearch(tid, limit, ts)
+        return await self._send(tsss_op.to_json())
+    
     async def add_trigger(self, tid, proc, onwhat, target, arg):
         add_trigger_op = TSDBOp_AddTrigger(tid, proc, onwhat, target, arg)
         return await self._send(add_trigger_op.to_json())

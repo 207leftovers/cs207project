@@ -27,10 +27,8 @@ class TSDB_REST_Client(object):
         return await self._send(rollback_op.to_json()) 
         
     async def insert_ts(self, tid, primary_key, ts):
-        # your code here, construct from the code in tsdb_ops.py
-        print ("PRIMARY KEY", primary_key, type(primary_key))
-        InsertedTS = TSDBOp_InsertTS(tid, primary_key, ts)
-        return await self._send(InsertedTS.to_json())
+        insert_op = TSDBOp_InsertTS(tid, primary_key, ts)
+        return await self._send(insert_op.to_json())
 
     async def delete_ts(self, tid, primary_key):
         delete_ts_op = TSDBOp_DeleteTS(tid, primary_key)
@@ -48,6 +46,14 @@ class TSDB_REST_Client(object):
         aug_select_op = TSDBOp_AugmentedSelect(tid, proc, target, arg, md, additional)
         return await self._send(aug_select_op.to_json())
 
+    async def create_vp(self, tid, pk):
+        create_vp_op = TSDBOp_CreateVP(tid, pk)
+        return await self._send(create_vp_op.to_json())
+    
+    async def ts_similarity_search(self, tid, limit, ts):
+        tsss_op = TSDBOp_TSSimilaritySearch(tid, limit, ts)
+        return await self._send(tsss_op.to_json())
+    
     async def add_trigger(self, tid, proc, onwhat, target, arg):
         add_trigger_op = TSDBOp_AddTrigger(tid, proc, onwhat, target, arg)
         return await self._send(add_trigger_op.to_json())
