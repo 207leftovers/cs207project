@@ -28,7 +28,7 @@ class Test_TSDB_Client(asynctest.TestCase):
         # We'll use a subprocess to run our server script, according to:
         #     http://stackoverflow.com/questions/3781851/run-a-python-script-from-another-python-script-passing-in-args
         # We need this log file for some reason, it throws exceptions without it
-        self.server_log_file = open('.tsdb_server1.log.test','w')
+        self.server_log_file = open('.tsdb_server.log.test','w')
         self.server_proc = subprocess.Popen(['python', 'go_server_overwrite.py'], 
             stdout=self.server_log_file, stderr=subprocess.STDOUT)
         time.sleep(1)
@@ -62,12 +62,13 @@ class Test_TSDB_Client(asynctest.TestCase):
             
         # Insert
         await client.insert_ts(tid, 1, ats)
-                            
-        # TODO!
+
+        # TODO:
         return
-    
+        
         # Select
         status, payload = await client.select(tid, {'pk':{'==':1}}, ['ts','mean','std'], None)
+        
         assert(status == 0)
         assert(ts.TimeSeries(payload['1']['ts'][0], payload['1']['ts'][1]) == ats)
         print(payload['1'])

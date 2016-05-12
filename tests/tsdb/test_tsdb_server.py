@@ -21,10 +21,8 @@ schema = {
   'blarg': {'convert': int, 'index': 1, 'default': 0},
   'useless': {'convert': identity, 'index': None, 'default': 0},
   'mean': {'convert': float, 'index': 1, 'default': 0},
-  'std': {'convert': float, 'index': 1, 'default': 0},
-  'vp': {'convert': bool, 'index': 1, 'default': False}
+  'std': {'convert': float, 'index': 1, 'default': 0}
 }
-
 
 def tsmaker(m, s, j):
     "returns metadata and a time series in the shape of a jittered normal"
@@ -236,6 +234,32 @@ class Test_TSDB_Protocol(unittest.TestCase):
         assert(aug_select_return['status'] == TSDBStatus.OK)
         assert(aug_select_return['payload'] == {1: {'mean': 1.4142135623730403}})
         
+    def test_simple_run(self):
+        db = PersistentDB(schema, 'pk', overwrite=True)
+        server = TSDBServer(db)
+        prot = TSDBProtocol(server)
+        tid = prot._begin_transaction(TSDBOp_BeginTransaction())['payload']
+        
+        # Data
+        t = [0,1,2,3,4]
+        v = [1.0,2.0,3.0,2.0,1.0]
+        ats = ts.TimeSeries(t, v)
+            
+        # Add Trigger
+        prot._add_trigger(TSDBOp_AddTrigger(tid, 'stats', 'insert_ts', ['mean', 'std'], None))
+            
+        # Insert
+        prot._insert_ts(TSDBOp_InsertTS(tid, 1, ats))
+
+        # Select
+        select_return = prot._select(TSDBOp_Select(tid, {'pk':{'==':1}}, ['ts','mean','std'], None))
+        
+        assert(select_return['status'] == 0)
+        assert(ts.TimeSeries(select_return['payload']['1']['ts'][0], select_return['payload']['1']['ts'][1]) == ats)
+        #print(payload['1'])
+        #assert(payload['1']['std'] == 1.4142135623730951)
+        #assert(payload['1']['mean'] == 2.0)
+        
     def test_create_vp(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
         server = TSDBServer(db)
@@ -278,9 +302,10 @@ class Test_TSDB_Protocol(unittest.TestCase):
             with self.assertRaises(KeyError):
                 prot._create_vp(TSDBOp_CreateVP(tid, vpkeys[i]))
             
-            prot._insert_ts(TSDBOp_InsertTS(tid, vpkeys[i], tsdict[vpkeys[i]]))
+            back = prot._insert_ts(TSDBOp_InsertTS(tid, vpkeys[i], tsdict[vpkeys[i]]))
+            assert(back['status'] == 0)
             prot._create_vp(TSDBOp_CreateVP(tid, vpkeys[i]))
-            
+        
         
             
 

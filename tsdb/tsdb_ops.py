@@ -17,7 +17,6 @@ class TSDBOp(dict):
         # It recursively converts elements in a hierarchical data structure
         # into a JSON-encodable form. It does *not* handle class instances
         # unless they have a 'to_json' method.
-        #print(">>>",self.items())
         if obj is None:
             obj = self
         json_dict = OrderedDict()

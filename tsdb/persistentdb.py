@@ -167,10 +167,15 @@ class PersistentDB(object):
         d_vp = self.numvps
         self.numvps += 1
         
-        # Augment the schema by adding a column for this vp
-        self.schema["d_vp-{}".format(d_vp)] = {'convert': float, 'index': 1, 'default': 0.0}
+        fieldname = "d_vp-{}".format(d_vp)
         
-        return 'd_vp-{}'.format(d_vp), ts
+        # Augment the schema by adding a column for this vp
+        self.schema[fieldname] = {'convert': float, 'index': 1, 'default': 0.0}
+        
+        # Add to valid fields
+        self.validfields.append(fieldname)
+        
+        return fieldname, ts
     
     def build_vp_tree(self):
         # 1. Pick numvps randomly from all of the pks
@@ -283,6 +288,7 @@ class PersistentDB(object):
 
         # META
         pks = set(self._trees['pk'].get_all_keys())
+        
         # Select the keys that matches the metadata
         for meta_key in meta.keys():
             if meta_key == 'pk':

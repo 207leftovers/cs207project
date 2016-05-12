@@ -70,7 +70,11 @@ class TSDBProtocol(asyncio.Protocol):
         return TSDBOp_Return(TSDBStatus.OK, op['op'])
 
     def _select(self, op):
-        loids, fields = self.server.db.select(op['tid'], op['md'], op['fields'], op['additional'])
+        try:
+            loids, fields = self.server.db.select(op['tid'], op['md'], op['fields'], op['additional'])
+        except ValueError as e:
+            return TSDBOp_Return(TSDBStatus.INVALID_KEY, op['op'])
+        
         self._run_trigger('select', loids, op['tid'])
         if fields is not None:
             d = OrderedDict(zip(loids, fields))

@@ -474,7 +474,6 @@ class ArrayBinaryTree(BaseTree):
         #if self._storage.lock():
         #    self._refresh_tree_ref()
         node = self._follow(self._tree_ref)
-        #print(str(value))
         self._tree_ref = self._delete(node, key, str(value))
         
     def _delete(self, node, key, value):
