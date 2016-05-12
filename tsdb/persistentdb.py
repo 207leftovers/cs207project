@@ -328,9 +328,9 @@ class PersistentDB(object):
                 # Get all fields but the TimeSeries
                 for row_field in self.validfields:
                     # Skip the ts 
-                    if row_field is 'ts':
+                    if row_field == 'ts':
                         continue
-                    if row_field is 'pk':
+                    if row_field == 'pk':
                         matched_field[row_field] = self._trees['pk'].get_as_row(pk).pk
                     else:
                         matched_field[row_field] = self._trees['pk'].get_as_row(pk).row[row_field]
@@ -338,9 +338,9 @@ class PersistentDB(object):
                 # Only get the indicated fields
                 for field in fields:
                     if field in self.validfields:
-                        if field is 'pk':
+                        if field == 'pk':
                             matched_field[field] = self._trees['pk'].get_as_row(pk).pk
-                        elif field is 'ts':
+                        elif field == 'ts':
                             matched_field[field] = self._trees['pk'].get_as_row(pk).ts
                         else:
                             matched_field[field] = self._trees['pk'].get_as_row(pk).row[field]
@@ -370,7 +370,7 @@ class PersistentDB(object):
 
                 # Get the order for the result_set
                 for pk in pks:
-                    if sorted_by is 'pk':
+                    if sorted_by == 'pk':
                         order_list.append(self._trees['pk'].get_as_row(pk).pk)
                     elif sorted_by in self.validfields:
                         order_list.append(self._trees['pk'].get_as_row(pk).row[sorted_by])

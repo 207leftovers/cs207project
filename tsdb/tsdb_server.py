@@ -10,7 +10,7 @@ import json
 import ast
 from aiohttp import web
 
-def trigger_callback_maker(pk, target, calltomake):
+def trigger_callback_maker(tid, pk, target, calltomake):
     def callback_(future):
         result = future.result()
         if target is not None:
@@ -53,7 +53,7 @@ class TSDBProtocol(asyncio.Protocol):
             self.server.db.insert_ts(op['tid'], op['pk'], op['ts'])
         except ValueError as e:
             return TSDBOp_Return(TSDBStatus.INVALID_KEY, op['op'])
-        self._run_trigger('insert_ts', [op['pk']])
+        self._run_trigger('insert_ts', [op['pk']], op['tid'])
         return TSDBOp_Return(TSDBStatus.OK, op['op'])
     
     def _delete_ts(self, op):
@@ -61,17 +61,17 @@ class TSDBProtocol(asyncio.Protocol):
             self.server.db.delete_ts(op['tid'], op['pk'])
         except ValueError as e:
             return TSDBOp_Return(TSDBStatus.INVALID_KEY, op['op'])
-        self._run_trigger('delete_ts', [op['pk']])
+        self._run_trigger('delete_ts', [op['pk']], op['tid'])
         return TSDBOp_Return(TSDBStatus.OK, op['op'])
 
     def _upsert_meta(self, op):
         self.server.db.upsert_meta(op['tid'], op['pk'], op['md'])
-        self._run_trigger('upsert_meta', [op['pk']])
+        self._run_trigger('upsert_meta', [op['pk']], op['tid'])
         return TSDBOp_Return(TSDBStatus.OK, op['op'])
 
     def _select(self, op):
         loids, fields = self.server.db.select(op['tid'], op['md'], op['fields'], op['additional'])
-        self._run_trigger('select', loids)
+        self._run_trigger('select', loids, op['tid'])
         if fields is not None:
             d = OrderedDict(zip(loids, fields))
             return TSDBOp_Return(TSDBStatus.OK, op['op'], d)
@@ -118,7 +118,7 @@ class TSDBProtocol(asyncio.Protocol):
                 trigs.remove(t)
         return TSDBOp_Return(TSDBStatus.OK, op['op'])
 
-    def _run_trigger(self, opname, rowmatch):
+    def _run_trigger(self, opname, rowmatch, tid):
         lot = self.server.triggers[opname]
         print("S> list of triggers to run", lot)
         for tname, t, arg, target in lot:
@@ -131,7 +131,7 @@ class TSDBProtocol(asyncio.Protocol):
                 
                 #row = self.server.db.rows[pk]
                 task = asyncio.ensure_future(t(pk, row, arg))
-                task.add_done_callback(trigger_callback_maker(pk, target, self.server.db.upsert_meta))
+                task.add_done_callback(trigger_callback_maker(tid, pk, target, self.server.db.upsert_meta))
 
     def _create_vp(self, op):
         tid = op['tid']

@@ -119,7 +119,7 @@ class TestTransactions(unittest.TestCase):
         assert type(e1).__name__ == 'ValueError'  
 
     def test_different_schemas(self):
-        
+
         db = PersistentDB(schema, 'pk', overwrite=True)
         first_tid = db.begin_transaction()
         db.insert_ts(first_tid, 1, ats1)
