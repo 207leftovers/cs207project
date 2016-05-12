@@ -165,6 +165,17 @@ class PersistentDB(object):
     def get(self, key):
         #self._assert_not_closed()
         return self._tree.get(key)
+    
+    def build_vp_tree(self):
+        # 1. Pick numvps randomly from all of the pks
+        # - set these pk's vp field to True
+        # - store the vps in a list 
+        
+        # 2. Update all the d_vp-i's to be the distance from the vantage points
+        
+        # 3. Add a trigger to update any new inserted timeseries with the distance
+        pass
+        
 
     # Insert a timeseries for a specific primary key
     def insert_ts(self, tid, pk, ts):

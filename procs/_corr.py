@@ -60,21 +60,14 @@ def K_function_mult(ts1, ts2, mult):
 
 def kernel_corr(ts1, ts2, mult=1):
     "compute a kernelized correlation so that we can get a real distance"
-    #your code here. 
-
-    #using the code below gave overflow errors which is why a new kernel K_function was needed.
-    """
-    crossCorr = corr(ts1, ts2)
-    return np.sum(np.exp(crossCorr*mult))/ np.sqrt(np.sum(np.exp(mult*ccor(ts1, ts1)))*np.sum(np.exp(mult*ccor(ts2, ts2))))
-    """
-    #Using the formula in the paper and using the K_function_mult to compute the kernelized correlation
+    # Using the formula in the paper and using the K_function_mult to compute the kernelized correlation
     return K_function_mult(ts1, ts2, mult) / np.sqrt(K_function_mult(ts1, ts1, mult) \
             * K_function_mult(ts2, ts2, mult))
 
 
-#this is for a quick and dirty test of these functions
-#you might need to add procs to pythonpath for this to work
-#commenting this since its not needed anymore
+# This is for a quick and dirty test of these functions
+# You might need to add procs to pythonpath for this to work
+# Commenting this since its not needed anymore
 """
 if __name__ == "__main__":
     print("HI")

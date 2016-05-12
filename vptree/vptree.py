@@ -37,7 +37,6 @@ class vpnodeVP(vpnode):
         self.leftChild = leftChild
         self.rightChild = rightChild
 
-
 class vpnodeLeaf(vpnode):
     """
     Leaf nodes with primary key lists with the closest matches
@@ -47,13 +46,11 @@ class vpnodeLeaf(vpnode):
         self.uid = uid
         self.pkList = pkList
 
-
 #Building the tree class
 class VPtree():
     """
     Main tree class
     """
-
     def __init__(self, allPk, vpList, dfunc):
         """
         allPK - List of all primary keys
@@ -65,6 +62,9 @@ class VPtree():
         self.root = self.maketree(allPk, vpList)
     
     def maketree(self, allPk, vpList):
+        # allPk - list of primary keys
+        # vpList - pks that are vantage points
+        
         #Making an id for the node:
         uid = uuid.uuid4().int % 10000
 

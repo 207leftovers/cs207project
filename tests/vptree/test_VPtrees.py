@@ -7,7 +7,8 @@ for i in range(len(data)):
     dataDict['key'+str(i+1)] = data[i]
 allPk = list(dataDict.keys())
 testvps = ['key7', 'key10', 'key45', 'key73']
-#creating distance function
+
+# Creating distance function
 def absdist(VP,allPk):
     """
     Implementing basic absolute distance function
@@ -15,8 +16,10 @@ def absdist(VP,allPk):
     x = dataDict[VP]
     y = np.array([dataDict[key] for key in allPk])
     return np.abs(x-y)
+
 tree = VPtree(allPk, testvps, absdist)
 vpt = tree.gen_graph()
+
 def dist(vp,arg):
     x = dataDict[vp]
     return np.abs(x-arg)

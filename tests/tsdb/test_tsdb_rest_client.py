@@ -45,7 +45,6 @@ class Test_TSDB_REST_Client(asynctest.TestCase):
         time.sleep(1)
     
     async def test_REST_simple_run(self):
-        
         # Data
         t = [0,1,2,3,4]
         v = [1.0,2.0,3.0,2.0,1.0]
@@ -58,7 +57,7 @@ class Test_TSDB_REST_Client(asynctest.TestCase):
         status, tid = await client.begin_transaction()
             
         # Add Trigger
-        await client.add_trigger(tid,'stats', 'insert_ts', ['mean', 'std'], None)
+        await client.add_trigger(tid, 'stats', 'insert_ts', ['mean', 'std'], None)
             
         # Insert
         await client.insert_ts(tid, 1, ats)
@@ -70,7 +69,6 @@ class Test_TSDB_REST_Client(asynctest.TestCase):
         assert(ts.TimeSeries(payload['1']['ts'][0], payload['1']['ts'][1]) == ats)
         assert(payload['1']['std'] == 1.4142135623730951)
         assert(payload['1']['mean'] == 2.0)
-        # FINALLY WORKING!!! YAY!!!
         
         # Upsert
         await client.upsert_meta(tid, 1, {'order':1})

@@ -17,6 +17,6 @@ Traceback (most recent call last):
     response = self._select(op)
   File "/Users/Avery/Dropbox/Harvard/CS207/cs207project/tsdb/tsdb_server.py", line 58, in _select
     loids, fields = self.server.db.select(op['tid'], op['md'], op['fields'], op['additional'])
-  File "/Users/Avery/Dropbox/Harvard/CS207/cs207project/tsdb/persistentdb.py", line 323, in select
+  File "/Users/Avery/Dropbox/Harvard/CS207/cs207project/tsdb/persistentdb.py", line 334, in select
     matched_field[field] = self._trees['pk'].get_as_row(pk).row[field]
 KeyError: 'ts'
