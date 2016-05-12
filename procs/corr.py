@@ -9,7 +9,10 @@ import asyncio
 def proc_main(pk, row, arg):
     # The argument is a time series. But due to serialization it does
     # not come out as the "instance", and must be cast
-    argts = ts.TimeSeries(*arg)
+    if type(arg) is not ts.TimeSeries:
+        argts = ts.TimeSeries(*arg)
+    else:
+        argts = arg
     
     # Compute a standardized time series
     stand_argts = stand(argts, argts.mean(), argts.std())

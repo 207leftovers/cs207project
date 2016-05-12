@@ -21,15 +21,13 @@ OPMAP = {
 
 class PersistentDB(object):
 
-    def __init__(self, schema, pkfield, f='data', overwrite=False, numvps=5):
 
+    def __init__(self, schema, pkfield, f='data', overwrite=False):
         # Augment the schema by adding an indicator column for vantage points
         schema['vp'] = {'convert': bool, 'index': 1, 'default': False}
-        # Augment the schema by adding columns for 5 Vantage Points
-        for i in range(numvps):
-            schema["d_vp-{}".format(i)] = {'convert': float, 'index': 1, 'default': 0.0}
-   
-
+        
+        self.numvps = 0
+        
         self.schema = schema
         self.validfields = ['ts']
         self.pkfield = pkfield
@@ -54,10 +52,7 @@ class PersistentDB(object):
         # Load meta information if the path exists and we are not overwriting
         if os.path.exists(path_to_db_files+meta_info_filename) and not overwrite:
             with open(path_to_db_files+meta_info_filename, 'rb', buffering=0) as fd:
-                try: self.pkfield, self.schema = pickle.load(fd)
-                except EOFError: 
-                    pass
-                #self.pkfield, self.schema = pickle.load(fd)
+                self.pkfield, self.schema = pickle.load(fd)
                 # Ensure the schema matches 
                 if (schema is not None) and (schema != self.schema):
                     raise ValueError("Schemas don't match")
@@ -157,9 +152,23 @@ class PersistentDB(object):
         for key in self._storage.keys():
             self._storage[key].close()
 
-    def get(self, key):
-        #self._assert_not_closed()
-        return self._tree.get(key)
+    def get_row(self, pk):
+        self._assert_not_closed('pk')
+        return self._trees['pk'].get_as_row(pk)
+    
+    def create_vp(self, tid, pk):
+        self.check_tid_open(tid)
+        ts = self.get_row(pk).ts
+        
+        self.upsert_meta(tid, pk, {'vp': True})
+        
+        d_vp = self.numvps
+        self.numvps += 1
+        
+        # Augment the schema by adding a column for this vp
+        self.schema["d_vp-{}".format(d_vp)] = {'convert': float, 'index': 1, 'default': 0.0}
+        
+        return 'd_vp-{}'.format(d_vp), ts
     
     def build_vp_tree(self):
         # 1. Pick numvps randomly from all of the pks
@@ -327,14 +336,15 @@ class PersistentDB(object):
                 # Only get the indicated fields
                 for field in fields:
                     if field in self.validfields:
-                        if field == 'pk':
+                        if field is 'pk':
                             matched_field[field] = self._trees['pk'].get_as_row(pk).pk
-                        elif field == 'ts':
+                        elif field is 'ts':
                             matched_field[field] = self._trees['pk'].get_as_row(pk).ts
                         else:
                             matched_field[field] = self._trees['pk'].get_as_row(pk).row[field]
 
             matchedfielddicts.append(matched_field)
+
         # ADDITIONAL
         if additional is None:
             return list(pks), matchedfielddicts
