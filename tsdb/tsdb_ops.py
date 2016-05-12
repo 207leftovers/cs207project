@@ -176,6 +176,16 @@ class TSDBOp_CreateVP(TSDBOp):
     def from_json(cls, json_dict):
         return cls(json_dict['tid'], json_dict['pk'])
     
+class TSDBOp_TSSimilaritySearch(TSDBOp):
+    def __init__(self, tid, limit, ts):
+        super().__init__('ts_similarity_search', tid)
+        self['limit'] = limit
+        self['ts'] = ts
+
+    @classmethod
+    def from_json(cls, json_dict):
+        return cls(json_dict['tid'], json_dict['limit'], json_dict['ts'])
+    
 # This simplifies reconstructing TSDBOp instances from network data.
 typemap = {
   'begin_transaction': TSDBOp_BeginTransaction,

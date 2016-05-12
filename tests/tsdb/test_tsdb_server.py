@@ -300,22 +300,22 @@ class Test_TSDB_Protocol(unittest.TestCase):
         for k in tsdict1:
             prot._insert_ts(TSDBOp_InsertTS(tid, k, tsdict1[k]))
     
+        numvps = 5
         # Choose 5 distinct vantage point time series
-        vpkeys = ["ts-{}".format(i) for i in np.random.choice(range(40), size=1, replace=False)]
-        for i in range(1):
+        vpkeys = ["ts-{}".format(i) for i in np.random.choice(range(40), size=numvps, replace=False)]
+        print("VPKEYS", vpkeys)
+        for i in range(numvps):
             with self.assertRaises(KeyError):
                 prot._create_vp(TSDBOp_CreateVP(tid, vpkeys[i]))
             
             back = prot._insert_ts(TSDBOp_InsertTS(tid, vpkeys[i], tsdict[vpkeys[i]]))
             assert(back['status'] == 0)
-            prot._create_vp(TSDBOp_CreateVP(tid, vpkeys[i]))
+            prot._create_vp(TSDBOp_CreateVP(tid, vpkeys[i]))            
+            
+        select_return = prot._select(TSDBOp_Select(tid, {'vp':{'==':True}}, ['ts','mean','std'], None))
+        assert(len(select_return['payload']) == 5)
+        
+        similar = prot._ts_similarity_search(TSDBOp_TSSimilaritySearch(tid, 5, tsdict[vpkeys[0]]))
+        assert(len(similar['payload']) == 5)
         
         db.close()
-        
-            
-
-            
-            
-
-            
-

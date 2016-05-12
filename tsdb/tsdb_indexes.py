@@ -398,7 +398,7 @@ class ArrayBinaryTree(BaseTree):
         value_list = value_str.split(' ')
         value_arr = []
         for value in value_list:
-            value_arr.append(self._convert(value))
+            value_arr.append(value)
         return value_arr
         
     def _get(self, key):

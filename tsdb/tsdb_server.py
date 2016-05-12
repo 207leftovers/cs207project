@@ -9,6 +9,7 @@ import procs
 import json
 import ast
 from aiohttp import web
+import numpy as np
 
 def trigger_callback_maker(tid, pk, target, calltomake):
     def callback_(future):
@@ -94,6 +95,7 @@ class TSDBProtocol(asyncio.Protocol):
         mod = import_module('procs.' + proc)
         storedproc = getattr(mod,'proc_main')
         results=[]
+        
         for i, pk in enumerate(loids):
             #row = self.server.db.rows[pk]
             #result = storedproc(pk, row, arg)
@@ -102,7 +104,7 @@ class TSDBProtocol(asyncio.Protocol):
         return TSDBOp_Return(TSDBStatus.OK, op['op'], dict(zip(loids, results)))
 
     def _add_trigger(self, op):
-        print('S> Adding triggers')
+        #print('S> Adding triggers')
         trigger_proc = op['proc']  # the module in procs
         trigger_onwhat = op['onwhat']  # on what? eg `insert_ts`
         trigger_target = op['target']  # if provided, this meta will be upserted
@@ -124,7 +126,7 @@ class TSDBProtocol(asyncio.Protocol):
 
     def _run_trigger(self, opname, rowmatch, tid):
         lot = self.server.triggers[opname]
-        print("S> list of triggers to run", lot)
+        #print("S> list of triggers to run", lot)
         for tname, t, arg, target in lot:
             for pk in rowmatch:
                 a_row = self.server.db._trees['pk'].get_as_row(pk)
@@ -168,7 +170,50 @@ class TSDBProtocol(asyncio.Protocol):
         return TSDBOp_Return(TSDBStatus.OK, op['op'])
         # choose 5 distinct vantage point time series
         #vpkeys = ["ts-{}".format(i) for i in np.random.choice(range(50), size=5, replace=False)]
-                
+        
+    def _ts_similarity_search(self, op):
+        if self.server.db.numvps == 0:
+            # No Vantage Points!
+            return TSDBOp_Return(TSDBStatus.INVALID_OPERATION, op['op'])
+
+        tid = op['tid']
+        limit = op['limit']
+        ts = op['ts']
+        
+        # Get the closest VP
+        a_select = self._augmented_select(TSDBOp_AugmentedSelect(tid, 'corr', ['vpd'], ts, {'vp': {'==': True}}, None))
+        if a_select['status'] != TSDBStatus.OK:
+            return TSDBOp_Return(TSDBStatus.UNKNOWN_ERROR, op['op'])
+
+        payload = a_select['payload']
+        pks = payload.keys()
+        
+        min_vp_dist = None
+        
+        for pk in pks:
+            dist = payload[pk]['vpd']
+            if min_vp_dist == None or dist < min_vp_dist:
+                closest_vp = pk
+                min_vp_dist = dist
+
+        # The radius is 2 times the distance to the nearest vp
+        radius = 2 * min_vp_dist
+        vp_id = self.server.db.vps.index(closest_vp)
+        
+        a_select = self._augmented_select(TSDBOp_AugmentedSelect(tid, 'corr', ['dist'], ts, {'d_vp-{}'.format(vp_id): {'<=': radius}}, None))
+        if a_select['status'] != TSDBStatus.OK:
+            return TSDBOp_Return(TSDBStatus.UNKNOWN_ERROR, op['op'])
+        
+        payload = a_select['payload']
+
+        closest_ts = [(d, payload[d]['dist']) for d in payload.keys()]
+        closest_ts.sort(key=lambda x: x[1])
+        closest_ts = closest_ts[:limit]
+        closest = {}
+        for key, value in closest_ts:
+            closest[key] = value
+
+        return TSDBOp_Return(TSDBStatus.OK, op['op'], closest)
                 
     def connection_made(self, conn):
         print('S> connection made')
@@ -237,6 +282,8 @@ class TSDBProtocol(asyncio.Protocol):
                 response = self._rollback(op)
             elif isinstance(op, TSDBOp_CreateVP):
                 response = self._create_vp(op)
+            elif isinstance(op, TSDBOp_TSSimilaritySearch):
+                response = self._ts_similarity_search(op)
             elif isinstance(op, TSDBOp_InsertTS):
                 response = self._insert_ts(op)
             elif isinstance(op, TSDBOp_DeleteTS):

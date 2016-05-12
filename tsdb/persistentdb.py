@@ -31,6 +31,7 @@ class PersistentDB(object):
         self.schema = schema
         self.validfields = ['ts']
         self.pkfield = pkfield
+        self.vps = []
        
         self.defaults = {}
         
@@ -174,19 +175,9 @@ class PersistentDB(object):
         
         # Add to valid fields
         self.validfields.append(fieldname)
+        self.vps.append(pk)
         
         return fieldname, ts
-    
-    def build_vp_tree(self):
-        # 1. Pick numvps randomly from all of the pks
-        # - set these pk's vp field to True
-        # - store the vps in a list 
-        
-        # 2. Update all the d_vp-i's to be the distance from the vantage points
-        
-        # 3. Add a trigger to update any new inserted timeseries with the distance
-        pass
-        
 
     # Insert a timeseries for a specific primary key
     def insert_ts(self, tid, pk, ts):
