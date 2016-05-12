@@ -15,7 +15,8 @@ schema = {
   'vp': {'convert': bool, 'index': 1},
   'sig_epsilon_estimate': {'convert': float, 'index': 1},
   'sig_eta_estimate': {'convert': float, 'index': 1},
-  'prediction': {'convert': identity, 'index': None}
+  'prediction': {'convert': identity, 'index': None},
+  'period': {'convert': float, 'index': 1}
 }
 
 NUMVPS = 5
