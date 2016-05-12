@@ -73,7 +73,7 @@ class Test_TSDB_Protocol():
         assert(server.db._trees['pk'].get_as_row(2).ts == ats1)
         
         # Test Protocol Upsert
-        upserted_meta = TSDBOp_UpsertMeta(tid, 2, {'ts': ats2, 'order': 1})
+        upserted_meta = TSDBOp_UpsertMeta(tid, 2, {'order': 1})
         upsert_return = prot._upsert_meta(upserted_meta)
         assert(upsert_return['op'] == 'upsert_meta')
         assert(upsert_return['status'] == TSDBStatus.OK)
@@ -100,7 +100,7 @@ class Test_TSDB_Protocol():
         assert(select_return['op'] == 'select')
         assert(select_return['status'] == TSDBStatus.OK)
         assert(select_return['payload'][1]['ts'] == ats1)
-        assert(select_return['payload'][2]['ts'] == ats2)
+        assert(select_return['payload'][2]['ts'] == ats1)
         
         # Test Add Trigger
         add_trigger_op = TSDBOp_AddTrigger(tid, 'stats', 'insert_ts', ['mean', 'std'], None)

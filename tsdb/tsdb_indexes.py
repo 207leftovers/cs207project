@@ -474,6 +474,7 @@ class ArrayBinaryTree(BaseTree):
         #if self._storage.lock():
         #    self._refresh_tree_ref()
         node = self._follow(self._tree_ref)
+        print(str(value))
         self._tree_ref = self._delete(node, key, str(value))
         
     def _delete(self, node, key, value):
@@ -495,10 +496,11 @@ class ArrayBinaryTree(BaseTree):
         else:
             "Got the right node, now remove the value from it"
             values = self._follow(node.value_ref).split(' ')
-            if value not in values:
+            if (value is not None) and (value not in values):
                 raise ValueError('Could not remove value ', value ,' from node with key', key)
             else:
-                values.remove(value)
+                if value is not None:
+                    values.remove(value)
                 if len(values) > 0:
                     "We still have multiple values in this node, so restore it"
                     a_value_ref = ValueRef(str.join(' ', values))
@@ -509,8 +511,8 @@ class ArrayBinaryTree(BaseTree):
                     right = self._follow(node.right_ref)
                     if left and right:
                         replacement = self._find_max(left)
-                        left_ref = self._delete(
-                            self._follow(node.left_ref), replacement.key)
+                        #left_ref = self._delete(self._follow(node.left_ref), replacement.key)
+                        left_ref = self._delete(self._follow(node.left_ref), replacement.key, None)
                         new_node = BinaryNode(
                             left_ref,
                             replacement.key,

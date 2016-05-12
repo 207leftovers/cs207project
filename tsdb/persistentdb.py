@@ -215,6 +215,10 @@ class PersistentDB(object):
         self.check_tid_open(tid)
         self._assert_not_closed('pk')
         
+         # Check for 'ts'
+        if 'ts' in meta.keys():
+            raise ValueError("TimeSeries are not allowed to be upserted")
+        
         if self._trees['pk'].has_key(pk):
             # Get the row if it already exists
             row_str = self._trees['pk'].get(pk)
@@ -222,9 +226,11 @@ class PersistentDB(object):
             # Delete the old indices
             self.delete_indices(pk, row)
         else:
-            # Create the row if it doesn't exist
-            row = DBRow(pk, self.defaults)
+            ## Create the row if it doesn't exist
+            #row = DBRow(pk, self.defaults)
+            raise ValueError("TimeSeries with pk: ", pk, " not present in db")
             
+       
         # Look through the fields and upsert their values
         for key in meta:         
             if key in self.validfields:

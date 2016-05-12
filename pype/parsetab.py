@@ -16,7 +16,9 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'declaration':([24,25,37,41,],[40,40,51,51,]),'expression':([10,16,20,21,22,23,26,29,30,32,33,34,43,],[17,27,31,31,31,31,31,44,46,46,46,46,46,]),'parameter_list':([20,21,22,23,26,],[30,32,33,34,43,]),'import_statement':([0,1,],[2,7,]),'component':([0,1,],[5,8,]),'expression_list':([10,],[16,]),'declaration_list':([24,25,],[37,41,]),'statement_list':([0,],[1,]),'type':([39,],[53,]),'program':([0,],[6,]),}
+
+_lr_goto_items = {'declaration':([22,27,31,41,],[30,30,45,45,]),'statement_list':([0,],[1,]),'import_statement':([0,1,],[2,7,]),'expression_list':([10,],[13,]),'declaration_list':([22,27,],[31,41,]),'parameter_list':([23,24,25,26,28,],[36,37,38,39,43,]),'type':([33,],[47,]),'expression':([10,13,23,24,25,26,28,29,36,37,38,39,43,],[14,20,35,35,35,35,35,44,49,49,49,49,49,]),'component':([0,1,],[5,8,]),'program':([0,],[6,]),}
+
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
