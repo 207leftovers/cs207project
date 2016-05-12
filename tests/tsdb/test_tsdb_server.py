@@ -249,22 +249,26 @@ class Test_TSDB_Protocol(unittest.TestCase):
             
         # Add Trigger
         prot._add_trigger(TSDBOp_AddTrigger(tid, 'stats', 'insert_ts', ['mean', 'std'], None))
+        assert('insert_ts' in prot.server.triggers)
             
         # Insert
+        print('INSERTING')
         prot._insert_ts(TSDBOp_InsertTS(tid, '1', ats))
 
         # Select
         select_return = prot._select(TSDBOp_Select(tid, {'pk': {'==': '1'}}, ['ts','mean','std'], None))
         
+        payload = select_return['payload']
+        
         assert(select_return['status'] == 0)
         assert(select_return['payload']['1']['ts'] == ats)
         # TODO:
-        #print(payload['1'])
-        #assert(payload['1']['std'] == 1.4142135623730951)
-        #assert(payload['1']['mean'] == 2.0)
+        print(payload['1'])
+        assert(payload['1']['std'] == 1.4142135623730951)
+        assert(payload['1']['mean'] == 1.8)
         db.close()
 
-    def test_create_vp(self):
+    def a_test_create_vp(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
         server = TSDBServer(db)
         prot = TSDBProtocol(server)
@@ -283,9 +287,10 @@ class Test_TSDB_Protocol(unittest.TestCase):
             # the primary key format is ts-1, ts-2, etc
             pk = "ts-{}".format(i)
             tsdict[pk] = tsrs
-            meta['vp'] = False # augment metadata with a boolean asking if this is a  VP.
+            meta['vp'] = False
             metadict[pk] = meta
             
+        # Dictionaries tetst [pomts
         tsdict1={}
         metadict1={}
         for i, m, s, j in zip(range(40, 50), mus, sigs, jits):
@@ -293,7 +298,7 @@ class Test_TSDB_Protocol(unittest.TestCase):
             # the primary key format is ts-1, ts-2, etc
             pk = "ts-{}".format(i)
             tsdict1[pk] = tsrs
-            meta['vp'] = False # augment metadata with a boolean asking if this is a  VP.
+            meta['vp'] = False
             metadict1[pk] = meta
     
         # Insert some rows
@@ -301,9 +306,11 @@ class Test_TSDB_Protocol(unittest.TestCase):
             prot._insert_ts(TSDBOp_InsertTS(tid, k, tsdict1[k]))
     
         numvps = 5
-        # Choose 5 distinct vantage point time series
-        vpkeys = ["ts-{}".format(i) for i in np.random.choice(range(40), size=numvps, replace=False)]
-        print("VPKEYS", vpkeys)
+        
+        # Choose 5 distinct ts to become vantage points
+        vpkeys = ["ts-{}".format(i) for i in range(5)]
+        
+        # Create the Vantage Points
         for i in range(numvps):
             with self.assertRaises(KeyError):
                 prot._create_vp(TSDBOp_CreateVP(tid, vpkeys[i]))
@@ -311,19 +318,48 @@ class Test_TSDB_Protocol(unittest.TestCase):
             back = prot._insert_ts(TSDBOp_InsertTS(tid, vpkeys[i], tsdict[vpkeys[i]]))
             assert(back['status'] == 0)
             prot._create_vp(TSDBOp_CreateVP(tid, vpkeys[i]))            
-            
+        
+        # Ensure the Vantage Points were set
         select_return = prot._select(TSDBOp_Select(tid, {'vp':{'==':True}}, ['ts','mean','std'], None))
         assert(len(select_return['payload']) == 5)
         
+        # Check to see if existing TimeSeries have vpd's
+        select_return = prot._select(TSDBOp_Select(tid, {'pk':{'==':'ts-41'}}, [], None))
+        payload = select_return['payload']
+        assert('d_vp-0' in payload['ts-41'])
+        assert('d_vp-4' in payload['ts-41'])
+        assert(payload['ts-41']['d_vp-0'] > 0)
+        
+        # Similarity Search for a vantage point
         similar = prot._ts_similarity_search(TSDBOp_TSSimilaritySearch(tid, 5, tsdict[vpkeys[0]]))
         payload = similar['payload']
         assert(len(payload) == 5)
         assert(payload[vpkeys[0]] == 0.0)
         keys = payload.keys()
         prev = 0.0
-        print(payload)
+        # Check the order
         for key in keys:
             value = payload[key]
             assert(value >= prev and value <= 1.0)
             prev = value
+        
+        # Insert the rest of the rows
+        for k in range(5, 35):
+            key = 'ts-' + str(k)
+            prot._insert_ts(TSDBOp_InsertTS(tid, key, tsdict[key]))
+            
+        # Check to see if the new rows have vpd's
+        select_return = prot._select(TSDBOp_Select(tid, {'pk':{'==':'ts-5'}}, [], None))
+        payload = select_return['payload']
+        assert('d_vp-0' in payload['ts-5'])
+        assert('d_vp-4' in payload['ts-5'])
+        assert(payload['ts-5']['d_vp-0'] > 0)
+        
+        # Similarity Search for a non-existant ts
+        similar = prot._ts_similarity_search(TSDBOp_TSSimilaritySearch(tid, 'ts-36', tsdict['ts-36']))
+        payload = similar['payload']
+        print(payload)
+        assert(1==2)
+        assert(len(payload) == 5)
+        
         db.close()

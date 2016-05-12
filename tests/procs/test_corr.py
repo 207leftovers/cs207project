@@ -43,5 +43,3 @@ def test_kernelcorr():
     standts2 = _corr.stand(t2, t2.mean(), t2.std())
     # Kernel_corr should return a correlation of 1.0 since we use similar timeseries
     assert(_corr.kernel_corr(standts1, standts2, mult=1) == 1.0)
-    
-

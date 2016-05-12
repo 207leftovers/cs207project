@@ -9,7 +9,6 @@ import portalocker
 from tsdb.tsdb_row import *
 from tsdb.tsdb_indexes import *
 
-
 # This dictionary will help you in writing a generic select operation
 OPMAP = {
     '<': operator.lt,
@@ -26,26 +25,37 @@ class PersistentDB(object):
         with open(self.path_to_db_files+self.meta_info_filename, 'wb') as fd:
                 pickle.dump({
                     'pkfield': self.pkfield,
-                    'schema': self.schema
+                    'schema': self.schema,
+                    'vps': self.vps
                 }, fd)
+                
+    def read_meta_from_dist(self):
+        with open(self.path_to_db_files+self.meta_info_filename, 'rb', buffering=0) as fd:
+            try:
+                d = pickle.load(fd)
+                self.pkfield = d['pkfield']
+                self.schema = d['schema']
+                self.vps = d['vps']
+            except EOFError: 
+                raise EOFError
     
     def __init__(self, schema, pkfield, f='data', overwrite=False):
         # Augment the schema by adding an indicator column for vantage points
         schema['vp'] = {'convert': bool, 'index': 1, 'default': False}
         
-        self.numvps = 0
+        # METAINFO
+        self.meta_info_filename = 'db_meta'
         
-        self.schema = schema
-        self.validfields = ['ts']
         self.pkfield = pkfield
+        self.schema = schema
         self.vps = []
-       
         self.defaults = {}
         
+        self.validfields = ['ts']
+
+        # LOAD INDICES FROM FILES
         self._storage = {}
         self._trees = {}
-        
-        self.meta_info_filename = 'db_meta'
         
         self.path_to_db_files = 'db_files/' + f + '/'
         if not os.path.exists(self.path_to_db_files):
@@ -54,25 +64,20 @@ class PersistentDB(object):
         # The highest transaction sequence number
         self.tid_seq = 0        
         # Transaction Table
-        # "contains all transactions that are currently running and the Sequence Number of the last log entry they caused"
+        # Contains all transactions that are currently running and the Sequence Number of the last log entry they caused
         self.tt = {}
 
         # Load meta information if the path exists and we are not overwriting
         if os.path.exists(self.path_to_db_files+self.meta_info_filename) and not overwrite:
-            with open(self.path_to_db_files+self.meta_info_filename, 'rb', buffering=0) as fd:
-                try:
-                    d = pickle.load(fd)
-                    self.pkfield = d['pkfield']
-                    self.schema = d['schema']
-                except EOFError: 
-                    raise EOFError
-                # Ensure the schema matches (uness the passed in schema was None)
-                if (schema is not None) and len(schema) != len(self.schema):
-                    print(self.schema)
-                    print(schema)
-                    raise ValueError("Schemas don't match")
-                if self.pkfield != pkfield:
-                    raise ValueError("PKs don't match")
+            # Read in the metadata from disk
+            self.read_meta_from_dist()
+            # Ensure the schema matches (uness the passed in schema was None)
+            if (schema is not None) and len(schema) != len(self.schema):
+                print(self.schema)
+                print(schema)
+                raise ValueError("Schemas don't match")
+            if self.pkfield != pkfield:
+                raise ValueError("PKs don't match")
         else:
             # Write the meta information to file
             self.write_meta_to_disk()
@@ -84,23 +89,18 @@ class PersistentDB(object):
             
             if indexinfo is not None or s=='pk':
                 self.validfields.append(s)
-                # Use binary search trees for highcard/numeric
-                # TODO:
-                # Use bitmaps for lowcard/str_or_factor
                 # Always index PK no matter what indexinfo says
-            
                 if s == 'pk':
                     f = self.open_file(self.path_to_db_files + s, overwrite)
                     self._storage[s] = Storage(f)
                     self._trees[s] = BinaryTree(self._storage[s])
                 else:
+                    # Use binary search trees for highcard/numeric
+                    # TODO: Use bitmaps for lowcard/str_or_factor
                     self.defaults[s] = default
                     f = self.open_file(self.path_to_db_files + s, overwrite)
                     self._storage[s] = Storage(f)
                     self._trees[s] = ArrayBinaryTree(self._storage[s], convert)
-                    # if convert in ():
-                    # else:
-                    #    self._trees[s] = BitMask(self._storage[s])
                 
     def open_file(self, filename, overwrite):
         try:
@@ -151,8 +151,10 @@ class PersistentDB(object):
     def rollback(self, tid):
         self.check_tid_open(tid)
         
+        # Read the meta data that is stored on disk
+        self.read_meta_from_dist()
+        
         open_fields = self.tt[tid]
-        #print (open_fields)
         for field in open_fields:
             self._assert_not_closed(field)
             self._storage[field].unlock()
@@ -178,8 +180,7 @@ class PersistentDB(object):
         pk = str(pk)
         self.upsert_meta(tid, pk, {'vp': True})
         
-        d_vp = self.numvps
-        self.numvps += 1
+        d_vp = len(self.vps)
         
         fieldname = "d_vp-{}".format(d_vp)
         
@@ -231,6 +232,7 @@ class PersistentDB(object):
     # Upsert data for a specific primary key based on a dictionary of 
     # fields and values to upsert
     def upsert_meta(self, tid, pk, meta):
+        print('UPSERTING', pk, meta)
         "Implement upserting field values, as long as the fields are in the schema."
         self.check_tid_open(tid)
         self._assert_not_closed('pk')
@@ -247,10 +249,8 @@ class PersistentDB(object):
             # Delete the old indices
             self.delete_indices(pk, row)
         else:
-            ## Create the row if it doesn't exist
-            #row = DBRow(pk, self.defaults)
+            # Can't upsert metadata on a non-existant row
             raise ValueError("TimeSeries with pk: ", pk, " not present in db")
-            
        
         # Look through the fields and upsert their values
         for key in meta:         
@@ -332,9 +332,14 @@ class PersistentDB(object):
                 pks = pks.intersection(some_pks)
         matchedfielddicts = []
         
+        print("PKS", pks)
+        print("VALID FIELDS", self.validfields)
+        
         # FIELDS
         # select the correct fields
         for pk in pks:
+            pk_row = self._trees['pk'].get_as_row(pk)
+            print('ROW', pk_row.row)
             matched_field = {}
             # If fields is None, just return the primary keys
             if fields == None:
@@ -346,20 +351,20 @@ class PersistentDB(object):
                     # Skip the ts 
                     if row_field == 'ts':
                         continue
-                    if row_field == 'pk':
-                        matched_field[row_field] = self._trees['pk'].get_as_row(pk).pk
+                    elif row_field == 'pk':
+                        matched_field[row_field] = pk_row.pk
                     else:
-                        matched_field[row_field] = self._trees['pk'].get_as_row(pk).row[row_field]
+                        matched_field[row_field] = pk_row.row[row_field]
             else:
                 # Only get the indicated fields
                 for field in fields:
                     if field in self.validfields:
                         if field == 'pk':
-                            matched_field[field] = self._trees['pk'].get_as_row(pk).pk
+                            matched_field[field] = pk_row.pk
                         elif field == 'ts':
-                            matched_field[field] = self._trees['pk'].get_as_row(pk).ts
+                            matched_field[field] = pk_row.ts
                         else:
-                            matched_field[field] = self._trees['pk'].get_as_row(pk).row[field]
+                            matched_field[field] = pk_row.row[field]
 
             matchedfielddicts.append(matched_field)
 
@@ -386,10 +391,11 @@ class PersistentDB(object):
 
                 # Get the order for the result_set
                 for pk in pks:
+                    pk_row = self._trees['pk'].get_as_row(pk)
                     if sorted_by == 'pk':
-                        order_list.append(self._trees['pk'].get_as_row(pk).pk)
+                        order_list.append(pk_row.pk)
                     elif sorted_by in self.validfields:
-                        order_list.append(self._trees['pk'].get_as_row(pk).row[sorted_by])
+                        order_list.append(pk_row.row[sorted_by])
                     else:
                         order_list.append(0)
                 result_tuple = []

@@ -13,8 +13,10 @@ import numpy as np
 
 def trigger_callback_maker(tid, pk, target, calltomake):
     def callback_(future):
+        print('CALLBACK_')
         result = future.result()
         if target is not None:
+            print('CALLBACKS', pk, target, result)
             calltomake(tid, pk, dict(zip(target, result)))
         return result
     return callback_
@@ -126,7 +128,11 @@ class TSDBProtocol(asyncio.Protocol):
 
     def _run_trigger(self, opname, rowmatch, tid):
         lot = self.server.triggers[opname]
-        #print("S> list of triggers to run", lot)
+        tnames = []
+        for tname, t, arg, target in lot:
+            tnames.append(tname)
+        
+        print("S> Running triggers for rows: ", rowmatch, tnames, opname)
         for tname, t, arg, target in lot:
             for pk in rowmatch:
                 a_row = self.server.db._trees['pk'].get_as_row(pk)
@@ -136,7 +142,8 @@ class TSDBProtocol(asyncio.Protocol):
                 row['ts'] = a_row.ts
                 
                 task = asyncio.ensure_future(t(pk, row, arg))
-                task.add_done_callback(trigger_callback_maker(tid, pk, target, self.server.db.upsert_meta))
+                result = task.add_done_callback(trigger_callback_maker(tid, pk, target, self.server.db.upsert_meta))
+                print('RESULT', result)
 
     def _create_vp(self, op):
         tid = op['tid']
@@ -172,8 +179,8 @@ class TSDBProtocol(asyncio.Protocol):
         #vpkeys = ["ts-{}".format(i) for i in np.random.choice(range(50), size=5, replace=False)]
         
     def _ts_similarity_search(self, op):
-        if self.server.db.numvps == 0:
-            # No Vantage Points!
+        if len(self.server.db.vps) == 0:
+            # No Vantage Points! Can't run Similarity Search
             return TSDBOp_Return(TSDBStatus.INVALID_OPERATION, op['op'])
 
         tid = op['tid']
