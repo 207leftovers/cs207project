@@ -80,7 +80,6 @@ class TSDBClient(object):
 
         # 8192
         data = await reader.read()
-        #print('Received: %r' % data)
         writer.close()
 
         deserializer = Deserializer();
@@ -99,8 +98,5 @@ class TSDBClient(object):
     # Once again replace this function if appropriate
     async def _send(self, msg):
         loop = asyncio.get_event_loop()
-        # These lines don't work
-        #coro = asyncio.ensure_future(self._send_coro(msg, loop))
-        #loop.run_until_complete(coro)
         status, payload = await self._send_coro(msg, loop)
         return status, payload

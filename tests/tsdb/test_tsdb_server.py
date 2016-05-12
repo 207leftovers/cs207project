@@ -116,7 +116,7 @@ class Test_TSDB_Protocol(unittest.TestCase):
         storedproc = getattr(mod,'main')
         
         assert(server.triggers['insert_ts'] ==  [('stats', storedproc, None, ['mean', 'std'])])
-        
+        db.close()
         #prot._insert_ts(TSDBOp_InsertTS(3, ats1))
         #time.sleep(1)
         #inserted_row = server.db.rows[3]
@@ -169,6 +169,7 @@ class Test_TSDB_Protocol(unittest.TestCase):
         delete_return2 = prot._delete_ts(delete_op)
         assert(delete_return2['op'] == 'delete_ts')
         assert(delete_return2['status'] == TSDBStatus.INVALID_KEY)
+        db.close()
 
     def test_protocol_triggers(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
@@ -193,6 +194,7 @@ class Test_TSDB_Protocol(unittest.TestCase):
         storedproc = getattr(mod,'main')
 
         assert(server.triggers['insert_ts'] ==  [])
+        db.close()
 
     def test_augmented_select(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
@@ -233,7 +235,8 @@ class Test_TSDB_Protocol(unittest.TestCase):
         assert(aug_select_return['op'] == 'augmented_select')
         assert(aug_select_return['status'] == TSDBStatus.OK)
         assert(aug_select_return['payload'] == {1: {'mean': 1.4142135623730403}})
-        
+        db.close()
+
     def test_simple_run(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
         server = TSDBServer(db)
@@ -249,17 +252,19 @@ class Test_TSDB_Protocol(unittest.TestCase):
         prot._add_trigger(TSDBOp_AddTrigger(tid, 'stats', 'insert_ts', ['mean', 'std'], None))
             
         # Insert
-        prot._insert_ts(TSDBOp_InsertTS(tid, 1, ats))
+        prot._insert_ts(TSDBOp_InsertTS(tid, '1', ats))
 
         # Select
-        select_return = prot._select(TSDBOp_Select(tid, {'pk':{'==':1}}, ['ts','mean','std'], None))
+        select_return = prot._select(TSDBOp_Select(tid, {'pk': {'==': '1'}}, ['ts','mean','std'], None))
         
         assert(select_return['status'] == 0)
-        assert(ts.TimeSeries(select_return['payload']['1']['ts'][0], select_return['payload']['1']['ts'][1]) == ats)
+        assert(select_return['payload']['1']['ts'] == ats)
+        # TODO:
         #print(payload['1'])
         #assert(payload['1']['std'] == 1.4142135623730951)
         #assert(payload['1']['mean'] == 2.0)
-        
+        db.close()
+
     def test_create_vp(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
         server = TSDBServer(db)
@@ -296,21 +301,22 @@ class Test_TSDB_Protocol(unittest.TestCase):
         for k in tsdict1:
             prot._insert_ts(TSDBOp_InsertTS(tid, k, tsdict1[k]))
     
+        numvps = 5
         # Choose 5 distinct vantage point time series
-        vpkeys = ["ts-{}".format(i) for i in np.random.choice(range(40), size=1, replace=False)]
-        for i in range(1):
+        vpkeys = ["ts-{}".format(i) for i in np.random.choice(range(40), size=numvps, replace=False)]
+        print("VPKEYS", vpkeys)
+        for i in range(numvps):
             with self.assertRaises(KeyError):
                 prot._create_vp(TSDBOp_CreateVP(tid, vpkeys[i]))
             
             back = prot._insert_ts(TSDBOp_InsertTS(tid, vpkeys[i], tsdict[vpkeys[i]]))
             assert(back['status'] == 0)
-            prot._create_vp(TSDBOp_CreateVP(tid, vpkeys[i]))
+            prot._create_vp(TSDBOp_CreateVP(tid, vpkeys[i]))            
+            
+        select_return = prot._select(TSDBOp_Select(tid, {'vp':{'==':True}}, ['ts','mean','std'], None))
+        assert(len(select_return['payload']) == 5)
         
+        similar = prot._ts_similarity_search(TSDBOp_TSSimilaritySearch(tid, 5, tsdict[vpkeys[0]]))
+        assert(len(similar['payload']) == 5)
         
-            
-
-            
-            
-
-            
-
+        db.close()

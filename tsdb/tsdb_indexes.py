@@ -109,7 +109,6 @@ class Storage(object):
         self.locked = False
         #we ensure that we start in a sector boundary
         self._ensure_superblock()
-
     def _ensure_superblock(self):
         "Guarantee that the next write will start on a sector boundary"
         self.lock()
@@ -371,8 +370,8 @@ class ArrayBinaryTree(BaseTree):
         keys = []
         
         # TODO!!!!
-        #if not self._storage.locked:
-        #    self._refresh_tree_ref()
+        if not self._storage.locked:
+            self._refresh_tree_ref()
             
         nodes = [self._follow(self._tree_ref)]
         
@@ -399,7 +398,7 @@ class ArrayBinaryTree(BaseTree):
         value_list = value_str.split(' ')
         value_arr = []
         for value in value_list:
-            value_arr.append(self._convert(value))
+            value_arr.append(value)
         return value_arr
         
     def _get(self, key):
@@ -408,8 +407,8 @@ class ArrayBinaryTree(BaseTree):
         #refresh the references and get new tree if needed
         
         # TODO!!!!
-        #if not self._storage.locked:
-        #    self._refresh_tree_ref()
+        if not self._storage.locked:
+            self._refresh_tree_ref()
             
         #get the top level node
         node = self._follow(self._tree_ref)
@@ -429,8 +428,8 @@ class ArrayBinaryTree(BaseTree):
         # we dont lose updates from any other process
         
         # TODO: PUT THESE BACK
-        #if self._storage.lock():
-        #    self._refresh_tree_ref()
+        if self._storage.lock():
+            self._refresh_tree_ref()
 
         # Get current top-level node and make a value-ref
         node = self._follow(self._tree_ref)
@@ -471,8 +470,8 @@ class ArrayBinaryTree(BaseTree):
         "Delete value from node with key, creating new tree and path"
         "If node has no more values, then delete the node"
         # TODO: !!!!
-        #if self._storage.lock():
-        #    self._refresh_tree_ref()
+        if self._storage.lock():
+            self._refresh_tree_ref()
         node = self._follow(self._tree_ref)
         self._tree_ref = self._delete(node, key, str(value))
         

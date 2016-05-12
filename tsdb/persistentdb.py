@@ -21,7 +21,6 @@ OPMAP = {
 
 class PersistentDB(object):
 
-
     def __init__(self, schema, pkfield, f='data', overwrite=False):
         # Augment the schema by adding an indicator column for vantage points
         schema['vp'] = {'convert': bool, 'index': 1, 'default': False}
@@ -31,6 +30,7 @@ class PersistentDB(object):
         self.schema = schema
         self.validfields = ['ts']
         self.pkfield = pkfield
+        self.vps = []
        
         self.defaults = {}
         
@@ -39,19 +39,19 @@ class PersistentDB(object):
         
         meta_info_filename = 'db_meta'
         
-        path_to_db_files = 'db_files/' + f + '/'
-        if not os.path.exists(path_to_db_files):
-            os.makedirs(path_to_db_files)
+        self.path_to_db_files = 'db_files/' + f + '/'
+        if not os.path.exists(self.path_to_db_files):
+            os.makedirs(self.path_to_db_files)
         
         # The highest transaction sequence number
         self.tid_seq = 0        
         # Transaction Table
         # "contains all transactions that are currently running and the Sequence Number of the last log entry they caused"
         self.tt = {}
-        
+
         # Load meta information if the path exists and we are not overwriting
-        if os.path.exists(path_to_db_files+meta_info_filename) and not overwrite:
-            with open(path_to_db_files+meta_info_filename, 'rb', buffering=0) as fd:
+        if os.path.exists(self.path_to_db_files+meta_info_filename) and not overwrite:
+            with open(self.path_to_db_files+meta_info_filename, 'rb', buffering=0) as fd:
                 try: self.pkfield, self.schema = pickle.load(fd)
                 except EOFError: 
                     pass
@@ -64,7 +64,7 @@ class PersistentDB(object):
             pass
             # TODO: !!!
             # Write the meta information to file
-            #with open(path_to_db_files+meta_info_filename,'wb',buffering=0) as fd:
+            #with open(self.path_to_db_files+meta_info_filename,'wb',buffering=0) as fd:
             #    pickle.dump((self.pkfield, dict(self.schema)), fd)
 
         for s in schema:            
@@ -80,12 +80,12 @@ class PersistentDB(object):
                 # Always index PK no matter what indexinfo says
             
                 if s == 'pk':
-                    f = self.open_file(path_to_db_files + s, overwrite)
+                    f = self.open_file(self.path_to_db_files + s, overwrite)
                     self._storage[s] = Storage(f)
                     self._trees[s] = BinaryTree(self._storage[s])
                 else:
                     self.defaults[s] = default
-                    f = self.open_file(path_to_db_files + s, overwrite)
+                    f = self.open_file(self.path_to_db_files + s, overwrite)
                     self._storage[s] = Storage(f)
                     self._trees[s] = ArrayBinaryTree(self._storage[s], convert)
                     # if convert in ():
@@ -130,7 +130,7 @@ class PersistentDB(object):
         for field in open_fields:
             self._assert_not_closed(field)
             self._trees[field].commit()
-        
+            self._storage[field].unlock()
         # remove this tid from the transaction table
         del self.tt[tid]
         
@@ -174,19 +174,13 @@ class PersistentDB(object):
         
         # Add to valid fields
         self.validfields.append(fieldname)
+        self.vps.append(pk)
+        
+        f = self.open_file(self.path_to_db_files + fieldname, True)
+        self._storage[fieldname] = Storage(f)
+        self._trees[fieldname] = ArrayBinaryTree(self._storage[fieldname], float)
         
         return fieldname, ts
-    
-    def build_vp_tree(self):
-        # 1. Pick numvps randomly from all of the pks
-        # - set these pk's vp field to True
-        # - store the vps in a list 
-        
-        # 2. Update all the d_vp-i's to be the distance from the vantage points
-        
-        # 3. Add a trigger to update any new inserted timeseries with the distance
-        pass
-        
 
     # Insert a timeseries for a specific primary key
     def insert_ts(self, tid, pk, ts):
