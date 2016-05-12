@@ -315,15 +315,15 @@ class PersistentDB(object):
                 # Only get the indicated fields
                 for field in fields:
                     if field in self.validfields:
-                        if field is 'pk':
+                        if field == 'pk':
                             matched_field[field] = self._trees['pk'].get_as_row(pk).pk
-                        elif field is 'ts':
+                        elif field == 'ts':
                             matched_field[field] = self._trees['pk'].get_as_row(pk).ts
                         else:
                             matched_field[field] = self._trees['pk'].get_as_row(pk).row[field]
 
             matchedfielddicts.append(matched_field)
-
+        print (matchedfielddicts)
         # ADDITIONAL
         if additional is None:
             return list(pks), matchedfielddicts

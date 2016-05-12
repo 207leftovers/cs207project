@@ -1,5 +1,5 @@
 import ast
-from TimeSeries import TimeSeries
+import timeseries as ts
 
 class DBRow:
     "Stores a row of data for a primary key"        
@@ -30,4 +30,4 @@ class DBRow:
         ts_times = a_dict['ts_t']
         ts_values = a_dict['ts_v']
         row = a_dict['row']
-        return DBRow(pk, row, TimeSeries(ts_times, ts_values))
+        return DBRow(pk, row, ts.TimeSeries(ts_times, ts_values))

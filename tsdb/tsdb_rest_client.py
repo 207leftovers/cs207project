@@ -59,6 +59,7 @@ class TSDB_REST_Client(object):
     # from here onwards. Return the status and the payload
     async def _run(self, msg):
         with aiohttp.ClientSession() as session:
+            print (json.dumps(msg))
             async with session.post(self.url, data=json.dumps(msg)) as resp:
                 #print(await resp.text())
                 status = resp.status

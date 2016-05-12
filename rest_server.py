@@ -18,7 +18,8 @@ schema = {
 }
 
 #TEST this out by running
-#curl http://localhost:9999/ -X POST -d "pk=four&op=insert_ts&ts=[[0.0, 1.0, 4.0], [0.0, 0.0, 4.0]]" 
+#curl -H "Content-Type: application/json" -X POST -d '{"op":"begin_transaction"}' http://localhost:9999/
+#curl -H "Content-Type: application/json" -X POST -d '{"op":"insert_ts","tid":2,"ts":[[1.0, 2.0, 3.0, 2.0, 1.0], [0.0, 1.0, 2.0, 3.0, 4.0]], "pk":1}' http://localhost:9999/
 
 def main():
     db = PersistentDB(schema, 'pk', overwrite=True)
