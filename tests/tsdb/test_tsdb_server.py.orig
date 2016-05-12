@@ -234,6 +234,11 @@ class Test_TSDB_Protocol(unittest.TestCase):
 
         assert(aug_select_return['op'] == 'augmented_select')
         assert(aug_select_return['status'] == TSDBStatus.OK)
+<<<<<<< HEAD
+        assert(aug_select_return['payload'] == {1: {'dist': 0.83485935360315389}})
+=======
+        assert(aug_select_return['payload'] == {"1": {'mean': 1.4142135623730403}})
+>>>>>>> fix pk to strings errors
         db.close()
 
     def test_simple_run(self):

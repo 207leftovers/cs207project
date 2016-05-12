@@ -41,13 +41,13 @@ ats4 = ts.TimeSeries(t4, v4)
 class TestTransactions(unittest.TestCase):
     
     # Tests
-    def test_transact1(self):
+    def teast_transact1(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
         first_tid = db.begin_transaction()
         db.insert_ts(first_tid, 1, ats1)
-        row1 = DBRow.row_from_string(db._trees['pk'].get(1))
-        assert(row1.pk == 1)
-        assert(db._trees['pk'].has_key(1) == True)
+        row1 = DBRow.row_from_string(db._trees['pk'].get("1"))
+        assert(row1.pk == "1")
+        assert(db._trees['pk'].has_key("1") == True)
 
         #COMMIT 
         db.commit(first_tid)
@@ -65,7 +65,7 @@ class TestTransactions(unittest.TestCase):
         db.upsert_meta(second_tid, 1, { 'order': 1})
 
         ids1, fields1 = db.select(second_tid, {'pk': {'==': 1}}, ['ts', 'order'], None)
-        assert(ids1 == [1])
+        assert(ids1 == ["1"])
         assert(fields1[0]['ts'] == ats1)
         assert(fields1[0]['order'] == 1)
 
@@ -83,9 +83,9 @@ class TestTransactions(unittest.TestCase):
         db = PersistentDB(schema, 'pk', overwrite=True)
         first_tid = db.begin_transaction()
         db.insert_ts(first_tid, 1, ats1)
-        row1 = DBRow.row_from_string(db._trees['pk'].get(1))
-        assert(row1.pk == 1)
-        assert(db._trees['pk'].has_key(1) == True)
+        row1 = DBRow.row_from_string(db._trees['pk'].get("1"))
+        assert(row1.pk == "1")
+        assert(db._trees['pk'].has_key("1") == True)
 
         #COMMIT 
         db.commit(first_tid)
@@ -99,7 +99,7 @@ class TestTransactions(unittest.TestCase):
         second_tid = db2.begin_transaction()
         ids1, fields1 = db2.select(second_tid, {'pk': {'==': 1}}, ['ts', 'order'], None)
         print (fields1)
-        assert(ids1 == [1])
+        assert(ids1 == ["1"])
         assert(fields1[0]['ts'] == ats1)
         assert(fields1[0]['order'] == 0.0)
 
@@ -109,9 +109,9 @@ class TestTransactions(unittest.TestCase):
         db = PersistentDB(schema, 'pk', overwrite=True)
         first_tid = db.begin_transaction()
         db.insert_ts(first_tid, 1, ats1)
-        row1 = DBRow.row_from_string(db._trees['pk'].get(1))
-        assert(row1.pk == 1)
-        assert(db._trees['pk'].has_key(1) == True)
+        row1 = DBRow.row_from_string(db._trees['pk'].get("1"))
+        assert(row1.pk == "1")
+        assert(db._trees['pk'].has_key("1") == True)
         db.close()
 
         #COMMIT 
@@ -127,9 +127,9 @@ class TestPersistence(unittest.TestCase):
         db = PersistentDB(schema, 'pk', f='2', overwrite=True)
         first_tid = db.begin_transaction()
         db.insert_ts(first_tid, 1, ats1)
-        row1 = DBRow.row_from_string(db._trees['pk'].get(1))
-        assert(row1.pk == 1)
-        assert(db._trees['pk'].has_key(1) == True)
+        row1 = DBRow.row_from_string(db._trees['pk'].get("1"))
+        assert(row1.pk == "1")
+        assert(db._trees['pk'].has_key("1") == True)
         db.close()
         
         e1 = ''

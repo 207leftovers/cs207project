@@ -242,7 +242,7 @@ class BinaryTree(BaseTree):
             if node is not None:
                 nodes.append(self._follow(node.left_ref))
                 nodes.append(self._follow(node.right_ref))
-                keys.append(node.key)
+                keys.append(str(node.key))
         return keys
     
     def has_key(self, key):
@@ -269,6 +269,8 @@ class BinaryTree(BaseTree):
         node = self._follow(self._tree_ref)
         #traverse until you find appropriate node
         while node is not None:
+            #make sure keys are strings
+            key = str(key)
             if key < node.key:
                 node = self._follow(node.left_ref)
             elif key > node.key:
@@ -285,7 +287,7 @@ class BinaryTree(BaseTree):
             self._refresh_tree_ref()
         # Get current top-level node and make a value-ref
         node = self._follow(self._tree_ref)
-        value_ref = ValueRef(value)
+        value_ref = ValueRef(str(value))
         # Insert and get new tree ref
         self._tree_ref = self._insert(node, key, value_ref)
         # Add key to the set
@@ -410,6 +412,7 @@ class ArrayBinaryTree(BaseTree):
         if not self._storage.locked:
             self._refresh_tree_ref()
             
+
         #get the top level node
         node = self._follow(self._tree_ref)
         #traverse until you find appropriate node

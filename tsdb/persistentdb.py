@@ -174,7 +174,8 @@ class PersistentDB(object):
     def create_vp(self, tid, pk):
         self.check_tid_open(tid)
         ts = self.get_row(pk).ts
-        
+        #make sure pk are strings
+        pk = str(pk)
         self.upsert_meta(tid, pk, {'vp': True})
         
         d_vp = self.numvps
@@ -198,6 +199,8 @@ class PersistentDB(object):
     # Insert a timeseries for a specific primary key
     def insert_ts(self, tid, pk, ts):
         self.check_tid_open(tid)
+        #make sure pk are strings
+        pk = str(pk)
         self._assert_not_closed('pk')
         self.tt[tid].add('pk')
         
@@ -211,6 +214,8 @@ class PersistentDB(object):
     # Delete a timeseries for a specific primary key
     def delete_ts(self, tid, pk):
         self.check_tid_open(tid)
+        #make sure pk are strings
+        pk = str(pk)
         self._assert_not_closed('pk')
         self.tt[tid].add('pk')
         
@@ -221,7 +226,7 @@ class PersistentDB(object):
             
             self.delete_indices(pk, row)
         else:
-            raise ValueError('Primary key %d not found during deletion' % pk)
+            raise ValueError('Primary key not found during deletion')
     
     # Upsert data for a specific primary key based on a dictionary of 
     # fields and values to upsert
@@ -229,7 +234,8 @@ class PersistentDB(object):
         "Implement upserting field values, as long as the fields are in the schema."
         self.check_tid_open(tid)
         self._assert_not_closed('pk')
-        
+        #make sure pk are strings
+        pk = str(pk)
          # Check for 'ts'
         if 'ts' in meta.keys():
             raise ValueError("TimeSeries are not allowed to be upserted")
@@ -253,7 +259,7 @@ class PersistentDB(object):
                 row.update(key, meta[key])
                 
         self._trees['pk'].set(pk, row.to_string())
-        
+        print ("ROW3", row.to_string())
         # Update with the new indices
         self.update_indices(pk, row)
         
@@ -295,13 +301,14 @@ class PersistentDB(object):
 
         # META
         pks = set(self._trees['pk'].get_all_keys())
-        
         # Select the keys that matches the metadata
         for meta_key in meta.keys():
             if meta_key == 'pk':
                 # PKs
                 # range operators are stored in a dict
                 for operator, value in meta[meta_key].items():
+                    #make sure pk are strings
+                    value = str(value)
                     some_pks = set()
                     for pk in pks:
                         if OPMAP[operator](pk, value):
@@ -313,12 +320,10 @@ class PersistentDB(object):
                 # range operators are stored in a dict
                 for operator, value in meta[meta_key].items():  
                     some_field_keys = set()
-                
                     for field_key in all_field_keys:
                         if OPMAP[operator](field_key, value):
                             some_field_keys |= set([field_key])
                     all_field_keys = some_field_keys
-                    
                 some_pks = set()    
                 # Now gather all PKs for these field keys
                 for field_key in all_field_keys:
@@ -326,7 +331,6 @@ class PersistentDB(object):
                     
                 # Now update the over-all set of pks by finding the intersection
                 pks = pks.intersection(some_pks)
-                
         matchedfielddicts = []
         
         # FIELDS

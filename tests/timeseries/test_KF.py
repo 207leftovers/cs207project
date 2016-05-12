@@ -1,5 +1,7 @@
-import set_compiler
-set_compiler.install()
+import timeseries.set_compiler
+timeseries.set_compiler.install()
+
+import scipy.optimize
 
 import pyximport
 pyximport.install()
@@ -10,13 +12,8 @@ import KF
 
 import timeseries as ts
 import numpy as np
-import scipy.optimize
 
-import set_compiler
-set_compiler.install()
 
-import pyximport
-pyximport.install()
 
 
 def test_KF():

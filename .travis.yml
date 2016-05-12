@@ -21,6 +21,7 @@ install:
     - pip install aiohttp
     - pip install asynctest
     - pip install graphviz
+    - pip install portalocker
 script:
     - py.test --cov timeseries --cov pype
     

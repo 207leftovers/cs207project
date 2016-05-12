@@ -198,6 +198,10 @@ class TSDBProtocol(asyncio.Protocol):
 
         # The radius is 2 times the distance to the nearest vp
         radius = 2 * min_vp_dist
+        if radius == 0:
+            # Give radius a boost if has found the exact ts to get other ts's other than the exact one
+            radius = 8.0
+        
         vp_id = self.server.db.vps.index(closest_vp)
         
         a_select = self._augmented_select(TSDBOp_AugmentedSelect(tid, 'corr', ['dist'], ts, {'d_vp-{}'.format(vp_id): {'<=': radius}}, None))
@@ -209,7 +213,7 @@ class TSDBProtocol(asyncio.Protocol):
         closest_ts = [(d, payload[d]['dist']) for d in payload.keys()]
         closest_ts.sort(key=lambda x: x[1])
         closest_ts = closest_ts[:limit]
-        closest = {}
+        closest = OrderedDict()
         for key, value in closest_ts:
             closest[key] = value
 
@@ -251,6 +255,8 @@ class TSDBProtocol(asyncio.Protocol):
                     response = self._upsert_meta(op)
                 elif isinstance(op, TSDBOp_Select):
                     response = self._select(op)
+                elif isinstance(op, TSDBOp_AugmentedSelect):
+                    response = self._augmented_select(op)
                 elif isinstance(op, TSDBOp_AddTrigger):
                     response = self._add_trigger(op)
                 elif isinstance(op, TSDBOp_RemoveTrigger):
@@ -300,6 +306,8 @@ class TSDBProtocol(asyncio.Protocol):
                 response = self._upsert_meta(op)
             elif isinstance(op, TSDBOp_Select):
                 response = self._select(op)
+            elif isinstance(op, TSDBOp_AugmentedSelect):
+                response = self._augmented_select(op)
             elif isinstance(op, TSDBOp_AddTrigger):
                 response = self._add_trigger(op)
             elif isinstance(op, TSDBOp_RemoveTrigger):

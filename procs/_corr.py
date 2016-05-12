@@ -16,13 +16,14 @@ def random_ts(a):
     v = a*np.random.random(100)
     return ts.TimeSeries(t, v)
 
+# Standardizes the variable x, using the mean m, and standard deviation s
 def stand(x, m, s):
     return (x-m)/s
 
+# Given two standardized time series, compute their cross-correlation using FFT
 def ccor(ts1, ts2):
-    "given two standardized time series, compute their cross-correlation using FFT"
-    #your code here
-    return nfft.ifft(nfft.fft(ts1) * np.conj(nfft.fft(ts2)))
+    return ((1 / (1. * len(ts1))) * nfft.ifft(nfft.fft(ts1) * np.conjugate(nfft.fft(ts2))).real)
+    #return nfft.ifft(nfft.fft(ts1) * np.conj(nfft.fft(ts2)))
 
 def max_corr_at_phase(ts1, ts2):
     ccorts = ccor(ts1, ts2)
@@ -57,12 +58,19 @@ def K_function_mult(ts1, ts2, mult):
         k += np.exp(mult*np.dot(ts1_val, ts2_appended))
     return k
 
-
+# Compute a kernelized correlation so that we can get a real distance
 def kernel_corr(ts1, ts2, mult=1):
-    "compute a kernelized correlation so that we can get a real distance"
-    # Using the formula in the paper and using the K_function_mult to compute the kernelized correlation
-    return K_function_mult(ts1, ts2, mult) / np.sqrt(K_function_mult(ts1, ts1, mult) \
-            * K_function_mult(ts2, ts2, mult))
+    
+    # Numerator
+    numerator = np.sum(np.exp(mult * ccor(ts1, ts2)))
+
+    # Denominator
+    denominator = np.sqrt(np.sum(np.exp(mult * ccor(ts1, ts1))) * np.sum(np.exp(mult * ccor(ts2, ts2))))
+    
+    if denominator == 0:
+        return 0
+    else:
+        return numerator/denominator
 
 
 # This is for a quick and dirty test of these functions
