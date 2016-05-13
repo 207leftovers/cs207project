@@ -21,7 +21,7 @@ It also has a REST API that can be run via rest_server.py and REST_commands.sh
 
 
 ### Additional Features:
-* `Kalman Filter`:
+* `Kalman Filter`: A common issue in time series is that noise will obscure the underlying time series. Kalman filter is able to filter out Gaussian white noise from the innovations using Bayesian inference and estimating a joint probability distribution. We write a Cython version of Kalman filter to filter out the underlying "true" path.
 
 * `Lomb-Scargle FFT for calculating periods`: Regular FFT is not advised for irregular time series. Hence comes the need for the FFT which works for irregular time series and approximates it better that regular FFT. The algorithm used for this purpose is Lomb-Scargle FFT. The original complexity is N^2 but the implementation here is NlogN.
 
@@ -40,7 +40,7 @@ It also has a REST API that can be run via rest_server.py and REST_commands.sh
 ### Procedures
 * `corr`: Calculate the correlation between two time series. Used internally for the similarity search in the database.
 * `stats`: Computes the mean and the standard deviation for the time series.
-* `KalmanFilter` - To be filled by Haosu.
+* `KalmanFilter` - We generate a time series with constant Gaussian innovations, and obscured the series by Gaussian noice. Using this algorithm, we can estimate the sigma_eta: the variance of innovations and sigma_epsilon: the variance of noise. The estimate turns out to be accurate (<10%).
 * `period` - Computes the period of the irregular time series. Uses the Lomb-Scargle method to compute the FFT approximation. The FFT values are then used to find the period of the signal. The Lomb-Scargle FFT code is clearly described in the procs folder.
 
 
