@@ -72,7 +72,8 @@ async def main():
     filtered = KFresult['Predict']
 
     plt.title('Kalman Filtered')
-    plt.plot(filtered)
+    plt.plot(v, color = 'g', alpha = 0.4)
+    plt.plot(filtered, color = 'b')
     plt.show()
 
 
