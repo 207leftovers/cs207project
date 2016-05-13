@@ -20,8 +20,8 @@ It also has a REST API that can be run via rest_server.py and REST_commands.sh
   * Demo: [`Client`](/tsdb/go_client.py): This sets up a client that runs a similarity search on 50 TimeSeries objects.
 
 ### Rest Server
-* [`Server`](/tsdb/rest_server.py): This sets up an aiohttp rest server that can process requests from a client.
-* [`Server Overwrite`](/tsdb/rest_server_overwrite.py): This sets up an aiohttp rest server that can process requests from a client that overwrites any existing database files.
+* [`Rest Server`](/tsdb/rest_server.py): This sets up an aiohttp rest server that can process requests from a client.
+* [`Rest Server Overwrite`](/tsdb/rest_server_overwrite.py): This sets up an aiohttp rest server that can process requests from a client that overwrites any existing database files.
   * Demo: [`Rest Client`](/tsdb/rest_client.py): This sets up a rest client that runs a similarity search on 50 TimeSeries objects.
 
 ### Persistent Architecture
