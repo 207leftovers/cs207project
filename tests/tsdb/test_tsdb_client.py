@@ -179,3 +179,63 @@ class Test_TSDB_Client(asynctest.TestCase):
 
         assert(len(tsss) == 5)
         #print(list(tsss.items())[0][0])
+
+    async def test_client_commit(self):
+        # Data
+        t = [0,1,2,3,4]
+        v = [1.0,2.0,3.0,2.0,1.0]
+        ats = ts.TimeSeries(t, v)
+            
+        # Setup Client
+        client = TSDBClient()
+        
+        # Get Transaction ID
+        status, tid = await client.begin_transaction()
+            
+        # Add Trigger
+        await client.add_trigger(tid, 'stats', 'insert_ts', ['mean', 'std'], None)
+            
+        # Insert
+        await client.insert_ts(tid, "1", ats)
+
+
+        await client.commit(tid)
+      
+        # Get Transaction ID
+        status, tid = await client.begin_transaction()      
+        # Select
+        status, payload = await client.select(tid, {'pk':{'==':'1'}}, ['ts','mean','std'], None)
+        assert(status == 0)
+
+        assert(ts.TimeSeries(payload['1']['ts'][0], payload['1']['ts'][1]) == ats)
+        assert(payload['1']['std'] == 1.4142135623730951)
+        assert(payload['1']['mean'] == 2.0)
+        
+    async def test_client_rollback(self):
+        # Data
+        t = [0,1,2,3,4]
+        v = [1.0,2.0,3.0,2.0,1.0]
+        ats = ts.TimeSeries(t, v)
+            
+        # Setup Client
+        client = TSDBClient()
+        
+        # Get Transaction ID
+        status, tid = await client.begin_transaction()
+            
+        # Add Trigger
+        await client.add_trigger(tid, 'stats', 'insert_ts', ['mean', 'std'], None)
+            
+        # Insert
+        await client.insert_ts(tid, "1", ats)
+
+
+        await client.rollback(tid)
+      
+        # Get Transaction ID
+        status, tid = await client.begin_transaction()      
+        # Select
+        status, payload = await client.select(tid, {'pk':{'==':'1'}}, ['ts','mean','std'], None)
+        assert(status == 0)
+        assert(len(payload) == 0)
+        

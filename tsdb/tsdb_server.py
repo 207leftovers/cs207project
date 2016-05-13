@@ -293,7 +293,6 @@ class TSDBProtocol(asyncio.Protocol):
         response = TSDBOp_Return(status, None)  # until proven otherwise.
 
         msg = data
-        print ("msg_received",msg)
         try:
             op = TSDBOp.from_json(msg)
         except TypeError as e:
@@ -329,8 +328,6 @@ class TSDBProtocol(asyncio.Protocol):
                     response = TSDBOp_Return(TSDBStatus.UNKNOWN_ERROR, op['op'])
         except Exception as e:
             response = TSDBOp_Return(TSDBStatus.UNKNOWN_ERROR,"", str(e))
-
-        print ("RESPONSE", response)
         return web.json_response(response.to_json())
 
 class TSDBServer(object):
