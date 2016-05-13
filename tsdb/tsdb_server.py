@@ -38,8 +38,9 @@ class TSDBProtocol(asyncio.Protocol):
             
     def _commit(self, op):
         try:
-            print("S> Commit", op['tod'])
+            print("S> Commit", op['tid'])
             self.server.db.commit(op['tid'])
+            return TSDBOp_Return(TSDBStatus.OK, op['op'], payload=op['tid'])
         except ValueError as e:
             return TSDBOp_Return(TSDBStatus.INVALID_KEY, op['op'])
         
@@ -47,6 +48,7 @@ class TSDBProtocol(asyncio.Protocol):
         try:
             print("S> Rollback ", op['tid'])
             self.server.db.rollback(op['tid'])
+            return TSDBOp_Return(TSDBStatus.OK, op['op'], payload=op['tid'])
         except ValueError as e:
             return TSDBOp_Return(TSDBStatus.INVALID_KEY, op['op'])
         
