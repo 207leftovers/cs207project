@@ -17,10 +17,10 @@ It also has a REST API that can be run via rest_server.py and REST_commands.sh
 
 
 ### Persistent Architecture
-* `PersistentDB`: A database to store and search through TimeSeries.  
-* `BinaryTree`: A Binary Tree that is used to store the full database rows indexed by primary key.
-* `ArrayBinaryTree`: A Binary Tree that is used to index all non-primary keys.  Each value is given its own node, and all primary keys that have that value are stored in an array in the node.
-* `DBRow`: A Row object that is used to convert database rows between strings and objects.
+* [`PersistentDB`](\tsdb\persistentdb.py): A database to store and search through TimeSeries.  
+* [`BinaryTree`](\tsdb\tsdb_indexes.py): A Binary Tree that is used to store the full database rows indexed by primary key.
+* [`ArrayBinaryTree`](\tsdb\tsdb_indexes.py): A Binary Tree that is used to index all non-primary keys.  Each value is given its own node, and all primary keys that have that value are stored in an array in the node.
+* [`DBRow`](\tsdb\tsdb_row.py): A Row object that is used to convert database rows between strings and objects.
 
 
 ### Additional Features:
