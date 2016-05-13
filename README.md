@@ -30,18 +30,18 @@ It also has a REST API that can be run via rest_server.py and REST_commands.sh
 
 
 ### DB Functions
-* `begin_transaction`: Get a transaction id to use in other DB functions.
-* `commit`: Commits a transaction and stores all changes to disk.
-* `rollback`: Rolls back the indicated transaction.
-* `insert_ts`: Insert time series data. Can be followed by a trigger which is a pre-defined function.
-* `delete_ts`: Delete time series data and the metadata for that particular time series.
-* `upsert_meta`: Update/Insert the time series metadata.
-* `select`: Perform select operation on the time series and the metadata.
-* `augmented-select`: Perform augmented select (query, followed by a pre-defined function) of time series data and/or metadata.
-* `create_vp`: Create a new vantage point by using a primary key available in the database.
-* `ts_similarity_search`: Run a similarity search on the basis of vantage points in order to find the closest time series.
-* `add_trigger`: Add a trigger such that it will cause a pre-defined function to be run upon execution of a particular database operation.
-* `remove_trigger`: Remove a trigger associated with a certain database operation.
+* [`begin_transaction`](/tsdb/tsdb_server.py#L29): Get a transaction id to use in other DB functions.
+* [`commit`](/tsdb/tsdb_server.py#L37): Commits a transaction and stores all changes to disk.
+* [`rollback`](/tsdb/tsdb_server.py#L45): Rolls back the indicated transaction.
+* [`insert_ts`](/tsdb/tsdb_server.py#L53): Insert time series data. Can be followed by a trigger which is a pre-defined function.
+* [`delete_ts`](/tsdb/tsdb_server.py#L62): Delete time series data and the metadata for that particular time series.
+* [`upsert_meta`](/tsdb/tsdb_server.py#L70): Update/Insert the time series metadata.
+* [`select`](/tsdb/tsdb_server.py#L75): Perform select operation on the time series and the metadata.
+* [`augmented-select`](/tsdb/tsdb_server.py#L89): Perform augmented select (query, followed by a pre-defined function) of time series data and/or metadata.
+* [`create_vp`](/tsdb/tsdb_server.py#L147): Create a new vantage point by using a primary key available in the database.
+* [`ts_similarity_search`](/tsdb/tsdb_server.py#L180): Run a similarity search on the basis of vantage points in order to find the closest time series.
+* [`add_trigger`](/tsdb/tsdb_server.py#L108): Add a trigger such that it will cause a pre-defined function to be run upon execution of a particular database operation.
+* [`remove_trigger`](/tsdb/tsdb_server.py#L120): Remove a trigger associated with a certain database operation.
 
 
 ### Procedures
