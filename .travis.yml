@@ -23,9 +23,6 @@ install:
     - pip install graphviz
     - pip install portalocker
 
-    - cd timeseries
-    - python setup.py build_ext --inplace
-    - cd ../..
 script:
     - py.test --cov timeseries --cov pype
 
