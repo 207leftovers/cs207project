@@ -17,7 +17,10 @@ It also has a REST API that can be run via rest_server.py and REST_commands.sh
 
 
 ### Persistent Architecture
-
+* `PersistentDB`: A database to store and search through TimeSeries.  
+* `BinaryTree`: A Binary Tree that is used to store the full database rows indexed by primary key.
+* `ArrayBinaryTree`: A Binary Tree that is used to index all non-primary keys.  Each value is given its own node, and all primary keys that have that value are stored in an array in the node.
+* `DBRow`: A Row object that is used to convert database rows between strings and objects.
 
 
 ### Additional Features:
@@ -25,7 +28,11 @@ It also has a REST API that can be run via rest_server.py and REST_commands.sh
 
 * `Lomb-Scargle FFT for calculating periods`: Regular FFT is not advised for irregular time series. Hence comes the need for the FFT which works for irregular time series and approximates it better that regular FFT. The algorithm used for this purpose is Lomb-Scargle FFT. The original complexity is N^2 but the implementation here is NlogN.
 
-### Functions
+
+### DB Functions
+* `begin_transaction`: Get a transaction id to use in other DB functions.
+* `commit`: Commits a transaction and stores all changes to disk.
+* `rollback`: Rolls back the indicated transaction.
 * `insert_ts`: Insert time series data. Can be followed by a trigger which is a pre-defined function.
 * `delete_ts`: Delete time series data and the metadata for that particular time series.
 * `upsert_meta`: Update/Insert the time series metadata.

@@ -65,6 +65,7 @@ class TestTransactions(unittest.TestCase):
         assert(ids1 == ['1'])
         assert(fields1[0]['ts'] == ats1)
         assert(fields1[0]['order'] == 5)
+        assert(db._trees['pk'].get_as_row('1').row['order'] == 5)
 
         # Rollback
         db.rollback(second_tid)
@@ -75,11 +76,10 @@ class TestTransactions(unittest.TestCase):
         assert(ids1 == ['1'])
         assert(fields1[0]['ts'] == ats1)
         
-        # TODO:
         # Check the trees
-        #assert(db._trees['pk'].get_as_row('1').row['order'] == 0)
-        #assert(db._trees['order'].get(0) == ['1'])
-        #assert(fields1[0]['order'] == 0.0)
+        assert(db._trees['pk'].get_as_row('1').row['order'] == 0)
+        #assert(db._trees['order'].get(5) == ['1'])
+        assert(fields1[0]['order'] == 0.0)
 
         db.close()
 
