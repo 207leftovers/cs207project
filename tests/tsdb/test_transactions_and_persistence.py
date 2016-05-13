@@ -4,8 +4,6 @@ import timeseries as ts
 import time
 import unittest
 
-identity = lambda x: x
-
 schema = {
   'pk': {'convert': str, 'index': None, 'default': -1},  # Will be indexed anyways
   'ts': {'convert': str, 'index': None, 'default': None},
@@ -18,7 +16,7 @@ schema = {
 }
 
 schema2 = {
-  'pk': {'convert': identity, 'index': None, 'default': -1},  # Will be indexed anyways
+  'pk': {'convert': str, 'index': None, 'default': -1}
 }
 
 # Define Time Series
@@ -41,41 +39,47 @@ ats4 = ts.TimeSeries(t4, v4)
 class TestTransactions(unittest.TestCase):
     
     # Tests
-    def teast_transact1(self):
+    def test_transact(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
         first_tid = db.begin_transaction()
-        db.insert_ts(first_tid, 1, ats1)
+        db.insert_ts(first_tid, '1', ats1)
         row1 = DBRow.row_from_string(db._trees['pk'].get("1"))
         assert(row1.pk == "1")
         assert(db._trees['pk'].has_key("1") == True)
 
-        #COMMIT 
+        # Commit 
         db.commit(first_tid)
-
-        # ROLLBACK
-        try:
+        
+        # Rollback with no open transaction
+        with self.assertRaises(ValueError):
             db.rollback(first_tid)
-        except Exception as e: 
-            e1 = e
-        assert type(e1).__name__ == 'ValueError'  
 
-        #Add Meta Data
+        # Add Meta Data
         second_tid = db.begin_transaction()
+        _, fields1 = db.select(second_tid, {'pk': {'==': '1'}}, ['ts', 'order'], None)
+        assert(fields1[0]['order'] == 0)
 
-        db.upsert_meta(second_tid, 1, { 'order': 1})
-
-        ids1, fields1 = db.select(second_tid, {'pk': {'==': 1}}, ['ts', 'order'], None)
-        assert(ids1 == ["1"])
+        # Upsert with a new value for ORDER
+        db.upsert_meta(second_tid, '1', { 'order': 5})
+        ids1, fields1 = db.select(second_tid, {'pk': {'==': '1'}}, ['ts', 'order'], None)
+        assert(ids1 == ['1'])
         assert(fields1[0]['ts'] == ats1)
-        assert(fields1[0]['order'] == 1)
+        assert(fields1[0]['order'] == 5)
 
+        # Rollback
         db.rollback(second_tid)
 
+        # Test that values are still what they were after the first commit
         third_tid = db.begin_transaction()
-        ids1, fields1 = db.select(third_tid, {'pk': {'==': 1}}, ['ts', 'order'], None)
-        assert(ids1 == [1])
+        ids1, fields1 = db.select(third_tid, {'pk': {'==': '1'}}, ['ts', 'order'], None)
+        assert(ids1 == ['1'])
         assert(fields1[0]['ts'] == ats1)
-        assert(fields1[0]['order'] == 0.0)
+        
+        # TODO:
+        # Check the trees
+        #assert(db._trees['pk'].get_as_row('1').row['order'] == 0)
+        #assert(db._trees['order'].get(0) == ['1'])
+        #assert(fields1[0]['order'] == 0.0)
 
         db.close()
 
@@ -97,7 +101,7 @@ class TestTransactions(unittest.TestCase):
             assert(e == None)
 
         second_tid = db2.begin_transaction()
-        ids1, fields1 = db2.select(second_tid, {'pk': {'==': 1}}, ['ts', 'order'], None)
+        ids1, fields1 = db2.select(second_tid, {'pk': {'==': '1'}}, ['ts', 'order'], None)
         print (fields1)
         assert(ids1 == ["1"])
         assert(fields1[0]['ts'] == ats1)
@@ -108,7 +112,7 @@ class TestTransactions(unittest.TestCase):
     def test_close_commit(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
         first_tid = db.begin_transaction()
-        db.insert_ts(first_tid, 1, ats1)
+        db.insert_ts(first_tid, '1', ats1)
         row1 = DBRow.row_from_string(db._trees['pk'].get("1"))
         assert(row1.pk == "1")
         assert(db._trees['pk'].has_key("1") == True)
@@ -121,7 +125,6 @@ class TestTransactions(unittest.TestCase):
             e1 = e
         assert type(e1).__name__ == 'ValueError'  
 
-        
 class TestPersistence(unittest.TestCase):
     def test_different_schemas(self):
         db = PersistentDB(schema, 'pk', f='2', overwrite=True)
@@ -162,5 +165,3 @@ class TestPersistence(unittest.TestCase):
         with self.assertRaises(ValueError):
             db3 = PersistentDB(schema.copy(), 'pk', f='3', overwrite=False)
             db3.close()
-
-

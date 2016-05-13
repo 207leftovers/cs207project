@@ -12,8 +12,6 @@ import numpy as np
 from scipy.stats import norm
 import unittest
 
-#identity = lambda x: x
-
 schema = {
   'pk': {'convert': str, 'index': None, 'default': -1},  # Will be indexed anyways
   'ts': {'convert': str, 'index': None, 'default': None},
@@ -33,6 +31,7 @@ def tsmaker(m, s, j):
     v = norm.pdf(t, m, s) + j*np.random.randn(100)
     return meta, ts.TimeSeries(t, v)
 
+# Tests for tsdb_server
 class Test_TSDB_Protocol(unittest.TestCase):
 
     def test_protocol(self):
@@ -117,11 +116,6 @@ class Test_TSDB_Protocol(unittest.TestCase):
         
         assert(server.triggers['insert_ts'] ==  [('stats', storedproc, None, ['mean', 'std'])])
         db.close()
-        #prot._insert_ts(TSDBOp_InsertTS(3, ats1))
-        #time.sleep(1)
-        #inserted_row = server.db.rows[3]
-        #assert(inserted_row['mean'] == ats1)
-        #assert(inserted_row['std'] == ats1)
 
     def test_protocol_delete(self):
         db = PersistentDB(schema, 'pk', overwrite=True)
@@ -265,9 +259,6 @@ class Test_TSDB_Protocol(unittest.TestCase):
         
         assert(select_return['status'] == 0)
         assert(select_return['payload']['1']['ts'] == ats)
-        # TODO:
-        #assert(payload['1']['std'] == 1.4142135623730951)
-        #assert(payload['1']['mean'] == 1.8)
         db.close()
 
     def test_create_vp(self):

@@ -109,6 +109,7 @@ class Storage(object):
         self.locked = False
         #we ensure that we start in a sector boundary
         self._ensure_superblock()
+        
     def _ensure_superblock(self):
         "Guarantee that the next write will start on a sector boundary"
         self.lock()
@@ -200,6 +201,30 @@ class BaseTree(object):
     def __init__(self, storage):
         self._storage = storage
         self._refresh_tree_ref()
+        self._old_root_address = self._storage.get_root_address()
+        
+    def rollback(self):
+        print('----------')
+        print('CURRENT REF', self._storage.get_root_address())
+        print('OLD REF', self._old_root_address)
+        self._tree_ref = BinaryNodeRef(
+            address=self._old_root_address)
+
+        #print('rolling back ', self._tree_ref.address)
+        #self._refresh_tree_ref()
+        #print('refreshing', self._storage.get_root_address())
+        #self._refresh_tree_ref()
+        #print(self._storage.get_root_address())
+        #print('TOP NODE', self._follow(self._storage.get_root_address()).key)
+        #self._storage.commit_root_address(self._tree_ref.address)
+        #self._tree_ref = BinaryNodeRef(address=self._storage.get_root_address())
+        #self._storage.commit_root_address(self._tree_ref.address)
+        #self._storage.unlock()
+        #self._storage.lock()
+        #self._storage._seek_superblock()
+        #self._storage.unlock()
+
+        print('rb - storage', self._storage.get_root_address())
         
     def commit(self):
         "Changes are final only when committed"
@@ -207,6 +232,11 @@ class BaseTree(object):
         self._tree_ref.store(self._storage)
         # Make sure address of new tree is stored
         self._storage.commit_root_address(self._tree_ref.address)
+        print('commiting - 2 ', self._tree_ref.address)
+        print('CURRENT REF', self._old_root_address)
+        self._old_root_address = self._storage.get_root_address()
+
+        print('OLD REF', self._old_root_address)
         
     def _refresh_tree_ref(self):
         "Get reference to new tree if it has changed"
@@ -260,14 +290,14 @@ class BinaryTree(BaseTree):
         
     def get(self, key):
         "Get the value for a key as a String"
-        #your code here
         #if tree is not locked by another writer
         #refresh the references and get new tree if needed
         if not self._storage.locked:
             self._refresh_tree_ref()
-        #get the top level node
+
+        # Get the top level node
         node = self._follow(self._tree_ref)
-        #traverse until you find appropriate node
+        # Traverse until you find appropriate node
         while node is not None:
             #make sure keys are strings
             key = str(key)
@@ -324,8 +354,6 @@ class BinaryTree(BaseTree):
             self._refresh_tree_ref()
         node = self._follow(self._tree_ref)
         self._tree_ref = self._delete(node, key)
-        # Remove the key from the dictionary of keys
-        #self._keys.remove(key)
         
     def _delete(self, node, key):
         "Underlying delete implementation"
@@ -367,11 +395,11 @@ class ArrayBinaryTree(BaseTree):
         self._storage = storage
         self._refresh_tree_ref()
         self._convert = convert
+        self._old_root_address = self._storage.get_root_address()
         
     def get_all_keys(self):
         keys = []
-        
-        # TODO!!!!
+
         if not self._storage.locked:
             self._refresh_tree_ref()
             
@@ -408,10 +436,8 @@ class ArrayBinaryTree(BaseTree):
         #if tree is not locked by another writer
         #refresh the references and get new tree if needed
         
-        # TODO!!!!
         if not self._storage.locked:
-            self._refresh_tree_ref()
-            
+            self._refresh_tree_ref()    
 
         #get the top level node
         node = self._follow(self._tree_ref)
@@ -430,7 +456,6 @@ class ArrayBinaryTree(BaseTree):
         # Try to lock the tree. If we succeed make sure
         # we dont lose updates from any other process
         
-        # TODO: PUT THESE BACK
         if self._storage.lock():
             self._refresh_tree_ref()
 
@@ -472,7 +497,7 @@ class ArrayBinaryTree(BaseTree):
     def delete(self, key, value):
         "Delete value from node with key, creating new tree and path"
         "If node has no more values, then delete the node"
-        # TODO: !!!!
+
         if self._storage.lock():
             self._refresh_tree_ref()
         node = self._follow(self._tree_ref)

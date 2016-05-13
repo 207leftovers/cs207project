@@ -38,6 +38,20 @@ class PersistentDB(object):
                 self.vps = d['vps']
             except EOFError: 
                 raise EOFError
+                
+    def open_storage(self, s, convert, overwrite):
+        # Always index PK no matter what indexinfo says
+        if s == 'pk':
+            f = self.open_file(self.path_to_db_files + s, overwrite)
+            self._storage[s] = Storage(f)
+            self._trees[s] = BinaryTree(self._storage[s])
+        else:
+            # Use binary search trees for highcard/numeric
+            # TODO: Use bitmaps for lowcard/str_or_factor
+            f = self.open_file(self.path_to_db_files + s, overwrite)
+            self._storage[s] = Storage(f)
+            self._trees[s] = ArrayBinaryTree(self._storage[s], convert)
+
     
     def __init__(self, schema, pkfield, f='data', overwrite=False):
         # Augment the schema by adding an indicator column for vantage points
@@ -49,9 +63,6 @@ class PersistentDB(object):
         self.pkfield = pkfield
         self.schema = schema
         self.vps = []
-        self.defaults = {}
-        
-        self.validfields = ['ts']
 
         # LOAD INDICES FROM FILES
         self._storage = {}
@@ -77,28 +88,25 @@ class PersistentDB(object):
             if self.pkfield != pkfield:
                 raise ValueError("PKs don't match")
         else:
+            self.schema = schema
             # Write the meta information to file
             self.write_meta_to_disk()
-
-        for s in schema:            
-            indexinfo = schema[s]['index']
-            convert = schema[s]['convert']
-            default = schema[s]['default']
-            
+        
+        # Opens the storage
+        self.defaults = {}
+        self.validfields = ['ts']
+        
+        for s in self.schema:            
+            indexinfo = self.schema[s]['index']
+            convert = self.schema[s]['convert']
+            default = self.schema[s]['default']
+        
             if indexinfo is not None or s=='pk':
                 self.validfields.append(s)
-                # Always index PK no matter what indexinfo says
-                if s == 'pk':
-                    f = self.open_file(self.path_to_db_files + s, overwrite)
-                    self._storage[s] = Storage(f)
-                    self._trees[s] = BinaryTree(self._storage[s])
-                else:
-                    # Use binary search trees for highcard/numeric
-                    # TODO: Use bitmaps for lowcard/str_or_factor
-                    self.defaults[s] = default
-                    f = self.open_file(self.path_to_db_files + s, overwrite)
-                    self._storage[s] = Storage(f)
-                    self._trees[s] = ArrayBinaryTree(self._storage[s], convert)
+                if s != 'pk':
+                    self.defaults[s] = default                
+                # OPEN THE STORAGE! RELEASE THE KRAKEN!
+                self.open_storage(s, convert, overwrite)
                 
     def open_file(self, filename, overwrite):
         try:
@@ -154,8 +162,11 @@ class PersistentDB(object):
         
         open_fields = self.tt[tid]
         for field in open_fields:
+            print('Rolling back ', field)
             self._assert_not_closed(field)
-            self._storage[field].unlock()
+            self._trees[field].rollback()
+            self._storage[field].close()
+            self.open_storage(field, self.schema[field]['convert'], False)
         
         del self.tt[tid]
 
@@ -264,9 +275,11 @@ class PersistentDB(object):
         "Update the non-pk indices"
         rr = row.row
         for field in rr.keys():
-            v = rr[field]
-            if v is not None:
-                self._trees[field].set(v, pk)
+            print('FIED', field)
+            if field != 'pk':
+                v = rr[field]
+                if v is not None:
+                    self._trees[field].set(v, pk)
             
     def delete_indices(self, pk, row):
         rr = row.row
@@ -274,7 +287,6 @@ class PersistentDB(object):
             v = rr[field]
             if v is not None:
                 self._trees[field].delete(v, pk)
-                
                 
     def select(self, tid, meta, fields, additional):
         self.check_tid_open(tid)
@@ -305,7 +317,7 @@ class PersistentDB(object):
                 opdict=meta[meta_key]
             else:
                 opdict={'==':meta[meta_key]}
-
+            
             if meta_key == 'pk':
                 # PKs
                 # range operators are stored in a dict
