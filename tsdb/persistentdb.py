@@ -164,7 +164,7 @@ class PersistentDB(object):
         if 'pk' not in open_fields:
             open_fields |= {'pk'}
         for field in open_fields:
-            print('Rolling back ', field)
+            print('DB> Rolling back ', field)
             #self._assert_not_closed(field)
             self._trees[field].rollback()
             #self._storage[field].close()
