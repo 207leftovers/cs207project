@@ -64,6 +64,8 @@ class TestPersistentDB(unittest.TestCase):
         db.insert_ts(first_tid, 1, ats1)
         row1 = DBRow.row_from_string(db._trees['pk'].get("1"))
         assert(row1.pk == "1")
+        assert(row1.get_field('ts') == ats1)
+        assert(row1.get_field('order') == 0)
         assert(db._trees['pk'].has_key("1") == True)
 
         # ROLLBACK

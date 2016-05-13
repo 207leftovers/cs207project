@@ -161,12 +161,14 @@ class PersistentDB(object):
         self.read_meta_from_dist()
         
         open_fields = self.tt[tid]
+        if 'pk' not in open_fields:
+            open_fields |= {'pk'}
         for field in open_fields:
-            print('Rolling back ', field)
-            self._assert_not_closed(field)
+            print('DB> Rolling back ', field)
+            #self._assert_not_closed(field)
             self._trees[field].rollback()
-            self._storage[field].close()
-            self.open_storage(field, self.schema[field]['convert'], False)
+            #self._storage[field].close()
+            #self.open_storage(field, self.schema[field]['convert'], False)
         
         del self.tt[tid]
 

@@ -2,8 +2,6 @@
 from tsdb import TSDBServer, PersistentDB
 import timeseries as ts
 
-#identity = lambda x: x
-
 schema = {
   'pk': {'convert': str, 'index': None, 'default': -1},  # Will be indexed anyways
   'ts': {'convert': str, 'index': None, 'default': None},
