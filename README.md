@@ -10,6 +10,9 @@ The timeseries module contains code for a TimeSeries class to handle ordered dat
 The pype module is a Domain Specific Language to compile simple programs. <br />
 
 The tsdb module is a database to store and retrieve TimeSeries objects. <br />
+It can be run via go_server.py and go_client.py
+It also has a REST API that can be run via rest_server.py and REST_commands.sh
+
 
 Group Members:<br />
 Avery Faller | averyfaller <br />
