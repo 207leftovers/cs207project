@@ -23,4 +23,3 @@ def test_p():
     print(period.proc_main(1, row, (t2, v2))[0])
     assert(np.abs(period.proc_main(1, row, (t2, v2))[0] - 6.28) < 0.5)
 
-

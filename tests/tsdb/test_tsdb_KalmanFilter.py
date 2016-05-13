@@ -8,15 +8,15 @@ import asynctest
 import time
 from scipy.stats import norm
 
-import set_compiler
-set_compiler.install()
+#import timeseries.set_compiler as set_compiler
+#set_compiler.install()
 
 import pyximport
 pyximport.install()
 
 import numpy as np
 
-import KF
+import timeseries.KF as KF
 
 # m is the mean, s is the standard deviation, and j is the jitter
 # the meta just fills in values for order and blarg from the schema

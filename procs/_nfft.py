@@ -121,6 +121,15 @@ def _nfft(mag, time,ofac,hifac, MACC=4):
     return wk1, wk2, nout
 
 
+def period(data_irr, time_irr, ofac=4):
+    fx, fy, nout = _nfft(data_irr, time_irr, ofac, 100.)  
+    max_idx = np.argmax(fy)
+    period = fx[max_idx]
+    T = 1.0 / period
+    new_time = np.mod(time_irr, 2 * T) / (2 * T)
+    return T
+
+
 
 
 

@@ -48,8 +48,8 @@ class Test_TSDB_Period(asynctest.TestCase):
         stopTime = 20
         numPoints = 200
         numSelPoints = 60
-        data_irr, time_irr = basic_irregular(stopTime, numPoints, numSelPoints)
-        ats = ts.TimeSeries(time_irr, data_irr) 
+        data_irr, time_irr = basic_irregular(stopTime, numPoints, numSelPoints) 
+        ats = ts.TimeSeries(data_irr, time_irr)
         # Setup Client
         client = TSDBClient()
         

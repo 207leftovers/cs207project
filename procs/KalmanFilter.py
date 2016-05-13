@@ -7,13 +7,14 @@ import scipy.optimize
 
 import asyncio
 
-import set_compiler
-set_compiler.install()
+
+#import timeseries.set_compiler as set_compiler
+#set_compiler.install()
 
 import pyximport
 pyximport.install()
 
-import KF
+import timeseries.KF as KF
 
 
 def proc_main(pk, row, arg):
