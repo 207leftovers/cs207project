@@ -6,6 +6,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def basic_irregular(stopTime, numPoints, numSelPoints, num):
+    """
+    Input - 
+    stopTime - Maximum time of the signal
+    numPoints - Number of points in the signal
+    numSelPoints - Number of points to be randomly selected
+    num - multiplier inside the sine function
+
+    Output - 
+    data_irr - irregular magnitude arrays
+    time_irr - irregular time arrays
+    Also a timeseries object is returned
+    """
     meta={}
     meta['order'] = int(np.random.choice([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]))
     meta['blarg'] = int(np.random.choice([1, 2]))
