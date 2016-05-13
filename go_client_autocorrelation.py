@@ -65,7 +65,7 @@ async def main():
     await client.add_trigger(tid, 'corr', 'insert_ts', ['std'], None)
         
     # Insert
-    await client.insert_ts(tid, 1, ats)
+    await client.insert_ts(tid, 2, ats)
 
     x = np.arange(1,200)
     y = []

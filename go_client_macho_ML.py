@@ -49,18 +49,18 @@ async def main():
     filename = fileList[0]
     data_irr, time_irr, ats = gen_data(filename, datapath)
 
-    await client.insert_ts(tid, 1, ats)
+    await client.insert_ts(tid, 5, ats)
     print('---------------------')
-    status, payload = await client.select(tid, {'pk':{'==':1}}, ['period','sig_epsilon_estimate','sig_eta_estimate'], None)
-    print("The period of the signal is:", payload['1']['period'])
+    status, payload = await client.select(tid, {'pk':{'==':5}}, ['period','sig_epsilon_estimate','sig_eta_estimate'], None)
+    print("The period of the signal is:", payload['5']['period'])
     
-    sig_epsilon_estimate = payload['1']['sig_epsilon_estimate']
-    sig_eta_estimate = payload['1']['sig_eta_estimate']
+    sig_epsilon_estimate = payload['5']['sig_epsilon_estimate']
+    sig_eta_estimate = payload['5']['sig_eta_estimate']
 
     KFresult = KF.KF(data_irr, sig_epsilon_estimate, sig_eta_estimate)
     filtered = KFresult['Predict']
 
-    plt.title('Long Period Variables')
+    plt.title('Microlensing')
     plt.plot(time_irr[1:], data_irr[1:], color = 'b',alpha = 0.4, label='original')
     plt.plot(time_irr[1:], filtered[1:], color = 'g', label='kalman-filtered')
     plt.show()

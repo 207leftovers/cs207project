@@ -43,11 +43,11 @@ async def main():
     numSelPoints = 60
     num = 2
     data_irr, time_irr, ats = basic_irregular(stopTime, numPoints, numSelPoints, num)
-    await client.insert_ts(tid, 1, ats) 
+    await client.insert_ts(tid, 3, ats) 
 
     print('---------------------')
-    status, payload = await client.select(tid, {'pk':{'==':1}}, ['period'], None)
-    print("The period of the signal is:", payload['1']['period'])
+    status, payload = await client.select(tid, {'pk':{'==':3}}, ['period'], None)
+    print("The period of the signal is:", payload['3']['period'])
     
     plt.title('Irregular Time Series')
     plt.plot(time_irr, data_irr, color = 'b')
