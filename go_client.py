@@ -3,6 +3,8 @@ from tsdb import TSDBClient
 import timeseries as ts
 import numpy as np
 from scipy.stats import norm
+import asyncio
+import matplotlib.pyplot as plt
 
 # m is the mean, s is the standard deviation, and j is the jitter
 # the meta just fills in values for order and blarg from the schema
@@ -15,15 +17,19 @@ def tsmaker(m, s, j):
     v = norm.pdf(t, m, s) + j*np.random.randn(100)
     return meta, ts.TimeSeries(t, v)
 
-def main():
+async def main():
     print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
+    # Setup Client
     client = TSDBClient()
-
-    # add a trigger. notice the argument. It does not do anything here but
+        
+    # Get Transaction ID
+    status, tid = await client.begin_transaction()
+    
+    # Add a trigger. notice the argument. It does not do anything here but
     # could be used to save a shlep of data from client to server.
-    client.add_trigger(1, 'junk', 'insert_ts', None, 'db:one:ts')
+    await client.add_trigger(tid, 'junk', 'insert_ts', None, 'db:one:ts')
     # our stats trigger
-    client.add_trigger(2, 'stats', 'insert_ts', ['mean', 'std'], None)
+    await client.add_trigger(tid, 'stats', 'insert_ts', ['mean', 'std'], None)
     #Set up 50 time series
     mus = np.random.uniform(low=0.0, high=1.0, size=50)
     sigs = np.random.uniform(low=0.05, high=0.4, size=50)
@@ -40,83 +46,88 @@ def main():
         meta['vp'] = False # augment metadata with a boolean asking if this is a  VP.
         metadict[pk] = meta
 
-    # choose 5 distinct vantage point time series
-    vpkeys = ["ts-{}".format(i) for i in np.random.choice(range(50), size=5, replace=False)]
-    for i in range(5):
-        # add 5 triggers to upsert distances to these vantage points
-        client.add_trigger(i+3, 'corr', 'insert_ts', ["d_vp-{}".format(i)], tsdict[vpkeys[i]])
-        # change the metadata for the vantage points to have meta['vp']=True
-        metadict[vpkeys[i]]['vp']=True
     # Having set up the triggers, now inser the time series, and upsert the metadata
     for k in tsdict:
-        client.insert_ts(k, tsdict[k])
-        client.upsert_meta(k, metadict[k])
-
+        await client.insert_ts(tid, k, tsdict[k])
+        await client.upsert_meta(tid, k, metadict[k])
+        
     print("UPSERTS FINISHED")
+    print('---------------------')
+    
+    print('CREATING VPs')
+    # choose 5 distinct vantage point time series
+    vpkeys = ["ts-{}".format(i) for i in np.random.choice(range(50), size=5, replace=False)]
+
+    for vpkey in vpkeys:
+        await client.create_vp(tid, vpkey)
+        
     print('---------------------')
     print("STARTING SELECTS")
 
     print('---------DEFAULT------------')
-    client.select()
+    await client.select(tid)
 
     #in this version, select has sprouted an additional keyword argument
     # to allow for sorting. Limits could also be enforced through this.
     print('---------ADDITIONAL------------')
-    client.select(additional={'sort_by': '-order'})
+    await client.select(tid, additional={'sort_by': '-order'})
 
     print('----------ORDER FIELD-----------')
-    _, results = client.select(fields=['order'])
+    _, results = await client.select(tid, fields=['order'])
     for k in results:
         print(k, results[k])
 
     print('---------ALL FILEDS------------')
-    client.select(fields=[])
+    await client.select(tid, fields=[])
 
     print('------------TS with order 1---------')
-    client.select({'order': 1}, fields=['ts'])
+    await client.select(tid, metadata_dict={'order': {'==': 1}}, fields=['ts'])
 
     print('------------All fields, blarg 1 ---------')
-    client.select({'blarg': 1}, fields=[])
+    await client.select(tid, {'blarg': 1}, fields=[])
 
     print('------------order 1 blarg 2 no fields---------')
-    _, bla = client.select({'order': 1, 'blarg': 2})
+    _, bla = await client.select(tid, {'order': 1, 'blarg': 2})
     print(bla)
 
     print('------------order >= 4  order, blarg and mean sent back, also sorted---------')
-    _, results = client.select({'order': {'>=': 4}}, fields=['order', 'blarg', 'mean'], additional={'sort_by': '-order'})
+    _, results = await client.select(tid, {'order': {'>=': 4}}, fields=['order', 'blarg', 'mean'], additional={'sort_by': '-order'})
     for k in results:
         print(k, results[k])
 
     print('------------order 1 blarg >= 1 fields blarg and std---------')
-    _, results = client.select({'blarg': {'>=': 1}, 'order': 1}, fields=['blarg', 'std'])
+    _, results = await client.select(tid, {'blarg': {'>=': 1}, 'order': 1}, fields=['blarg', 'std'])
     for k in results:
         print(k, results[k])
 
     print('------now computing vantage point stuff---------------------')
     print("VPS", vpkeys)
 
-    #we first create a query time series.
+    # We first create a query time series.
     _, query = tsmaker(0.5, 0.2, 0.1)
 
-    # your code here begins
+    print("TS SIMILARITY SEARCH")
+    _, tsss = await client.ts_similarity_search(tid, 5, query)
 
-    # Step 1: in the vpdist key, get  distances from query to vantage points
-    # this is an augmented select
+    print("SIMILARS", tsss)
+    print(list(tsss.items())[0][0])
 
-    #1b: choose the lowest distance vantage point
-    # you can do this in local code
-
-    # Step 2: find all time series within 2*d(query, nearest_vp_to_query)
-    #this is an augmented select to the same proc in correlation
-
-    #2b: find the smallest distance amongst this ( or k smallest)
-    #you can do this in local code
-    #your code here ends
-    # plot the timeseries to see visually how we did.
-    import matplotlib.pyplot as plt
-    plt.plot(query)
-    plt.plot(tsdict[nearestwanted])
+    plt.title('TimeSeries')
+    plt.plot(query, linewidth=2.0)
+    plt.plot(tsdict[list(tsss.items())[0][0]], linewidth=2.0)
+    for i in tsdict.values():
+        plt.plot(i, alpha = .2)
+    plt.show()
+    
+    plt.title('TimeSeries')
+    plt.plot(query, linewidth=2.0)
+    for i in tsss.items():
+        plt.plot(tsdict[i[0]], linewidth=2.0)
+    for i in tsdict.values():
+        plt.plot(i, alpha = .2)
     plt.show()
 
 if __name__=='__main__':
-    main()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
+    loop.close()

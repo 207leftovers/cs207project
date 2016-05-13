@@ -92,7 +92,6 @@ class Test_TSDB_Client(asynctest.TestCase):
         assert(status == 0)
     # Modeled after go_client.py
     async def test_complex_run(self):
-        print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
         # Setup Client
         client = TSDBClient()
         
@@ -121,17 +120,17 @@ class Test_TSDB_Client(asynctest.TestCase):
             meta['vp'] = False # augment metadata with a boolean asking if this is a  VP.
             metadict[pk] = meta
     
-        # Choose 5 distinct vantage point time series
-        vpkeys = ["ts-{}".format(i) for i in np.random.choice(range(50), size=5, replace=False)]
-        for i in range(5):
-            # add 5 triggers to upsert distances to these vantage points
-            await client.add_trigger(tid, 'corr', 'insert_ts', ["d_vp-{}".format(i)], tsdict[vpkeys[i]])
-            # change the metadata for the vantage points to have meta['vp']=True
-            metadict[vpkeys[i]]['vp']=True
-        # Having set up the triggers, now insert the time series, and upsert the metadata
+        # Having set up the triggers, now inser the time series, and upsert the metadata
         for k in tsdict:
             await client.insert_ts(tid, k, tsdict[k])
             await client.upsert_meta(tid, k, metadict[k])
+        
+        # CREATING VPs
+        # choose 5 distinct vantage point time series
+        vpkeys = ["ts-{}".format(i) for i in np.random.choice(range(50), size=5, replace=False)]
+
+        for vpkey in vpkeys:
+            await client.create_vp(tid, vpkey)
     
         select = await client.select(tid)
         # Assert we received all pks
@@ -146,53 +145,37 @@ class Test_TSDB_Client(asynctest.TestCase):
             assert(select[1][list(select[1].keys())[x]]['order'] <= select[1][list(select[1].keys())[x-1]]['order'])
     
         # ALL FILEDS
-        #select = await client.select(tid, fields=[])
-        #assert(len(select[1]) == 50)
+        select = await client.select(tid, fields=[])
+        assert(len(select[1]) == 50)
     
-        # TODO:
         # TS with order 1
-        #select = await client.select(tid, {'order': 1}, fields=['ts'])
-        #assert(len(select[1]) == 0)
+        select = await client.select(tid, {'order': 1}, fields=['ts'])
+        assert(len(select[1]) > 0)
     
-        # print('------------All fields, blarg 1 ---------')
-        # await client.select(tid, {'blarg': 1}, fields=[])
+        # All fields, blarg 1
+        select = await client.select(tid, {'blarg': 1}, fields=[])
     
-        # print('------------order 1 blarg 2 no fields---------')
-        # _, bla = await client.select(tid, {'order': 1, 'blarg': 2})
-        # print(bla)
-    
-        # print('------------order >= 4  order, blarg and mean sent back, also sorted---------')
-        # _, results = await client.select(tid, {'order': {'>=': 4}}, fields=['order', 'blarg', 'mean'], additional={'sort_by': '-order'})
-        # for k in results:
-        #     print(k, results[k])
+        # order 1 blarg 2 no fields
+        _, bla = await client.select(tid, {'order': 1, 'blarg': 2})
 
-        # print('------------order 1 blarg >= 1 fields blarg and std---------')
-        # _, results = await client.select({'blarg': {'>=': 1}, 'order': 1}, fields=['blarg', 'std'])
-        # for k in results:
-        #     print(k, results[k])
+        # order >= 4  order, blarg and mean sent back, also sorted
+        _, results = await client.select(tid, {'order': {'>=': 4}}, fields=['order', 'blarg', 'mean'], additional={'sort_by': '-order'})
+        for k in results:
+            print(k, results[k])
 
-        # print('------now computing vantage point stuff---------------------')
-        # print("VPS", vpkeys)
-    
-        # #we first create a query time series.
-        # _, query = tsmaker(0.5, 0.2, 0.1)
+        # order 1 blarg >= 1 fields blarg and std
+        _, results = await client.select(tid, {'blarg': {'>=': 1}, 'order': 1}, fields=['blarg', 'std'])
+        for k in results:
+            print(k, results[k])
 
-        # your code here begins
-    
-        # Step 1: in the vpdist key, get  distances from query to vantage points
-        # this is an augmented select
-    
-        #1b: choose the lowest distance vantage point
-        # you can do this in local code
-    
-        # Step 2: find all time series within 2*d(query, nearest_vp_to_query)
-        #this is an augmented select to the same proc in correlation
-    
-        #2b: find the smallest distance amongst this ( or k smallest)
-        #you can do this in local code
-        #your code here ends
-        # plot the timeseries to see visually how we did.
-        #import matplotlib.pyplot as plt
-        #plt.plot(query)
-        #plt.plot(tsdict[nearestwanted])
-        #plt.show()
+        # Now computing vantage point stuff
+        print("VPS", vpkeys)
+
+        # We first create a query time series.
+        _, query = tsmaker(0.5, 0.2, 0.1)
+
+        # TS SIMILARITY SEARCH
+        _, tsss = await client.ts_similarity_search(tid, 5, query)
+
+        assert(len(tsss) == 5)
+        #print(list(tsss.items())[0][0])

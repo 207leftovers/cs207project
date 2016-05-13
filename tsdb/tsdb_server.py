@@ -272,10 +272,13 @@ class TSDBProtocol(asyncio.Protocol):
             except Exception as e:
                 response = TSDBOp_Return(TSDBStatus.UNKNOWN_ERROR, op['op'], e)
 
-
-            self.conn.write(serialize(response.to_json()))
+            try:
+                print("RSPONSE", response)
+                self.conn.write(serialize(response.to_json()))
+            except Exception as e:
+                response = TSDBOp_Return(TSDBStatus.UNKNOWN_ERROR, op['op'], e)
             self.conn.close()
-
+                
     def connection_lost(self, transport):
         print('S> connection lost')
 

@@ -300,10 +300,16 @@ class PersistentDB(object):
         pks = set(self._trees['pk'].get_all_keys())
         # Select the keys that matches the metadata
         for meta_key in meta.keys():
+            # Handle case if it is not a dict
+            if isinstance(meta[meta_key], dict):
+                opdict=meta[meta_key]
+            else:
+                opdict={'==':meta[meta_key]}
+
             if meta_key == 'pk':
                 # PKs
                 # range operators are stored in a dict
-                for operator, value in meta[meta_key].items():
+                for operator, value in opdict.items():
                     #make sure pk are strings
                     value = str(value)
                     some_pks = set()
@@ -315,7 +321,7 @@ class PersistentDB(object):
                 # Non PK lookups
                 all_field_keys = self._trees[meta_key].get_all_keys()
                 # range operators are stored in a dict
-                for operator, value in meta[meta_key].items():  
+                for operator, value in opdict.items():  
                     some_field_keys = set()
                     for field_key in all_field_keys:
                         if OPMAP[operator](field_key, value):
