@@ -8,7 +8,6 @@ from scipy.stats import norm
 import asyncio
 import matplotlib.pyplot as plt
 
-
 # m is the mean, s is the standard deviation, and j is the jitter
 # the meta just fills in values for order and blarg from the schema
 def tsmaker(m, s, j):
@@ -22,6 +21,49 @@ def tsmaker(m, s, j):
     
 async def main():
     print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
+    client = TSDB_REST_Client()
+    await client.add_trigger('junk', 'insert_ts', None, 23)
+    await client.add_trigger('stats', 'insert_ts', ['mean', 'std'], None)
+
+    await client.insert_ts('one',ts.TimeSeries([1, 2, 3],[1, 4, 9]))
+    await client.insert_ts('two',ts.TimeSeries([2, 3, 4],[4, 9, 16]))
+    await client.insert_ts('three',ts.TimeSeries([9,3,4],[4,0,16]))
+
+    await client.remove_trigger('junk', 'insert_ts')
+    await client.insert_ts('four',ts.TimeSeries([0,0,4],[1,0,4]))
+
+    await client.upsert_meta('one', {'order': 1, 'blarg': 1})
+    await client.upsert_meta('two', {'order': 2})
+    await client.upsert_meta('three', {'order': 1, 'blarg': 2})
+    await client.upsert_meta('four', {'order': 2, 'blarg': 2})
+    print("UPSERTS FINISHED")
+    print('---------------------')
+    await client.select()
+    print('---------------------')
+    await client.select(fields=['order'])
+    print('---------------------')
+    await client.select(fields=[])
+    print('---------------------')
+    print('---------------------')
+    await client.select({'order': 1}, fields=['ts'])
+    print('{{{{{{{{{{{{{{}}}}}}}}}}}}}}')
+    await client.select({'blarg': 1}, fields=[])
+    print('{{{{{{{{{{{{{{}}}}}}}}}}}}}}')
+    bla = client.select({'order': 1, 'blarg': 2})
+    print("END", bla)
+    await client.select({'blarg': {'>=': 2}}, fields=['blarg', 'mean'])
+    await client.select({'blarg': {'>=': 2}, 'order': 1}, fields=['blarg', 'std'])
+    await client.select({'order': {'>=': 2}}, fields=['order', 'blarg', 'mean'], additional={'sort_by': '-order'})
+    await client.select({'order': {'>=': 2}}, fields=['order', 'blarg', 'mean'], additional={'sort_by': '-order', 'limit':2})
+
+    select = await client.select(fields=['order'], additional={'sort_by': '-order'})
+
+async def test2():
+    # Data
+    t = [0,1,2,3,4]
+    v = [1.0,2.0,3.0,2.0,1.0]
+    ats = ts.TimeSeries(t, v)
+        
     # Setup Client
     client = TSDB_REST_Client()
         
