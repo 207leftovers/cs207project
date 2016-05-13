@@ -17,7 +17,7 @@ def basic_irregular(stopTime, numPoints, numSelPoints):
     index = np.sort(np.random.choice(range(numPoints), size=numSelPoints, replace=False))
     time_irr = time[index]
     data_irr = data[index]
-    return meta, ts.TimeSeries(time_irr, data_irr)
+    return data_irr, time_irr
 
 class Test_TSDB_Period(asynctest.TestCase):
 
@@ -48,8 +48,8 @@ class Test_TSDB_Period(asynctest.TestCase):
         stopTime = 20
         numPoints = 200
         numSelPoints = 60
-        meta, ats = basic_irregular(stopTime, numPoints, numSelPoints)
-            
+        data_irr, time_irr = basic_irregular(stopTime, numPoints, numSelPoints)
+        ats = ts.TimeSeries(time_irr, data_irr) 
         # Setup Client
         client = TSDBClient()
         
