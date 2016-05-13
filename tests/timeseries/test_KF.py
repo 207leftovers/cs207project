@@ -1,5 +1,5 @@
-import timeseries.set_compiler
-timeseries.set_compiler.install()
+#import timeseries.set_compiler
+#timeseries.set_compiler.install()
 
 import scipy.optimize
 
@@ -8,7 +8,7 @@ pyximport.install()
 
 import numpy as np
 
-import KF
+import timeseries.KF as KF
 
 import timeseries as ts
 import numpy as np
