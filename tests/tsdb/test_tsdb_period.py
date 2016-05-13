@@ -65,6 +65,6 @@ class Test_TSDB_Period(asynctest.TestCase):
         # Select
         status, payload = await client.select(tid, {'pk':{'==':1}}, ['period'], None)
         print(payload['1'])
-        assert(np.abs(payload['1']['period'] - 6.28 < 0.5))
+        assert(np.abs(payload['1']['period'] - 6.28) < 0.5)
         
 
