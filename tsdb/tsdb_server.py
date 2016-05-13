@@ -13,10 +13,8 @@ import numpy as np
 
 def trigger_callback_maker(tid, pk, target, calltomake):
     def callback_(future):
-        print('CALLBACK_')
         result = future.result()
         if target is not None:
-            print('CALLBACKS', pk, target, result)
             calltomake(tid, pk, dict(zip(target, result)))
         return result
     return callback_
@@ -38,8 +36,9 @@ class TSDBProtocol(asyncio.Protocol):
             
     def _commit(self, op):
         try:
-            print("S> Commit", op['tod'])
+            print("S> Commit", op['tid'])
             self.server.db.commit(op['tid'])
+            return TSDBOp_Return(TSDBStatus.OK, op['op'], payload=op['tid'])
         except ValueError as e:
             return TSDBOp_Return(TSDBStatus.INVALID_KEY, op['op'])
         
@@ -47,6 +46,7 @@ class TSDBProtocol(asyncio.Protocol):
         try:
             print("S> Rollback ", op['tid'])
             self.server.db.rollback(op['tid'])
+            return TSDBOp_Return(TSDBStatus.OK, op['op'], payload=op['tid'])
         except ValueError as e:
             return TSDBOp_Return(TSDBStatus.INVALID_KEY, op['op'])
         
@@ -293,7 +293,6 @@ class TSDBProtocol(asyncio.Protocol):
         response = TSDBOp_Return(status, None)  # until proven otherwise.
 
         msg = data
-        print ("msg_received",msg)
         try:
             op = TSDBOp.from_json(msg)
         except TypeError as e:
@@ -329,8 +328,6 @@ class TSDBProtocol(asyncio.Protocol):
                     response = TSDBOp_Return(TSDBStatus.UNKNOWN_ERROR, op['op'])
         except Exception as e:
             response = TSDBOp_Return(TSDBStatus.UNKNOWN_ERROR,"", str(e))
-
-        print ("RESPONSE", response)
         return web.json_response(response.to_json())
 
 class TSDBServer(object):

@@ -153,6 +153,8 @@ class Test_TSDB_Errors(asynctest.TestCase):
         assert(status == 0)
         assert(len(payload) == 0)
 
+
+
         # # Select
         # status, payload = await client.select(tid, {'order':{'==':0}}, ['ts','meaen','std'], None)
         # assert(status == 0)

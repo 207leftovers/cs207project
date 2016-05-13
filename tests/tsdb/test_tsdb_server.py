@@ -365,3 +365,137 @@ class Test_TSDB_Protocol(unittest.TestCase):
         assert(len(payload) > 1)
         
         db.close()
+
+    def test_server_commit(self):
+        db = PersistentDB(schema, 'pk', overwrite=True)
+        server = TSDBServer(db)
+        prot = TSDBProtocol(server)
+        
+        # Dumb server tests
+        assert(server.db == db)
+        assert(server.port == 9999)
+        
+        # Test Transaction
+        tid = prot._begin_transaction(TSDBOp_BeginTransaction())['payload']
+        assert(tid == 1)
+    
+        t1 = [0,1,2,3,4]
+        v1 = [1.0,2.0,3.0,2.0,1.0]
+        ats1 = ts.TimeSeries(t1, v1)
+    
+    
+        # Test TSDBOp_InsertTS
+        insert_op = {}
+        insert_op['pk'] = 1
+        insert_op['ts'] = ats1
+        insert_op['op'] = 'insert_ts'
+        insert_op['tid'] = tid
+        InsertedTS = TSDBOp_InsertTS(tid, 1, ats1)
+        assert(insert_op == InsertedTS)
+
+        # Test Protocol Insert
+        insert_return = prot._insert_ts(insert_op)
+        assert(insert_return['op'] == 'insert_ts')
+        assert(insert_return['status'] == TSDBStatus.OK)
+        assert(insert_return['payload'] == None)
+
+
+        #COMMIT
+        commit_op = {}
+        commit_op['op'] = 'commit'
+        commit_op['tid'] = tid
+        commitTS = TSDBOp_Commit(tid)
+        assert(commit_op == commitTS)
+
+        commit_return = prot._commit(commitTS)
+        assert(commit_return['op'] == 'commit')
+        assert(commit_return['status'] == TSDBStatus.OK)
+        assert(commit_return['payload'] == 1)
+
+        db.close()
+        db = PersistentDB(schema, 'pk', overwrite=False)
+        server = TSDBServer(db)
+        prot = TSDBProtocol(server)
+        # start new Transaction
+        tid = prot._begin_transaction(TSDBOp_BeginTransaction())['payload']
+
+        # Test Protocol Select (None fields)
+        metadata_dict = {'pk': {'>': '0'}}
+        fields = None
+        additional = None
+        select_op = TSDBOp_Select(tid, metadata_dict, fields, additional)
+        select_return = prot._select(select_op)
+        print("Here", select_return)
+        assert(select_return['op'] == 'select')
+        assert(select_return['status'] == TSDBStatus.OK)
+        assert(select_return['payload']['1'] == {})
+        
+
+        db.close()
+
+    def test_server_rollback(self):
+        db = PersistentDB(schema, 'pk', overwrite=True)
+        server = TSDBServer(db)
+        prot = TSDBProtocol(server)
+        
+        # Dumb server tests
+        assert(server.db == db)
+        assert(server.port == 9999)
+        
+        # Test Transaction
+        tid = prot._begin_transaction(TSDBOp_BeginTransaction())['payload']
+        assert(tid == 1)
+    
+        t1 = [0,1,2,3,4]
+        v1 = [1.0,2.0,3.0,2.0,1.0]
+        ats1 = ts.TimeSeries(t1, v1)
+    
+    
+        # Test TSDBOp_InsertTS
+        insert_op = {}
+        insert_op['pk'] = 1
+        insert_op['ts'] = ats1
+        insert_op['op'] = 'insert_ts'
+        insert_op['tid'] = tid
+        InsertedTS = TSDBOp_InsertTS(tid, 1, ats1)
+        assert(insert_op == InsertedTS)
+
+        # Test Protocol Insert
+        insert_return = prot._insert_ts(insert_op)
+        assert(insert_return['op'] == 'insert_ts')
+        assert(insert_return['status'] == TSDBStatus.OK)
+        assert(insert_return['payload'] == None)
+
+
+        #COMMIT
+        rollback_op = {}
+        rollback_op['op'] = 'rollback'
+        rollback_op['tid'] = tid
+        rollbackTS = TSDBOp_Rollback(tid)
+        assert(rollback_op == rollbackTS)
+
+        rollback_return = prot._rollback(rollbackTS)
+        assert(rollback_return['op'] == 'rollback')
+        assert(rollback_return['status'] == TSDBStatus.OK)
+        assert(rollback_return['payload'] == 1)
+
+        db.close()
+        db = PersistentDB(schema, 'pk', overwrite=False)
+        server = TSDBServer(db)
+        prot = TSDBProtocol(server)
+        # start new Transaction
+        tid = prot._begin_transaction(TSDBOp_BeginTransaction())['payload']
+
+        # Test Protocol Select (None fields)
+        metadata_dict = {'pk': {'>': '0'}}
+        fields = None
+        additional = None
+        select_op = TSDBOp_Select(tid, metadata_dict, fields, additional)
+        select_return = prot._select(select_op)
+        print("Here", select_return)
+        assert(select_return['op'] == 'select')
+        assert(select_return['status'] == TSDBStatus.OK)
+        assert(len(select_return['payload']) == 0)
+        
+
+        db.close()
