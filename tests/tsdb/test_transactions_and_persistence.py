@@ -161,5 +161,6 @@ class TestPersistence(unittest.TestCase):
         
         with self.assertRaises(ValueError):
             db3 = PersistentDB(schema.copy(), 'pk', f='3', overwrite=False)
+            db3.close()
 
 

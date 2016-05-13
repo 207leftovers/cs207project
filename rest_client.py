@@ -62,37 +62,24 @@ async def test2():
     await client.add_trigger(tid, 'stats', 'insert_ts', ['mean', 'std'], None)
         
     # Insert
-    await client.insert_ts(tid, "1", ats)
+    status, payload = await client.insert_ts(tid, "1", t)
+    print (status)
         
     # Select
-    status, payload = await client.select(tid, {'pk':{'==':"1"}}, ['ts','mean','std'], None)
+    status, payload = await client.select(tid, {'order':{'==':0}}, ['ts','meaen','std'], None)
     assert(status == 0)
+    assert(len(payload) == 1)
 
     assert(ts.TimeSeries(payload['1']['ts'][0], payload['1']['ts'][1]) == ats)
     assert(payload['1']['std'] == 1.4142135623730951)
     assert(payload['1']['mean'] == 2.0)
     
     # Upsert
-    await client.upsert_meta(tid, "1", {'order':1})
+    await client.upsert_meta(tid, "1", {'orderd':1})
     status, payload = await client.select(tid, {'order':{'==':1}}, ['pk', 'order'], None)
     assert(status == 0)
     assert(payload['1']['order'] == 1)
-    
-    # Remove Trigger
-    await client.remove_trigger(tid, 'stats', 'insert_ts')
-    
-    # Insert (No Trigger)
-    await client.insert_ts(tid, "2", ats)
-    status, payload = await client.select(tid, {'pk':{'==':"2"}}, ['ts','mean','std'], None)
-    assert(ts.TimeSeries(payload['2']['ts'][0], payload['2']['ts'][1]) == ats)
-    assert(payload['2']['std'] == 0)
-    #assert('mean' not in payload['2'])
-    
-    # Delete 
-    await client.delete_ts(tid, "1")
-    status, payload = await client.select(tid, {'pk':{'==':"1"}}, ['ts','mean','std'], None)
-    assert(status == 0)
-    assert(payload == {})
+
 if __name__=='__main__':
     loop = asyncio.get_event_loop()
     loop.run_until_complete(test2())
