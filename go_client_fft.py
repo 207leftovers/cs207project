@@ -3,6 +3,18 @@ from tsdb import TSDBClient
 import timeseries as ts
 import asyncio
 import numpy as np
+import matplotlib.pyplot as plt
+
+def basic_irregular(stopTime, numPoints, numSelPoints, num):
+    meta={}
+    meta['order'] = int(np.random.choice([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]))
+    meta['blarg'] = int(np.random.choice([1, 2]))
+    time = np.linspace(0, stopTime, numPoints)
+    data = np.sin(num*time)
+    index = np.sort(np.random.choice(range(numPoints), size=numSelPoints, replace=False))
+    time_irr = time[index]
+    data_irr = data[index]
+    return data_irr, time_irr, ts.TimeSeries(data_irr, time_irr)
 
 
 async def main():
@@ -10,21 +22,24 @@ async def main():
     client = TSDBClient()
     
     # Begin Transaction
-    status, tid = await client.begin_transaction()
-    assert(tid == 1)
+    status, tid = await client.begin_transaction() 
 
     await client.add_trigger(tid, 'period', 'insert_ts', ['period'], None)#['mean', 'std'], None)#
-    sigeta = np.random.normal(0,1,2000)
-    sigeps = np.random.normal(0,10,2000)
-
-    mus = np.cumsum(sigeta)+20
-    y = mus + sigeps
-
-    await client.insert_ts(tid, 'one',ts.TimeSeries(y,np.arange(2000)))
-    await client.upsert_meta(tid, 'one', {'order': 1, 'blarg': 1})
+   
+    stopTime = 20
+    numPoints = 200
+    numSelPoints = 60
+    num = 2
+    data_irr, time_irr, ats = basic_irregular(stopTime, numPoints, numSelPoints, num)
+    await client.insert_ts(tid, 1, ats) 
 
     print('---------------------')
-    await client.select(tid)
+    status, payload = await client.select(tid, {'pk':{'==':1}}, ['period'], None)
+    print("The period of the signal is:", payload['1']['period'])
+    
+    plt.title('Irregular Time Series')
+    plt.plot(time_irr, data_irr, color = 'b')
+    plt.show()
 
 if __name__=='__main__':
     loop = asyncio.get_event_loop()
