@@ -18,8 +18,8 @@ It also has a REST API that can be run via rest_server.py and REST_commands.sh
 
 ### Persistent Architecture
 * [`PersistentDB`](/tsdb/persistentdb.py): A database to store and search through TimeSeries.  
-* [`BinaryTree`](/tsdb/tsdb_indexes.py): A Binary Tree that is used to store the full database rows indexed by primary key.
-* [`ArrayBinaryTree`](/tsdb/tsdb_indexes.py): A Binary Tree that is used to index all non-primary keys.  Each value is given its own node, and all primary keys that have that value are stored in an array in the node.
+* [`BinaryTree`](/tsdb/tsdb_indexes.py#258): A Binary Tree that is used to store the full database rows indexed by primary key.
+* [`ArrayBinaryTree`](/tsdb/tsdb_indexes.py#359): A Binary Tree that is used to index all non-primary keys.  Each value is given its own node, and all primary keys that have that value are stored in an array in the node.
 * [`DBRow`](/tsdb/tsdb_row.py): A Row object that is used to convert database rows between strings and objects.
 
 
@@ -45,10 +45,10 @@ It also has a REST API that can be run via rest_server.py and REST_commands.sh
 
 
 ### Procedures
-* `corr`: Calculate the correlation between two time series. Used internally for the similarity search in the database.
-* `stats`: Computes the mean and the standard deviation for the time series.
-* `KalmanFilter` - We generate a time series with constant Gaussian innovations, and obscured the series by Gaussian noice. Using this algorithm, we can estimate the sigma_eta: the variance of innovations and sigma_epsilon: the variance of noise. The estimate turns out to be accurate (<10%).
-* `period` - Computes the period of the irregular time series. Uses the Lomb-Scargle method to compute the FFT approximation. The FFT values are then used to find the period of the signal. The Lomb-Scargle FFT code is clearly described in the procs folder.
+* [`corr`](/procs/corr.py): Calculate the correlation between two time series. Used internally for the similarity search in the database.
+* [`stats`](/procs/stats.py): Computes the mean and the standard deviation for the time series.
+* [`KalmanFilter`](/procs/KalmanFilter.py) - We generate a time series with constant Gaussian innovations, and obscured the series by Gaussian noice. Using this algorithm, we can estimate the sigma_eta: the variance of innovations and sigma_epsilon: the variance of noise. The estimate turns out to be accurate (<10%).
+* [`period`](/procs/period.py) - Computes the period of the irregular time series. Uses the Lomb-Scargle method to compute the FFT approximation. The FFT values are then used to find the period of the signal. The Lomb-Scargle FFT code is clearly described in the procs folder.
 
 
 Group Members:<br />
