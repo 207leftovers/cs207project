@@ -10,7 +10,7 @@ before_install:
   - conda update -q conda
 
 install:
-    - conda create -q -n env python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib
+    - conda create -q -n env python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib cython
     - source activate env
     - pip install pytest pytest-cov
     - pip install coverage
@@ -22,8 +22,12 @@ install:
     - pip install asynctest
     - pip install graphviz
     - pip install portalocker
+
+    - cd timeseries
+    - python setup.py build_ext --inplace
+    - cd ../..
 script:
     - py.test --cov timeseries --cov pype
-    
+
 after_success:
     - coveralls
