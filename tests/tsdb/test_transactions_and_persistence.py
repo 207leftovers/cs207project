@@ -106,7 +106,6 @@ class TestTransactions(unittest.TestCase):
         assert(ids1 == ["1"])
         assert(fields1[0]['ts'] == ats1)
         assert(fields1[0]['order'] == 0.0)
-
         db2.close()
 
     def test_close_commit(self):
