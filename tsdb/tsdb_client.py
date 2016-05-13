@@ -57,6 +57,14 @@ class TSDBClient(object):
         aug_select_op = TSDBOp_AugmentedSelect(tid, proc, target, arg, md, additional)
         return await self._send(aug_select_op.to_json())
 
+    async def create_vp(self, tid, pk):
+        create_vp_op = TSDBOp_CreateVP(tid, pk)
+        return await self._send(create_vp_op.to_json())
+    
+    async def ts_similarity_search(self, tid, limit, ts):
+        tsss_op = TSDBOp_TSSimilaritySearch(tid, limit, ts)
+        return await self._send(tsss_op.to_json())
+    
     async def add_trigger(self, tid, proc, onwhat, target, arg):
         add_trigger_op = TSDBOp_AddTrigger(tid, proc, onwhat, target, arg)
         return await self._send(add_trigger_op.to_json())
@@ -70,7 +78,7 @@ class TSDBClient(object):
 
     async def _send_coro(self, msg, loop):
         # your code here
-        print ("C> sending:", msg)
+        #print ("C> sending:", msg)
         serialized_msg = serialize(msg)
 
         reader, writer = await asyncio.open_connection('127.0.0.1', self.port, loop = loop)
@@ -86,7 +94,7 @@ class TSDBClient(object):
         deserializer.append(data)
         if deserializer.ready():
             response = deserializer.deserialize()
-            print('C> response', response)
+            #print('C> response', response)
             status = TSDBStatus(response['status'])
             payload = response['payload']
 

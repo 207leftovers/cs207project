@@ -65,3 +65,5 @@ target/
 *parsetab.py
 *db_files*
 .tsdb_server1.log.test
+*.log.test
+*.swp

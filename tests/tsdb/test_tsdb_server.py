@@ -71,22 +71,22 @@ class Test_TSDB_Protocol(unittest.TestCase):
         assert(insert_return['status'] == TSDBStatus.OK)
         assert(insert_return['payload'] == None)
 
-        assert(server.db._trees['pk'].get_as_row(1).pk == "1")
-        assert(server.db._trees['pk'].get_as_row(1).ts == ats1)
+        assert(server.db._trees['pk'].get_as_row('1').pk == '1')
+        assert(server.db._trees['pk'].get_as_row('1').ts == ats1)
         
         # Add some more data
-        prot._insert_ts(TSDBOp_InsertTS(tid, 2, ats1))
-        assert(server.db._trees['pk'].get_as_row(2).ts == ats1)
+        prot._insert_ts(TSDBOp_InsertTS(tid, '2', ats1))
+        assert(server.db._trees['pk'].get_as_row('2').ts == ats1)
         
         # Test Protocol Upsert
-        upserted_meta = TSDBOp_UpsertMeta(tid, 2, {'order': 1})
+        upserted_meta = TSDBOp_UpsertMeta(tid, '2', {'order': 1})
         upsert_return = prot._upsert_meta(upserted_meta)
         assert(upsert_return['op'] == 'upsert_meta')
         assert(upsert_return['status'] == TSDBStatus.OK)
         assert(upsert_return['payload'] == None)
     
         # Test Protocol Select (None fields)
-        metadata_dict = {'pk': {'>': 0}}
+        metadata_dict = {'pk': {'>': '0'}}
         fields = None
         additional = None
         select_op = TSDBOp_Select(tid, metadata_dict, fields, additional)
@@ -94,19 +94,19 @@ class Test_TSDB_Protocol(unittest.TestCase):
         print("Here", select_return)
         assert(select_return['op'] == 'select')
         assert(select_return['status'] == TSDBStatus.OK)
-        assert(select_return['payload']["1"] == {})
-        assert(select_return['payload']["2"] == {})
+        assert(select_return['payload']['1'] == {})
+        assert(select_return['payload']['2'] == {})
         
         # Test Protocol Select
-        metadata_dict = {'pk': {'>': 0}}
+        metadata_dict = {'pk': {'>': '0'}}
         fields = ['ts']
         additional = None
         select_op = TSDBOp_Select(tid, metadata_dict, fields, additional)
         select_return = prot._select(select_op)
         assert(select_return['op'] == 'select')
         assert(select_return['status'] == TSDBStatus.OK)
-        assert(select_return['payload']["1"]['ts'] == ats1)
-        assert(select_return['payload']["2"]['ts'] == ats1)
+        assert(select_return['payload']['1']['ts'] == ats1)
+        assert(select_return['payload']['2']['ts'] == ats1)
         
         # Test Add Trigger
         add_trigger_op = TSDBOp_AddTrigger(tid, 'stats', 'insert_ts', ['mean', 'std'], None)
@@ -138,7 +138,7 @@ class Test_TSDB_Protocol(unittest.TestCase):
         ats2 = ts.TimeSeries(t2, v2)
 
         insert_op = {}
-        insert_op['pk'] = "1"
+        insert_op['pk'] = '1'
         insert_op['ts'] = ats1
         insert_op['op'] = 'insert_ts'
         insert_op['tid'] = tid
@@ -148,15 +148,15 @@ class Test_TSDB_Protocol(unittest.TestCase):
         assert(insert_return['op'] == 'insert_ts')
         assert(insert_return['status'] == TSDBStatus.OK)
         assert(insert_return['payload'] == None)
-        assert(server.db._trees['pk'].get_as_row(1).pk == "1")
-        assert(server.db._trees['pk'].get_as_row(1).ts == ats1)
+        assert(server.db._trees['pk'].get_as_row('1').pk == '1')
+        assert(server.db._trees['pk'].get_as_row('1').ts == ats1)
 
         insert_return2 = prot._insert_ts(insert_op)
         assert(insert_return2['op'] == 'insert_ts')
         assert(insert_return2['status'] == TSDBStatus.INVALID_KEY)
 
         delete_op = {}
-        delete_op['pk'] = "1"
+        delete_op['pk'] = '1'
         delete_op['op'] = 'delete_ts'
         delete_op['tid'] = tid
 
@@ -211,7 +211,7 @@ class Test_TSDB_Protocol(unittest.TestCase):
         ats2 = ts.TimeSeries(t2, v2)
 
         insert_op = {}
-        insert_op['pk'] = 1
+        insert_op['pk'] = '1'
         insert_op['ts'] = ats1
         insert_op['op'] = 'insert_ts'
         insert_op['tid'] = tid
@@ -222,8 +222,8 @@ class Test_TSDB_Protocol(unittest.TestCase):
         assert(insert_return['status'] == TSDBStatus.OK)
         assert(insert_return['payload'] == None)
         
-        assert(server.db._trees['pk'].get_as_row(1).pk == "1")
-        assert(server.db._trees['pk'].get_as_row(1).ts == ats1)
+        assert(server.db._trees['pk'].get_as_row('1').pk == '1')
+        assert(server.db._trees['pk'].get_as_row('1').ts == ats1)
 
         # Test Protocol Select (None fields)
         metadata_dict = {'pk': {'>': 0}}
@@ -234,6 +234,7 @@ class Test_TSDB_Protocol(unittest.TestCase):
 
         assert(aug_select_return['op'] == 'augmented_select')
         assert(aug_select_return['status'] == TSDBStatus.OK)
+        assert(aug_select_return['payload'] == {'1': {'dist': 0.83485935360315389}})
         db.close()
 
     def test_simple_run(self):
@@ -249,19 +250,24 @@ class Test_TSDB_Protocol(unittest.TestCase):
             
         # Add Trigger
         prot._add_trigger(TSDBOp_AddTrigger(tid, 'stats', 'insert_ts', ['mean', 'std'], None))
+        assert('insert_ts' in prot.server.triggers)
             
         # Insert
+        print('INSERTING')
         prot._insert_ts(TSDBOp_InsertTS(tid, '1', ats))
+        
+        time.sleep(1)
 
         # Select
         select_return = prot._select(TSDBOp_Select(tid, {'pk': {'==': '1'}}, ['ts','mean','std'], None))
         
+        payload = select_return['payload']
+        
         assert(select_return['status'] == 0)
         assert(select_return['payload']['1']['ts'] == ats)
         # TODO:
-        #print(payload['1'])
         #assert(payload['1']['std'] == 1.4142135623730951)
-        #assert(payload['1']['mean'] == 2.0)
+        #assert(payload['1']['mean'] == 1.8)
         db.close()
 
     def test_create_vp(self):
@@ -283,9 +289,10 @@ class Test_TSDB_Protocol(unittest.TestCase):
             # the primary key format is ts-1, ts-2, etc
             pk = "ts-{}".format(i)
             tsdict[pk] = tsrs
-            meta['vp'] = False # augment metadata with a boolean asking if this is a  VP.
+            meta['vp'] = False
             metadict[pk] = meta
             
+        # Dictionaries tetst [pomts
         tsdict1={}
         metadict1={}
         for i, m, s, j in zip(range(40, 50), mus, sigs, jits):
@@ -293,7 +300,7 @@ class Test_TSDB_Protocol(unittest.TestCase):
             # the primary key format is ts-1, ts-2, etc
             pk = "ts-{}".format(i)
             tsdict1[pk] = tsrs
-            meta['vp'] = False # augment metadata with a boolean asking if this is a  VP.
+            meta['vp'] = False
             metadict1[pk] = meta
     
         # Insert some rows
@@ -301,9 +308,11 @@ class Test_TSDB_Protocol(unittest.TestCase):
             prot._insert_ts(TSDBOp_InsertTS(tid, k, tsdict1[k]))
     
         numvps = 5
-        # Choose 5 distinct vantage point time series
-        vpkeys = ["ts-{}".format(i) for i in np.random.choice(range(40), size=numvps, replace=False)]
-        print("VPKEYS", vpkeys)
+        
+        # Choose 5 distinct ts to become vantage points
+        vpkeys = ["ts-{}".format(i) for i in range(5)]
+        
+        # Create the Vantage Points
         for i in range(numvps):
             with self.assertRaises(KeyError):
                 prot._create_vp(TSDBOp_CreateVP(tid, vpkeys[i]))
@@ -311,19 +320,48 @@ class Test_TSDB_Protocol(unittest.TestCase):
             back = prot._insert_ts(TSDBOp_InsertTS(tid, vpkeys[i], tsdict[vpkeys[i]]))
             assert(back['status'] == 0)
             prot._create_vp(TSDBOp_CreateVP(tid, vpkeys[i]))            
-            
+        
+        # Ensure the Vantage Points were set
         select_return = prot._select(TSDBOp_Select(tid, {'vp':{'==':True}}, ['ts','mean','std'], None))
         assert(len(select_return['payload']) == 5)
         
+        # Check to see if existing TimeSeries have vpd's
+        select_return = prot._select(TSDBOp_Select(tid, {'pk':{'==':'ts-41'}}, [], None))
+        payload = select_return['payload']
+        assert('d_vp-0' in payload['ts-41'])
+        assert('d_vp-4' in payload['ts-41'])
+        assert(payload['ts-41']['d_vp-0'] > 0)
+        
+        # Similarity Search for a vantage point
         similar = prot._ts_similarity_search(TSDBOp_TSSimilaritySearch(tid, 5, tsdict[vpkeys[0]]))
         payload = similar['payload']
         assert(len(payload) == 5)
         assert(payload[vpkeys[0]] == 0.0)
         keys = payload.keys()
         prev = 0.0
-        print(payload)
+        # Check the order
         for key in keys:
             value = payload[key]
             assert(value >= prev and value <= 1.0)
             prev = value
+        
+        # Insert the rest of the rows
+        for k in range(5, 35):
+            key = 'ts-' + str(k)
+            prot._insert_ts(TSDBOp_InsertTS(tid, key, tsdict[key]))
+            
+        # Check to see if the new rows have vpd's
+        #select_return = prot._select(TSDBOp_Select(tid, {'pk':{'==':'ts-5'}}, [], None))
+        #payload = select_return['payload']
+        # TODO:
+        #assert('d_vp-0' in payload['ts-5'])
+        #assert('d_vp-4' in payload['ts-5'])
+        #assert(payload['ts-5']['d_vp-0'] > 0)
+        
+        # Similarity Search for a non-existant ts
+        similar = prot._ts_similarity_search(TSDBOp_TSSimilaritySearch(tid, 5, tsdict['ts-36']))
+        payload = similar['payload']
+        print(payload)
+        assert(len(payload) > 1)
+        
         db.close()
