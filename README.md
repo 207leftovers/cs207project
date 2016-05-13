@@ -14,7 +14,15 @@ The pype module is a Domain Specific Language to compile simple programs. <br />
 The tsdb module is a database to store and retrieve TimeSeries objects. It can be run via go_server.py and go_client.py. <br />
 
 It also has a REST API that can be run via rest_server.py and REST_commands.sh
+### Server
+* [`Server`](/tsdb/go_server.py): This sets up an asyncio server that can process requests from a client.
+* [`Server Overwrite`](/tsdb/go_server_overwrite.py): This sets up an asyncio server that can process requests from a client that overwrites any existing database files.
+  * Demo: [`Client`](/tsdb/go_client.py): This sets up a client that runs a similarity search on 50 TimeSeries objects.
 
+### Rest Server
+* [`Server`](/tsdb/rest_server.py): This sets up an aiohttp rest server that can process requests from a client.
+* [`Server Overwrite`](/tsdb/rest_server_overwrite.py): This sets up an aiohttp rest server that can process requests from a client that overwrites any existing database files.
+  * Demo: [`Rest Client`](/tsdb/rest_client.py): This sets up a rest client that runs a similarity search on 50 TimeSeries objects.
 
 ### Persistent Architecture
 * [`PersistentDB`](/tsdb/persistentdb.py): A database to store and search through TimeSeries.  
@@ -25,9 +33,16 @@ It also has a REST API that can be run via rest_server.py and REST_commands.sh
 
 ### Additional Features:
 * `Kalman Filter`: A common issue in time series is that noise will obscure the underlying time series. Kalman filter is able to filter out Gaussian white noise from the innovations using Bayesian inference and estimating a joint probability distribution. We write a Cython version of Kalman filter to filter out the underlying "true" path.
+  * Demo: [`go_client_kalman.py`](go_client_kalman.py)
 
 * `Lomb-Scargle FFT for calculating periods`: Regular FFT is not advised for irregular time series. Hence comes the need for the FFT which works for irregular time series and approximates it better that regular FFT. The algorithm used for this purpose is Lomb-Scargle FFT. The original complexity is N^2 but the implementation here is NlogN.
-
+  * Demo: [`go_client_fft.py`](go_client_fft.py)
+    * This uses astronomical data and combines both of the additional features
+  * Demo: [`go_client_macho_LPV.py`](go_client_macho_LPV.py)
+    * This is a demo for long-period variables
+  * Demo: [`go_client_macho_ML.py`](go_client_macho_ML.py)
+    * This is a demo for Micro-Lensing
+  
 
 ### DB Functions
 * [`begin_transaction`](/tsdb/tsdb_server.py#L29): Get a transaction id to use in other DB functions.
