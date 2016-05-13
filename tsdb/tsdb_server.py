@@ -13,10 +13,8 @@ import numpy as np
 
 def trigger_callback_maker(tid, pk, target, calltomake):
     def callback_(future):
-        print('CALLBACK_')
         result = future.result()
         if target is not None:
-            print('CALLBACKS', pk, target, result)
             calltomake(tid, pk, dict(zip(target, result)))
         return result
     return callback_
